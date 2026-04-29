@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const exams = [
   { id:"jee-main", name:"JEE Main", full:"Joint Entrance Examination Main", category:"Engineering", color:"#f97316", icon:"⚙️", difficulty:"High", frequency:"Twice a year",
@@ -106,13 +106,6 @@ const exams = [
     books:["Arun Sharma – QA & DI","Verbal Ability by Arun Sharma","TIME/CL study material","Previous year CAT papers"],
     eligibility:"Graduate with min 50% marks (45% SC/ST). Final year students eligible.",
     tips:["Accuracy > Speed","VARC: Read editorials daily","DILR: Practice set-based questions","Attempt 3-4 mocks per week from August"] },
-  { id:"xat", name:"XAT", full:"Xavier Aptitude Test", category:"Management", color:"#db2777", icon:"📈", difficulty:"High", frequency:"Once a year",
-    syllabus:["Verbal & Logical Ability","Decision Making","Quantitative Ability & Data Interpretation","General Knowledge"],
-    pattern:{duration:"3.5 hours",questions:"75 + 25 GK",total:"75 marks + GK",negative:"Yes (-0.25)"},
-    cutoff:[{year:2024,general:95,obc:90,sc:80,st:75},{year:2023,general:93,obc:88,sc:78,st:73}],
-    books:["XAT Decision Making by Arihant","CAT/XAT previous papers","TIME XAT material"],
-    eligibility:"Graduate from recognised university.",
-    tips:["Decision Making is unique to XAT","Essay writing for XLRI selection","GK section has no negative marking","XAT is harder than CAT"] },
   { id:"clat", name:"CLAT", full:"Common Law Admission Test", category:"Law", color:"#b45309", icon:"⚖️", difficulty:"High", frequency:"Once a year",
     syllabus:["English Language","Current Affairs & GK","Legal Reasoning","Logical Reasoning","Quantitative Techniques"],
     pattern:{duration:"2 hours",questions:"120 MCQs",total:"120 marks",negative:"Yes (-0.25)"},
@@ -120,33 +113,19 @@ const exams = [
     books:["Arihant CLAT guide","AP Bhardwaj – Legal Aptitude","Previous year CLAT papers","The Hindu for Current Affairs"],
     eligibility:"Class 12 with min 45% marks (40% SC/ST).",
     tips:["Legal reasoning needs regular practice","Current affairs from last 12 months","Reading comprehension is key","No maths beyond Class 10"] },
-  { id:"nid", name:"NID DAT", full:"National Institute of Design Design Aptitude Test", category:"Design", color:"#7c3aed", icon:"🎨", difficulty:"High", frequency:"Once a year",
+  { id:"nid", name:"NID DAT", full:"National Institute of Design Aptitude Test", category:"Design", color:"#7c3aed", icon:"🎨", difficulty:"High", frequency:"Once a year",
     syllabus:["Drawing & Sketching","Design Thinking","Creativity & Observation","Communication Skills"],
     pattern:{duration:"Prelims: 3hr | Mains: Studio test",questions:"Subjective + Studio test",total:"Based on jury",negative:"No"},
     cutoff:[{year:2024,general:55,obc:48,sc:38,st:35},{year:2023,general:53,obc:46,sc:36,st:33}],
     books:["NID previous year papers","Design sketching books","Draw every day — no book substitute"],
     eligibility:"Class 12 from any stream. No age bar.",
-    tips:["Practice drawing daily — non-negotiable","Observe design around you","Originality valued over perfection","Study products, packaging, environments"] },
-  { id:"nift", name:"NIFT", full:"National Institute of Fashion Technology Entrance Test", category:"Design", color:"#6d28d9", icon:"👗", difficulty:"High", frequency:"Once a year",
-    syllabus:["Creative Ability Test: Drawing, Design","General Ability Test: English, Maths, GK, Case Study"],
-    pattern:{duration:"CAT: 3hr | GAT: 2hr",questions:"CAT: subjective | GAT: 100 MCQs",total:"CAT + GAT combined",negative:"No for CAT, Yes for GAT"},
-    cutoff:[{year:2024,general:72,obc:65,sc:55,st:50},{year:2023,general:70,obc:63,sc:53,st:48}],
-    books:["NIFT previous year papers","Fashion history books","Basic drawing & sketching guides"],
-    eligibility:"Class 12 passed. Age: Max 23 years.",
-    tips:["Creative ability test needs daily practice","GAT needs GK and English skills","Fashion awareness is important","Portfolio quality matters"] },
-  { id:"iit-jam", name:"IIT JAM", full:"Joint Admission Test for MSc", category:"Science", color:"#0891b2", icon:"🧪", difficulty:"High", frequency:"Once a year",
-    syllabus:["Subject-specific (Physics/Chemistry/Maths/Biology/Geology/Economics)","Varies by paper chosen"],
-    pattern:{duration:"3 hours",questions:"60 questions (MCQ + NAT + MSQ)",total:"100 marks",negative:"Yes for MCQ only"},
-    cutoff:[{year:2024,general:20,obc:18,sc:10,st:10},{year:2023,general:19,obc:17,sc:9,st:9}],
-    books:["BSc textbooks of chosen subject","Previous year JAM papers","GateForum/Made Easy material"],
-    eligibility:"Bachelor's degree with relevant subject. Final year eligible.",
-    tips:["Subject mastery is key","Previous years are most important","NAT questions need calculation speed","Choose paper wisely"] },
+    tips:["Practice drawing daily","Observe design around you","Originality valued over perfection","Study products, packaging, environments"] },
   { id:"ctet", name:"CTET", full:"Central Teacher Eligibility Test", category:"Teaching", color:"#16a34a", icon:"📚", difficulty:"Moderate", frequency:"Twice a year",
-    syllabus:["Child Development & Pedagogy","Language I (compulsory)","Language II (compulsory)","Mathematics / Science / Social Studies"],
+    syllabus:["Child Development & Pedagogy","Language I & II","Mathematics / Science / Social Studies"],
     pattern:{duration:"2.5 hours",questions:"150 MCQs",total:"150 marks",negative:"No"},
     cutoff:[{year:2024,general:90,obc:82,sc:75,st:75},{year:2023,general:88,obc:80,sc:73,st:73}],
-    books:["Child Development by Arihant","NCERT textbooks Class 1–8","Previous year CTET papers","Disha CTET guide"],
-    eligibility:"Class 12 with 50% + 2 year D.El.Ed OR Graduation + B.Ed.",
+    books:["Child Development by Arihant","NCERT textbooks Class 1–8","Previous year CTET papers"],
+    eligibility:"Class 12 with 50% + D.El.Ed OR Graduation + B.Ed.",
     tips:["No negative marking — attempt all","Child Development has highest weightage","Pedagogy questions need conceptual clarity","Language sections test teaching methods"] },
   { id:"ugc-net", name:"UGC NET", full:"UGC National Eligibility Test", category:"Teaching", color:"#15803d", icon:"🎓", difficulty:"High", frequency:"Twice a year",
     syllabus:["Paper I: Teaching Aptitude, Research, Communication, Reasoning, GK","Paper II: Subject-specific (from 81 subjects)"],
@@ -164,10 +143,21 @@ const exams = [
     tips:["Drawing is the most important component","Practice perspective drawing","Maths up to Class 12 level","Observe architecture around you"] },
 ];
 
-const categories = ["All","Engineering","Medical","Government","Management","Law","Design","Science","Teaching","Architecture"];
-const catIcons = {"All":"🇮🇳","Engineering":"⚙️","Medical":"🩺","Government":"🏛️","Management":"📊","Law":"⚖️","Design":"🎨","Science":"🧪","Teaching":"📚","Architecture":"🏗️"};
-
+const categories = ["All","Engineering","Medical","Government","Management","Law","Design","Teaching","Architecture"];
+const catIcons = {"All":"🇮🇳","Engineering":"⚙️","Medical":"🩺","Government":"🏛️","Management":"📊","Law":"⚖️","Design":"🎨","Teaching":"📚","Architecture":"🏗️"};
 const diffColor = {"Easy":"#22c55e","Moderate":"#f59e0b","High":"#f97316","Very High":"#ef4444","Extremely High":"#7c3aed"};
+
+const SYSTEM_PROMPT = `You are ExamBot, an expert AI assistant for Indian competitive exam preparation built into the ExamNest website. You know everything about all Indian exams — JEE, NEET, UPSC, CAT, GATE, SSC, IBPS, CLAT, NDA, CTET, UGC NET, NEET PG, BITSAT, VITEEE, SBI PO, RRB NTPC, NID, NIFT, NATA and all others.
+
+You help students with:
+- Exam syllabus, pattern, eligibility, cutoffs
+- Study plans and strategies  
+- Book recommendations
+- Doubt solving
+- Career guidance
+- Comparing exams
+
+Keep answers concise, clear and helpful. Use bullet points when listing things. Be encouraging and supportive to students. Always respond in a friendly, mentor-like tone. If asked about very recent events after 2024, mention that details may have changed and to verify from official websites.`;
 
 const globalStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap');
@@ -175,13 +165,23 @@ const globalStyles = `
   html,body{font-family:'DM Sans',sans-serif;background:#f8f7f4;color:#1a1a2e;overscroll-behavior:none;}
   :root{--dark:#1a1a2e;--gold:#c9a84c;--gold-light:#e8c97e;--border:rgba(0,0,0,0.08);--muted:#888;}
   @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-  @keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-  @keyframes pop{0%{transform:scale(0.97)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
-  .card{transition:transform 0.15s ease,box-shadow 0.15s ease;}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  .card{transition:transform 0.15s ease;}
   .card:active{transform:scale(0.97);}
-  input:focus{outline:none;}
+  input:focus,textarea:focus{outline:none;}
   ::-webkit-scrollbar{display:none;}
 `;
+
+// ── QUICK SUGGESTIONS ──
+const quickQuestions = [
+  "Which is easier — JEE or NEET?",
+  "Best books for UPSC 2025",
+  "NEET 2024 cutoff for general",
+  "How to start CAT preparation?",
+  "SSC CGL vs IBPS PO — which is better?",
+  "JEE Main syllabus changes 2025",
+];
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -198,171 +198,143 @@ export default function App() {
      e.category.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const openExam = (exam) => {
-    setSelected(exam); setPage("detail"); setTab("syllabus");
-    window.scrollTo(0,0);
-  };
-  const goHome = () => {
-    setPage("home"); setSelected(null);
-    setNavTab("home");
-  };
-  const goSearch = () => {
-    setPage("home"); setNavTab("search");
-    setTimeout(()=>document.getElementById("searchInput")?.focus(),100);
-  };
+  const openExam = (exam) => { setSelected(exam); setPage("detail"); setTab("syllabus"); window.scrollTo(0,0); };
+  const goHome = () => { setPage("home"); setSelected(null); setNavTab("home"); };
+  const goChat = () => { setPage("home"); setNavTab("chat"); };
 
   return (
     <>
       <style>{globalStyles}</style>
       <div style={{minHeight:"100vh",background:"#f8f7f4",paddingBottom:72}}>
 
-        {/* ── DETAIL PAGE ── */}
-        {page === "detail" && selected ? (
+        {/* DETAIL PAGE */}
+        {page==="detail" && selected ? (
           <DetailPage exam={selected} goHome={goHome} tab={tab} setTab={setTab} />
+        ) : navTab==="chat" ? (
+          <ChatPage goHome={goHome} />
+        ) : navTab==="about" ? (
+          <AboutPage goHome={()=>setNavTab("home")} examCount={exams.length} />
         ) : (
-
-        /* ── HOME PAGE ── */
-        <>
-          {/* Top bar */}
-          <div style={{background:"var(--dark)",padding:"16px 20px 0",position:"sticky",top:0,zIndex:50}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-              <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <div style={{width:32,height:32,background:"rgba(255,255,255,0.1)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>📚</div>
-                <div>
-                  <div style={{fontFamily:"'Playfair Display',serif",fontSize:17,fontWeight:700,color:"#fff",lineHeight:1}}>ExamNest</div>
-                  <div style={{fontSize:9,color:"var(--gold)",letterSpacing:"0.12em",textTransform:"uppercase"}}>India's Exam Guide</div>
+          /* HOME */
+          <>
+            {/* Top bar */}
+            <div style={{background:"var(--dark)",padding:"16px 20px 0",position:"sticky",top:0,zIndex:50}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <div style={{width:32,height:32,background:"rgba(255,255,255,0.1)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>📚</div>
+                  <div>
+                    <div style={{fontFamily:"'Playfair Display',serif",fontSize:17,fontWeight:700,color:"#fff",lineHeight:1}}>ExamNest</div>
+                    <div style={{fontSize:9,color:"var(--gold)",letterSpacing:"0.12em",textTransform:"uppercase"}}>India's Exam Guide</div>
+                  </div>
+                </div>
+                {/* AI Badge */}
+                <div onClick={goChat} style={{background:"linear-gradient(135deg,#6366f1,#ec4899)",borderRadius:20,padding:"5px 12px",fontSize:11,color:"#fff",fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}>
+                  🤖 Ask AI
                 </div>
               </div>
-              <div style={{background:"rgba(255,255,255,0.1)",borderRadius:20,padding:"4px 12px",fontSize:11,color:"rgba(255,255,255,0.7)"}}>
-                {exams.length}+ Exams
+
+              {/* Search */}
+              <div style={{position:"relative",marginBottom:14}}>
+                <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",fontSize:15,color:"rgba(255,255,255,0.4)"}}>🔍</span>
+                <input value={search} onChange={e=>setSearch(e.target.value)}
+                  placeholder="Search any exam..."
+                  style={{width:"100%",padding:"11px 14px 11px 38px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:12,color:"#fff",fontSize:14,fontFamily:"inherit"}} />
+                {search && <span onClick={()=>setSearch("")} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",fontSize:16,color:"rgba(255,255,255,0.5)",cursor:"pointer"}}>✕</span>}
+              </div>
+
+              {/* Categories */}
+              <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:14,scrollbarWidth:"none"}}>
+                {categories.map(c=>(
+                  <button key={c} onClick={()=>setCategory(c)} style={{
+                    flexShrink:0,padding:"6px 14px",borderRadius:20,border:"none",cursor:"pointer",
+                    fontSize:12,fontFamily:"inherit",fontWeight:500,transition:"all 0.2s",
+                    background:category===c?"var(--gold)":"rgba(255,255,255,0.1)",
+                    color:category===c?"#1a1a2e":"rgba(255,255,255,0.7)",
+                  }}>{catIcons[c]} {c}</button>
+                ))}
               </div>
             </div>
 
-            {/* Search bar */}
-            <div style={{position:"relative",marginBottom:14}}>
-              <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",fontSize:15,color:"rgba(255,255,255,0.4)"}}>🔍</span>
-              <input id="searchInput" value={search} onChange={e=>setSearch(e.target.value)}
-                placeholder="Search JEE, NEET, UPSC, CAT..."
-                style={{width:"100%",padding:"11px 14px 11px 38px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:12,color:"#fff",fontSize:14,fontFamily:"inherit"}} />
-              {search && <span onClick={()=>setSearch("")} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",fontSize:16,color:"rgba(255,255,255,0.5)",cursor:"pointer"}}>✕</span>}
+            {/* AI Banner */}
+            <div onClick={goChat} style={{margin:"12px 16px 0",background:"linear-gradient(135deg,#1e1b4b,#312e81)",borderRadius:16,padding:"14px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:12,boxShadow:"0 4px 20px rgba(99,102,241,0.3)"}}>
+              <div style={{width:44,height:44,background:"linear-gradient(135deg,#6366f1,#ec4899)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>🤖</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:2}}>Ask ExamBot AI</div>
+                <div style={{fontSize:12,color:"rgba(255,255,255,0.65)"}}>Get instant answers about any exam, syllabus, cutoffs & more</div>
+              </div>
+              <div style={{fontSize:20,color:"rgba(255,255,255,0.4)"}}>›</div>
             </div>
 
-            {/* Category pills */}
-            <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:14,scrollbarWidth:"none"}}>
-              {categories.map(c=>(
-                <button key={c} onClick={()=>setCategory(c)} style={{
-                  flexShrink:0,padding:"6px 14px",borderRadius:20,border:"none",cursor:"pointer",
-                  fontSize:12,fontFamily:"inherit",fontWeight:500,transition:"all 0.2s",
-                  background:category===c?"var(--gold)":"rgba(255,255,255,0.1)",
-                  color:category===c?"#1a1a2e":"rgba(255,255,255,0.7)",
-                }}>{catIcons[c]} {c}</button>
+            {/* Results count / heading */}
+            <div style={{padding:"14px 20px 4px"}}>
+              {search || category!=="All" ? (
+                <div style={{fontSize:13,color:"var(--muted)"}}>{filtered.length} exam{filtered.length!==1?"s":""} found{category!=="All"?` in ${category}`:""}{search?` for "${search}":""}`}</div>
+              ) : (
+                <>
+                  <div style={{fontSize:20,fontWeight:700,fontFamily:"'Playfair Display',serif",color:"var(--dark)"}}>All Exams 🇮🇳</div>
+                  <div style={{fontSize:12,color:"var(--muted)",marginTop:2}}>Tap any exam for full details</div>
+                </>
+              )}
+            </div>
+
+            {/* Exam cards */}
+            <div style={{padding:"8px 16px",display:"flex",flexDirection:"column",gap:10}}>
+              {filtered.map((exam,i)=>(
+                <div key={exam.id} className="card" onClick={()=>openExam(exam)} style={{
+                  background:"#fff",borderRadius:16,overflow:"hidden",cursor:"pointer",
+                  boxShadow:"0 2px 12px rgba(0,0,0,0.06)",
+                  animation:`fadeUp 0.4s ease forwards ${Math.min(i*0.04,0.3)}s`,opacity:0,
+                }}>
+                  <div style={{height:3,background:exam.color}} />
+                  <div style={{padding:"13px 15px",display:"flex",alignItems:"center",gap:13}}>
+                    <div style={{width:50,height:50,background:exam.color+"15",borderRadius:13,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>{exam.icon}</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
+                        <div style={{fontFamily:"'Playfair Display',serif",fontSize:16,fontWeight:700,color:"var(--dark)"}}>{exam.name}</div>
+                        <div style={{fontSize:18,color:"#ccc",flexShrink:0}}>›</div>
+                      </div>
+                      <div style={{fontSize:11,color:"var(--muted)",marginBottom:7,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{exam.full}</div>
+                      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                        <span style={{background:exam.color+"18",color:exam.color,fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:7}}>{exam.category}</span>
+                        <span style={{background:diffColor[exam.difficulty]+"18",color:diffColor[exam.difficulty],fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:7}}>{exam.difficulty}</span>
+                        <span style={{background:"#f1f5f9",color:"#64748b",fontSize:10,padding:"2px 8px",borderRadius:7}}>{exam.frequency}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </div>
-          </div>
-
-          {/* Results count */}
-          {search || category !== "All" ? (
-            <div style={{padding:"12px 20px 4px",fontSize:12,color:"var(--muted)"}}>
-              {filtered.length} exam{filtered.length !== 1 ? "s" : ""} found
-              {category !== "All" ? ` in ${category}` : ""}
-              {search ? ` for "${search}"` : ""}
-            </div>
-          ) : (
-            <div style={{padding:"16px 20px 4px"}}>
-              <div style={{fontSize:20,fontWeight:700,fontFamily:"'Playfair Display',serif",color:"var(--dark)"}}>All Exams 🇮🇳</div>
-              <div style={{fontSize:12,color:"var(--muted)",marginTop:2}}>Tap any exam to see details</div>
-            </div>
-          )}
-
-          {/* Exam cards */}
-          <div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:12}}>
-            {filtered.map((exam,i)=>(
-              <div key={exam.id} className="card" onClick={()=>openExam(exam)} style={{
-                background:"#fff",borderRadius:16,overflow:"hidden",cursor:"pointer",
-                boxShadow:"0 2px 12px rgba(0,0,0,0.07)",
-                animation:`fadeUp 0.4s ease forwards ${Math.min(i*0.04,0.3)}s`,opacity:0,
-              }}>
-                <div style={{height:3,background:exam.color}} />
-                <div style={{padding:"14px 16px",display:"flex",alignItems:"center",gap:14}}>
-                  <div style={{width:52,height:52,background:exam.color+"15",borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0}}>
-                    {exam.icon}
-                  </div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
-                      <div style={{fontFamily:"'Playfair Display',serif",fontSize:16,fontWeight:700,color:"var(--dark)"}}>{exam.name}</div>
-                      <div style={{fontSize:18,color:"#ccc",flexShrink:0}}>›</div>
-                    </div>
-                    <div style={{fontSize:11,color:"var(--muted)",marginBottom:8,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{exam.full}</div>
-                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                      <span style={{background:exam.color+"18",color:exam.color,fontSize:10,fontWeight:600,padding:"3px 8px",borderRadius:8}}>{exam.category}</span>
-                      <span style={{background:diffColor[exam.difficulty]+"18",color:diffColor[exam.difficulty],fontSize:10,fontWeight:600,padding:"3px 8px",borderRadius:8}}>{exam.difficulty}</span>
-                      <span style={{background:"#f1f5f9",color:"#64748b",fontSize:10,padding:"3px 8px",borderRadius:8}}>{exam.frequency}</span>
-                    </div>
-                  </div>
+              {filtered.length===0&&(
+                <div style={{textAlign:"center",padding:"60px 0",color:"var(--muted)"}}>
+                  <div style={{fontSize:48,marginBottom:12}}>🔍</div>
+                  <div style={{fontSize:16,fontWeight:600}}>No exams found</div>
+                  <div style={{fontSize:13,marginTop:6}}>Try "JEE", "NEET", "UPSC"...</div>
+                  <button onClick={()=>{setSearch("");setCategory("All");}} style={{marginTop:16,padding:"10px 24px",background:"var(--dark)",color:"#fff",border:"none",borderRadius:12,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>Clear Filter</button>
                 </div>
-              </div>
-            ))}
-
-            {filtered.length===0&&(
-              <div style={{textAlign:"center",padding:"60px 0",color:"var(--muted)"}}>
-                <div style={{fontSize:48,marginBottom:12}}>🔍</div>
-                <div style={{fontSize:16,fontWeight:600}}>No exams found</div>
-                <div style={{fontSize:13,marginTop:6}}>Try "JEE", "NEET", "UPSC", "CAT"...</div>
-                <button onClick={()=>{setSearch("");setCategory("All");}} style={{marginTop:16,padding:"10px 24px",background:"var(--dark)",color:"#fff",border:"none",borderRadius:12,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>Clear Filter</button>
-              </div>
-            )}
-          </div>
-        </>
+              )}
+            </div>
+          </>
         )}
 
-        {/* ── BOTTOM NAV ── */}
-        {page !== "detail" && (
-          <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#fff",borderTop:"1px solid var(--border)",display:"flex",zIndex:100,paddingBottom:"env(safe-area-inset-bottom)"}}>
+        {/* BOTTOM NAV */}
+        {page!=="detail" && (
+          <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#fff",borderTop:"1px solid var(--border)",display:"flex",zIndex:100}}>
             {[
               {id:"home",icon:"🏠",label:"Home"},
-              {id:"search",icon:"🔍",label:"Search"},
+              {id:"chat",icon:"🤖",label:"AI Chat"},
               {id:"about",icon:"ℹ️",label:"About"},
             ].map(item=>(
               <button key={item.id} onClick={()=>{
-                if(item.id==="search") goSearch();
-                else if(item.id==="about") setNavTab("about");
-                else goHome();
+                setNavTab(item.id);
+                if(item.id==="home") goHome();
               }} style={{
                 flex:1,padding:"10px 0 8px",background:"none",border:"none",cursor:"pointer",
                 display:"flex",flexDirection:"column",alignItems:"center",gap:3,
               }}>
                 <div style={{fontSize:20}}>{item.icon}</div>
-                <div style={{fontSize:10,fontFamily:"inherit",fontWeight:navTab===item.id?600:400,color:navTab===item.id?"var(--dark)":"var(--muted)"}}>{item.label}</div>
-                {navTab===item.id&&<div style={{width:4,height:4,borderRadius:"50%",background:"var(--gold)",marginTop:1}} />}
+                <div style={{fontSize:10,fontFamily:"inherit",fontWeight:navTab===item.id?600:400,color:navTab===item.id?"#6366f1":"var(--muted)"}}>{item.label}</div>
+                {navTab===item.id&&<div style={{width:4,height:4,borderRadius:"50%",background:"#6366f1",marginTop:1}} />}
               </button>
             ))}
-          </div>
-        )}
-
-        {/* About overlay */}
-        {navTab==="about" && page!=="detail" && (
-          <div style={{position:"fixed",inset:0,background:"#f8f7f4",zIndex:80,overflowY:"auto",paddingBottom:80}}>
-            <div style={{background:"var(--dark)",padding:"20px",display:"flex",alignItems:"center",gap:12}}>
-              <button onClick={()=>setNavTab("home")} style={{background:"rgba(255,255,255,0.1)",border:"none",borderRadius:10,padding:"8px 14px",color:"#fff",cursor:"pointer",fontSize:14,fontFamily:"inherit"}}>← Back</button>
-              <div style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:"#fff"}}>About ExamNest</div>
-            </div>
-            <div style={{padding:"24px 20px"}}>
-              {[
-                {icon:"📚",title:"Who We Are",text:"ExamNest is an educational platform for students preparing for competitive exams across India. We cover Engineering, Medical, Government, Management, Law, Design and more."},
-                {icon:"🎯",title:"Our Mission",text:"To make exam-related information easily accessible to every Indian student — clear, accurate, and completely free."},
-                {icon:"✅",title:"What We Offer",text:"Detailed syllabus, exam pattern, cutoff marks, eligibility criteria, recommended books and preparation tips for all major Indian exams."},
-                {icon:"💡",title:"Why ExamNest?",text:"One platform. All exams. Free forever. No ads, no confusion — just clean exam guidance for every student."},
-              ].map((item,i)=>(
-                <div key={i} style={{background:"#fff",borderRadius:16,padding:"18px",marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,0.05)"}}>
-                  <div style={{fontSize:28,marginBottom:8}}>{item.icon}</div>
-                  <div style={{fontFamily:"'Playfair Display',serif",fontSize:17,fontWeight:700,marginBottom:6,color:"var(--dark)"}}>{item.title}</div>
-                  <div style={{fontSize:14,color:"#555",lineHeight:1.7}}>{item.text}</div>
-                </div>
-              ))}
-              <div style={{textAlign:"center",marginTop:24,fontSize:12,color:"var(--muted)"}}>
-                © 2026 ExamNest · {exams.length}+ Exams Covered<br/>Made with ❤️ for Indian Students
-              </div>
-            </div>
           </div>
         )}
       </div>
@@ -370,6 +342,128 @@ export default function App() {
   );
 }
 
+// ── AI CHAT PAGE ──
+function ChatPage({ goHome }) {
+  const [messages, setMessages] = useState([
+    { role:"assistant", content:"👋 Hi! I'm **ExamBot**, your AI guide for all Indian competitive exams!\n\nI can help you with syllabus, cutoffs, books, study plans, career advice and more. What would you like to know? 😊" }
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const bottomRef = useRef(null);
+
+  useEffect(()=>{ bottomRef.current?.scrollIntoView({behavior:"smooth"}); },[messages,loading]);
+
+  const send = async (text) => {
+    const q = text || input.trim();
+    if(!q || loading) return;
+    setInput("");
+    const newMsgs = [...messages, {role:"user",content:q}];
+    setMessages(newMsgs);
+    setLoading(true);
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",
+          max_tokens:1000,
+          system:SYSTEM_PROMPT,
+          messages:newMsgs.map(m=>({role:m.role,content:m.content}))
+        })
+      });
+      const data = await res.json();
+      const reply = data.content?.map(b=>b.text||"").join("")||"Sorry, I couldn't process that. Please try again.";
+      setMessages(prev=>[...prev,{role:"assistant",content:reply}]);
+    } catch {
+      setMessages(prev=>[...prev,{role:"assistant",content:"Connection error. Please check your internet and try again."}]);
+    }
+    setLoading(false);
+  };
+
+  const formatMsg = (text) => {
+    return text
+      .replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>")
+      .replace(/\*(.*?)\*/g,"<em>$1</em>")
+      .replace(/^• /gm,"&bull; ")
+      .replace(/\n/g,"<br/>");
+  };
+
+  return (
+    <div style={{height:"100vh",display:"flex",flexDirection:"column",background:"#f8f7f4"}}>
+      {/* Chat header */}
+      <div style={{background:"linear-gradient(135deg,#1e1b4b,#312e81)",padding:"16px 20px",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
+        <button onClick={goHome} style={{background:"rgba(255,255,255,0.15)",border:"none",borderRadius:10,padding:"7px 13px",color:"#fff",cursor:"pointer",fontSize:13,fontFamily:"inherit"}}>← Back</button>
+        <div style={{width:36,height:36,background:"linear-gradient(135deg,#6366f1,#ec4899)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🤖</div>
+        <div>
+          <div style={{fontSize:15,fontWeight:700,color:"#fff"}}>ExamBot AI</div>
+          <div style={{fontSize:11,color:"rgba(255,255,255,0.6)"}}>Ask anything about Indian exams</div>
+        </div>
+        <div style={{marginLeft:"auto",width:8,height:8,borderRadius:"50%",background:"#22c55e",boxShadow:"0 0 6px #22c55e"}} />
+      </div>
+
+      {/* Quick questions (only show at start) */}
+      {messages.length===1&&(
+        <div style={{padding:"12px 16px",flexShrink:0}}>
+          <div style={{fontSize:12,color:"var(--muted)",marginBottom:8}}>💡 Quick questions:</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
+            {quickQuestions.map((q,i)=>(
+              <button key={i} onClick={()=>send(q)} style={{
+                background:"#fff",border:"1px solid rgba(99,102,241,0.2)",borderRadius:20,
+                padding:"6px 12px",fontSize:11,color:"#6366f1",cursor:"pointer",
+                fontFamily:"inherit",fontWeight:500,
+              }}>{q}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Messages */}
+      <div style={{flex:1,overflowY:"auto",padding:"12px 16px",display:"flex",flexDirection:"column",gap:12}}>
+        {messages.map((msg,i)=>(
+          <div key={i} style={{display:"flex",justifyContent:msg.role==="user"?"flex-end":"flex-start",animation:"fadeIn 0.3s ease forwards"}}>
+            {msg.role==="assistant"&&(
+              <div style={{width:30,height:30,background:"linear-gradient(135deg,#6366f1,#ec4899)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0,marginRight:8,alignSelf:"flex-end"}}>🤖</div>
+            )}
+            <div style={{
+              maxWidth:"80%",padding:"11px 14px",borderRadius:msg.role==="user"?"16px 16px 4px 16px":"16px 16px 16px 4px",
+              background:msg.role==="user"?"linear-gradient(135deg,#6366f1,#818cf8)":"#fff",
+              color:msg.role==="user"?"#fff":"#333",
+              fontSize:13,lineHeight:1.7,
+              boxShadow:"0 2px 8px rgba(0,0,0,0.08)",
+            }} dangerouslySetInnerHTML={{__html:formatMsg(msg.content)}} />
+          </div>
+        ))}
+        {loading&&(
+          <div style={{display:"flex",alignItems:"flex-end",gap:8,animation:"fadeIn 0.3s ease forwards"}}>
+            <div style={{width:30,height:30,background:"linear-gradient(135deg,#6366f1,#ec4899)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>🤖</div>
+            <div style={{background:"#fff",borderRadius:"16px 16px 16px 4px",padding:"14px 16px",boxShadow:"0 2px 8px rgba(0,0,0,0.08)",display:"flex",gap:5,alignItems:"center"}}>
+              {[0,1,2].map(i=>(
+                <div key={i} style={{width:7,height:7,borderRadius:"50%",background:"#6366f1",animation:`bounce 0.8s ease infinite`,animationDelay:`${i*0.15}s`}} />
+              ))}
+            </div>
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input */}
+      <div style={{padding:"12px 16px",background:"#fff",borderTop:"1px solid var(--border)",display:"flex",gap:10,alignItems:"flex-end",flexShrink:0}}>
+        <textarea value={input} onChange={e=>setInput(e.target.value)}
+          onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}}
+          placeholder="Ask about any exam..." rows={1}
+          style={{flex:1,padding:"11px 14px",background:"#f8f7f4",border:"1px solid var(--border)",borderRadius:14,fontSize:14,fontFamily:"inherit",resize:"none",color:"#333",maxHeight:100}} />
+        <button onClick={()=>send()} disabled={loading||!input.trim()} style={{
+          width:44,height:44,borderRadius:14,border:"none",cursor:loading||!input.trim()?"not-allowed":"pointer",
+          background:loading||!input.trim()?"#e2e8f0":"linear-gradient(135deg,#6366f1,#818cf8)",
+          color:"#fff",fontSize:18,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",
+          transition:"all 0.2s",
+        }}>➤</button>
+      </div>
+    </div>
+  );
+}
+
+// ── DETAIL PAGE ──
 function DetailPage({exam,goHome,tab,setTab}){
   const tabs=[
     {id:"syllabus",label:"Syllabus",icon:"📖"},
@@ -378,29 +472,21 @@ function DetailPage({exam,goHome,tab,setTab}){
     {id:"books",label:"Books",icon:"📚"},
     {id:"tips",label:"Tips",icon:"💡"},
   ];
-
   return(
-    <div style={{minHeight:"100vh",background:"#f8f7f4",fontFamily:"'DM Sans',sans-serif"}}>
-      {/* Header */}
+    <div style={{minHeight:"100vh",background:"#f8f7f4"}}>
       <div style={{background:exam.color,padding:"16px 20px 0",position:"sticky",top:0,zIndex:50}}>
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
           <button onClick={goHome} style={{background:"rgba(255,255,255,0.2)",border:"none",borderRadius:10,padding:"8px 14px",color:"#fff",cursor:"pointer",fontSize:14,fontFamily:"inherit",fontWeight:500}}>← Back</button>
-          <div style={{fontFamily:"'Playfair Display',serif",fontSize:16,fontWeight:700,color:"#fff",opacity:0.9}}>ExamNest</div>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:15,fontWeight:700,color:"rgba(255,255,255,0.85)"}}>ExamNest</div>
         </div>
-
-        {/* Exam hero */}
         <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:16}}>
-          <div style={{width:60,height:60,background:"rgba(255,255,255,0.2)",borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,flexShrink:0}}>
-            {exam.icon}
-          </div>
+          <div style={{width:56,height:56,background:"rgba(255,255,255,0.2)",borderRadius:15,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,flexShrink:0}}>{exam.icon}</div>
           <div>
-            <div style={{fontSize:10,color:"rgba(255,255,255,0.75)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>{exam.category}</div>
+            <div style={{fontSize:10,color:"rgba(255,255,255,0.7)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>{exam.category}</div>
             <div style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:900,color:"#fff",lineHeight:1.1}}>{exam.name}</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,0.8)",marginTop:3}}>{exam.full}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,0.75)",marginTop:3}}>{exam.full}</div>
           </div>
         </div>
-
-        {/* Quick stats */}
         <div style={{display:"flex",gap:0,background:"rgba(0,0,0,0.15)",borderRadius:12,overflow:"hidden",marginBottom:16}}>
           {[["Marks",exam.pattern.total],["Duration",exam.pattern.duration],["Frequency",exam.frequency]].map(([l,v],i)=>(
             <div key={l} style={{flex:1,padding:"10px 8px",textAlign:"center",borderRight:i<2?"1px solid rgba(255,255,255,0.1)":"none"}}>
@@ -409,112 +495,124 @@ function DetailPage({exam,goHome,tab,setTab}){
             </div>
           ))}
         </div>
-
-        {/* Tabs */}
         <div style={{display:"flex",gap:0,overflowX:"auto",scrollbarWidth:"none"}}>
           {tabs.map(t=>(
             <button key={t.id} onClick={()=>setTab(t.id)} style={{
               flexShrink:0,padding:"10px 14px",background:"none",border:"none",cursor:"pointer",
               fontSize:12,fontFamily:"inherit",fontWeight:tab===t.id?600:400,
-              color:tab===t.id?"#fff":"rgba(255,255,255,0.6)",
+              color:tab===t.id?"#fff":"rgba(255,255,255,0.55)",
               borderBottom:`2px solid ${tab===t.id?"#fff":"transparent"}`,
-              transition:"all 0.2s",whiteSpace:"nowrap",
+              whiteSpace:"nowrap",transition:"all 0.2s",
             }}>{t.icon} {t.label}</button>
           ))}
         </div>
       </div>
-
-      {/* Eligibility strip */}
-      <div style={{background:"#fff",padding:"12px 20px",borderBottom:"1px solid rgba(0,0,0,0.06)",display:"flex",gap:8,alignItems:"flex-start"}}>
-        <span style={{fontSize:14,flexShrink:0}}>✅</span>
+      <div style={{background:"#fff",padding:"11px 20px",borderBottom:"1px solid rgba(0,0,0,0.06)",display:"flex",gap:8}}>
+        <span>✅</span>
         <div style={{fontSize:12,color:"#444",lineHeight:1.6}}><strong>Eligibility:</strong> {exam.eligibility}</div>
       </div>
-
-      {/* Tab content */}
-      <div style={{padding:"16px"}}>
-
+      <div style={{padding:"14px 16px"}}>
         {tab==="syllabus"&&(
-          <div style={{animation:"fadeUp 0.3s ease forwards"}}>
-            <div style={{fontSize:16,fontFamily:"'Playfair Display',serif",fontWeight:700,marginBottom:12,color:"var(--dark)"}}>Syllabus</div>
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {exam.syllabus.map((s,i)=>{
-                const[subject,...topics]=s.split(": ");
-                return(
-                  <div key={i} style={{background:"#fff",borderRadius:14,padding:"14px 16px",borderLeft:`4px solid ${exam.color}`,boxShadow:"0 1px 8px rgba(0,0,0,0.05)"}}>
-                    <div style={{fontWeight:700,fontSize:14,marginBottom:6,color:"var(--dark)"}}>{subject}</div>
-                    <div style={{fontSize:12,color:"#666",lineHeight:1.6}}>{topics.join(": ")}</div>
-                  </div>
-                );
-              })}
-            </div>
+          <div>
+            <div style={{fontSize:16,fontFamily:"'Playfair Display',serif",fontWeight:700,marginBottom:10}}>Syllabus</div>
+            {exam.syllabus.map((s,i)=>{
+              const[subject,...topics]=s.split(": ");
+              return(
+                <div key={i} style={{background:"#fff",borderRadius:13,padding:"13px 15px",marginBottom:10,borderLeft:`4px solid ${exam.color}`,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
+                  <div style={{fontWeight:700,fontSize:13,marginBottom:5}}>{subject}</div>
+                  <div style={{fontSize:12,color:"#666",lineHeight:1.6}}>{topics.join(": ")}</div>
+                </div>
+              );
+            })}
           </div>
         )}
-
         {tab==="pattern"&&(
-          <div style={{animation:"fadeUp 0.3s ease forwards"}}>
-            <div style={{fontSize:16,fontFamily:"'Playfair Display',serif",fontWeight:700,marginBottom:12,color:"var(--dark)"}}>Exam Pattern</div>
+          <div>
+            <div style={{fontSize:16,fontFamily:"'Playfair Display',serif",fontWeight:700,marginBottom:10}}>Exam Pattern</div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
               {Object.entries(exam.pattern).map(([k,v])=>(
-                <div key={k} style={{background:"#fff",borderRadius:14,padding:"14px",boxShadow:"0 1px 8px rgba(0,0,0,0.05)",textAlign:"center"}}>
+                <div key={k} style={{background:"#fff",borderRadius:13,padding:"13px",boxShadow:"0 1px 6px rgba(0,0,0,0.05)",textAlign:"center"}}>
                   <div style={{fontSize:9,color:"#888",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>{k.replace(/([A-Z])/g," $1").trim()}</div>
-                  <div style={{fontFamily:"'Playfair Display',serif",fontSize:16,fontWeight:700,color:exam.color,lineHeight:1.3}}>{v}</div>
+                  <div style={{fontFamily:"'Playfair Display',serif",fontSize:15,fontWeight:700,color:exam.color,lineHeight:1.3}}>{v}</div>
                 </div>
               ))}
             </div>
           </div>
         )}
-
         {tab==="cutoff"&&(
-          <div style={{animation:"fadeUp 0.3s ease forwards"}}>
-            <div style={{fontSize:16,fontFamily:"'Playfair Display',serif",fontWeight:700,marginBottom:12,color:"var(--dark)"}}>Cutoff Marks</div>
-            <div style={{background:"#fff",borderRadius:14,overflow:"hidden",boxShadow:"0 1px 8px rgba(0,0,0,0.05)"}}>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",background:exam.color+"20",padding:"10px 12px"}}>
+          <div>
+            <div style={{fontSize:16,fontFamily:"'Playfair Display',serif",fontWeight:700,marginBottom:10}}>Cutoff Marks</div>
+            <div style={{background:"#fff",borderRadius:13,overflow:"hidden",boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",background:exam.color+"20",padding:"10px 10px"}}>
                 {["Year","Gen","OBC","SC","ST"].map(h=>(
-                  <div key={h} style={{fontSize:11,fontWeight:700,color:"var(--dark)",textAlign:"center"}}>{h}</div>
+                  <div key={h} style={{fontSize:11,fontWeight:700,textAlign:"center"}}>{h}</div>
                 ))}
               </div>
               {exam.cutoff.map((row,i)=>(
-                <div key={i} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",padding:"12px",borderTop:"1px solid rgba(0,0,0,0.06)"}}>
-                  <div style={{fontSize:13,fontWeight:700,color:exam.color,textAlign:"center"}}>{row.year}</div>
-                  <div style={{fontSize:13,textAlign:"center"}}>{row.general}</div>
-                  <div style={{fontSize:13,textAlign:"center"}}>{row.obc}</div>
-                  <div style={{fontSize:13,textAlign:"center"}}>{row.sc}</div>
-                  <div style={{fontSize:13,textAlign:"center"}}>{row.st}</div>
+                <div key={i} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",padding:"11px 10px",borderTop:"1px solid rgba(0,0,0,0.06)"}}>
+                  <div style={{fontSize:12,fontWeight:700,color:exam.color,textAlign:"center"}}>{row.year}</div>
+                  {[row.general,row.obc,row.sc,row.st].map((v,j)=>(
+                    <div key={j} style={{fontSize:12,textAlign:"center"}}>{v}</div>
+                  ))}
                 </div>
               ))}
             </div>
-            <div style={{fontSize:11,color:"#888",marginTop:10,textAlign:"center"}}>* Indicative figures. Verify from official sources.</div>
+            <div style={{fontSize:11,color:"#888",marginTop:8,textAlign:"center"}}>* Indicative. Verify from official sources.</div>
           </div>
         )}
-
         {tab==="books"&&(
-          <div style={{animation:"fadeUp 0.3s ease forwards"}}>
-            <div style={{fontSize:16,fontFamily:"'Playfair Display',serif",fontWeight:700,marginBottom:12,color:"var(--dark)"}}>Recommended Books</div>
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {exam.books.map((book,i)=>(
-                <div key={i} style={{background:"#fff",borderRadius:14,padding:"14px 16px",display:"flex",alignItems:"center",gap:12,boxShadow:"0 1px 8px rgba(0,0,0,0.05)"}}>
-                  <div style={{width:36,height:36,background:exam.color+"18",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>📖</div>
-                  <div style={{fontSize:13,fontWeight:500,color:"#333",lineHeight:1.4}}>{book}</div>
-                </div>
-              ))}
-            </div>
+          <div>
+            <div style={{fontSize:16,fontFamily:"'Playfair Display',serif",fontWeight:700,marginBottom:10}}>Recommended Books</div>
+            {exam.books.map((book,i)=>(
+              <div key={i} style={{background:"#fff",borderRadius:13,padding:"13px 15px",marginBottom:10,display:"flex",alignItems:"center",gap:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
+                <div style={{width:34,height:34,background:exam.color+"18",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>📖</div>
+                <div style={{fontSize:13,fontWeight:500,color:"#333"}}>{book}</div>
+              </div>
+            ))}
           </div>
         )}
-
         {tab==="tips"&&(
-          <div style={{animation:"fadeUp 0.3s ease forwards"}}>
-            <div style={{fontSize:16,fontFamily:"'Playfair Display',serif",fontWeight:700,marginBottom:12,color:"var(--dark)"}}>Preparation Tips</div>
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {exam.tips.map((tip,i)=>(
-                <div key={i} style={{background:"#fff",borderRadius:14,padding:"14px 16px",display:"flex",gap:12,alignItems:"flex-start",boxShadow:"0 1px 8px rgba(0,0,0,0.05)"}}>
-                  <div style={{width:28,height:28,background:exam.color,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:13,flexShrink:0}}>{i+1}</div>
-                  <div style={{fontSize:13,color:"#333",lineHeight:1.7,paddingTop:4}}>{tip}</div>
-                </div>
-              ))}
-            </div>
+          <div>
+            <div style={{fontSize:16,fontFamily:"'Playfair Display',serif",fontWeight:700,marginBottom:10}}>Preparation Tips</div>
+            {exam.tips.map((tip,i)=>(
+              <div key={i} style={{background:"#fff",borderRadius:13,padding:"13px 15px",marginBottom:10,display:"flex",gap:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
+                <div style={{width:26,height:26,background:exam.color,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:12,flexShrink:0}}>{i+1}</div>
+                <div style={{fontSize:13,color:"#333",lineHeight:1.7,paddingTop:3}}>{tip}</div>
+              </div>
+            ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
 
+// ── ABOUT PAGE ──
+function AboutPage({goHome,examCount}){
+  return(
+    <div style={{minHeight:"100vh",background:"#f8f7f4",paddingBottom:80}}>
+      <div style={{background:"var(--dark)",padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
+        <button onClick={goHome} style={{background:"rgba(255,255,255,0.1)",border:"none",borderRadius:10,padding:"7px 13px",color:"#fff",cursor:"pointer",fontSize:13,fontFamily:"inherit"}}>← Back</button>
+        <div style={{fontFamily:"'Playfair Display',serif",fontSize:17,fontWeight:700,color:"#fff"}}>About ExamNest</div>
+      </div>
+      <div style={{padding:"20px 16px"}}>
+        {[
+          {icon:"📚",title:"Who We Are",text:"ExamNest is an educational platform for students preparing for competitive exams across India. We cover Engineering, Medical, Government, Management, Law, Design and more.",color:"#f97316"},
+          {icon:"🤖",title:"AI-Powered",text:"ExamNest features ExamBot — an AI assistant that can answer any question about Indian exams instantly, from syllabus to cutoffs to career advice.",color:"#6366f1"},
+          {icon:"🎯",title:"Our Mission",text:"To make exam-related information easily accessible to every Indian student — clear, accurate, and completely free.",color:"#10b981"},
+          {icon:"✅",title:"What We Offer",text:`Detailed syllabus, exam pattern, cutoff marks, eligibility, books and preparation tips for ${examCount}+ major Indian exams.`,color:"#ec4899"},
+        ].map((item,i)=>(
+          <div key={i} style={{background:"#fff",borderRadius:16,padding:"18px",marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,0.05)",display:"flex",gap:14,alignItems:"flex-start"}}>
+            <div style={{width:44,height:44,background:item.color+"15",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{item.icon}</div>
+            <div>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:16,fontWeight:700,marginBottom:6,color:"var(--dark)"}}>{item.title}</div>
+              <div style={{fontSize:13,color:"#555",lineHeight:1.7}}>{item.text}</div>
+            </div>
+          </div>
+        ))}
+        <div style={{textAlign:"center",marginTop:20,fontSize:12,color:"var(--muted)"}}>
+          © 2026 ExamNest · {examCount}+ Exams · Made with ❤️ for Indian Students
+        </div>
       </div>
     </div>
   );
