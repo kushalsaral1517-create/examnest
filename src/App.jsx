@@ -1,5 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 
+// ── SAVE & LOAD from localStorage (permanent storage) ──
+const STORAGE_KEY = "examnest_planner_v1";
+function saveToStorage(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+function loadFromStorage() {
+  try {
+    const d = localStorage.getItem(STORAGE_KEY);
+    return d ? JSON.parse(d) : null;
+  } catch(e) { return null; }
+}
+
 const exams = [
   { id:"jee-main", name:"JEE Main", full:"Joint Entrance Examination Main", category:"Engineering", color:"#f97316", icon:"⚙️", difficulty:"High", diffScore:3, frequency:"Twice a year", seats:"~11 lakh", salary:"₹8-25 LPA", duration:"4 years",
     syllabus:["Physics: Mechanics, Thermodynamics, Electrostatics, Optics, Modern Physics","Chemistry: Physical, Organic & Inorganic Chemistry","Mathematics: Algebra, Calculus, Coordinate Geometry, Trigonometry"],
@@ -67,7 +79,7 @@ const exams = [
     tips:["Legal reasoning needs regular practice","Current affairs from last 12 months","Reading comprehension is key","No maths beyond Class 10"] },
   { id:"ctet", name:"CTET", full:"Central Teacher Eligibility Test", category:"Teaching", color:"#16a34a", icon:"📚", difficulty:"Moderate", diffScore:2, frequency:"Twice a year", seats:"No limit", salary:"₹35,000-₹1.1 LPA", duration:"3 months prep",
     syllabus:["Child Development & Pedagogy","Language I & II","Mathematics / Science / Social Studies"],
-    topics:{"Child Development":["Growth & Development","Learning Theories","Inclusive Education","Assessment","Motivation"],"Language":["Reading","Writing","Grammar","Comprehension","Language Acquisition"],"Mathematics":["Number System","Geometry","Measurement","Data Handling","Pedagogy"],"EVS/Science":["Environment","Living World","Matter","Pedagogy"]},
+    topics:{"Child Development":["Growth & Development","Learning Theories","Inclusive Education","Assessment","Motivation"],"Language":["Reading","Writing","Grammar","Comprehension","Language Acquisition"],"Mathematics":["Number System","Geometry","Measurement","Data Handling","Pedagogy"],"EVS":["Environment","Living World","Matter","Pedagogy"]},
     pattern:{duration:"2.5 hours",questions:"150 MCQs",total:"150 marks",negative:"No"},
     cutoff:[{year:2024,general:90,obc:82,sc:75,st:75},{year:2023,general:88,obc:80,sc:73,st:73}],
     books:["Child Development by Arihant","NCERT textbooks Class 1–8","Previous year CTET papers"],
@@ -83,25 +95,24 @@ const exams = [
     tips:["Banking GK is very important","High accuracy in Prelims","Mains has descriptive English","Practice data interpretation daily"] },
 ];
 
-function getBotReply(question) {
-  const q = question.toLowerCase();
+function getBotReply(q) {
+  const question = q.toLowerCase();
   for (const exam of exams) {
-    if (q.includes(exam.name.toLowerCase()) || q.includes(exam.id.toLowerCase())) {
-      if (q.includes("cutoff")||q.includes("score")) { const c=exam.cutoff[0]; return `📊 **${exam.name} Cutoff ${c.year}:**\n\n• General: ${c.general}\n• OBC: ${c.obc}\n• SC: ${c.sc}\n• ST: ${c.st}\n\n⚠️ Verify from official website.`; }
-      if (q.includes("syllabus")||q.includes("topics")) return `📖 **${exam.name} Syllabus:**\n\n${exam.syllabus.map(s=>`• ${s}`).join("\n")}`;
-      if (q.includes("book")||q.includes("material")) return `📚 **Books for ${exam.name}:**\n\n${exam.books.map(b=>`• ${b}`).join("\n")}`;
-      if (q.includes("eligib")||q.includes("age")||q.includes("qualify")) return `✅ **${exam.name} Eligibility:**\n\n${exam.eligibility}`;
-      if (q.includes("pattern")||q.includes("marks")||q.includes("duration")) { const p=exam.pattern; return `📋 **${exam.name} Pattern:**\n\n• Duration: ${p.duration}\n• Questions: ${p.questions}\n• Total: ${p.total}\n• Negative: ${p.negative}`; }
-      if (q.includes("tip")||q.includes("prepare")||q.includes("how")) return `💡 **${exam.name} Tips:**\n\n${exam.tips.map((t,i)=>`${i+1}. ${t}`).join("\n")}`;
-      return `📌 **${exam.name}:**\n\n• Category: ${exam.category}\n• Difficulty: ${exam.difficulty}\n• Frequency: ${exam.frequency}\n• Marks: ${exam.pattern.total}\n• Seats: ${exam.seats}\n• Eligibility: ${exam.eligibility}`;
+    if (question.includes(exam.name.toLowerCase()) || question.includes(exam.id.toLowerCase())) {
+      if (question.includes("cutoff")||question.includes("score")) { const c=exam.cutoff[0]; return `📊 **${exam.name} Cutoff ${c.year}:**\n\n• General: ${c.general}\n• OBC: ${c.obc}\n• SC: ${c.sc}\n• ST: ${c.st}\n\n⚠️ Verify from official website.`; }
+      if (question.includes("syllabus")||question.includes("topics")) return `📖 **${exam.name} Syllabus:**\n\n${exam.syllabus.map(s=>`• ${s}`).join("\n")}`;
+      if (question.includes("book")||question.includes("material")) return `📚 **Books for ${exam.name}:**\n\n${exam.books.map(b=>`• ${b}`).join("\n")}`;
+      if (question.includes("eligib")||question.includes("age")||question.includes("qualify")) return `✅ **${exam.name} Eligibility:**\n\n${exam.eligibility}`;
+      if (question.includes("pattern")||question.includes("marks")||question.includes("duration")) { const p=exam.pattern; return `📋 **${exam.name} Pattern:**\n\n• Duration: ${p.duration}\n• Questions: ${p.questions}\n• Total: ${p.total}\n• Negative: ${p.negative}`; }
+      if (question.includes("tip")||question.includes("prepare")||question.includes("how")) return `💡 **${exam.name} Tips:**\n\n${exam.tips.map((t,i)=>`${i+1}. ${t}`).join("\n")}`;
+      return `📌 **${exam.name}:**\n\n• Category: ${exam.category}\n• Difficulty: ${exam.difficulty}\n• Marks: ${exam.pattern.total}\n• Seats: ${exam.seats}\n• Eligibility: ${exam.eligibility}`;
     }
   }
-  if (q.includes("hello")||q.includes("hi")||q.includes("hey")) return "👋 **Hello! I'm ExamBot!**\n\nAsk me about:\n• 📖 Syllabus\n• 📊 Cutoffs\n• 📚 Books\n• 💡 Tips\n• ✅ Eligibility\n\nFor any Indian exam! 😊";
-  if (q.includes("planner")||q.includes("study plan")) return "📅 **Study Planner** is available!\n\nTap the **📅 Planner** tab in bottom navigation.\n\n1. Select your exam\n2. Set your exam date\n3. Get a personalized daily study plan! 🎯";
-  if (q.includes("progress")||q.includes("tracker")) return "✅ **Progress Tracker** is in the Planner!\n\nAfter selecting your exam, tap any topic to mark it as:\n• ⬜ Not Started\n• 🟡 In Progress\n• ✅ Completed\n\nYour progress % updates automatically!";
-  if (q.includes("easy")||q.includes("easiest")) return "✅ **Easiest Exams:**\n\n1. CTET – No negative marking\n2. SSC MTS – Class 10 level\n3. RRB NTPC – Basic syllabus\n4. IBPS Clerk – Moderate level";
-  if (q.includes("tough")||q.includes("hard")) return "🔥 **Toughest Exams:**\n\n1. UPSC CSE – 2-3% selection\n2. JEE Advanced – IIT gateway\n3. NEET PG – Medical PG\n4. CAT – IIM MBA";
-  if (q.includes("thank")) return "😊 You're welcome! Best of luck! 💪\n\nConsistency beats intensity. Study daily! 🎯";
+  if (question.includes("hello")||question.includes("hi")||question.includes("hey")) return "👋 **Hello! I'm ExamBot!**\n\nAsk me about:\n• 📖 Syllabus\n• 📊 Cutoffs\n• 📚 Books\n• 💡 Tips\n• ✅ Eligibility\n\nFor any Indian exam! 😊";
+  if (question.includes("planner")||question.includes("progress")) return "📅 Go to the **Planner tab** at the bottom!\n\nYour progress is now **saved permanently** — even if you close the app! 🎉";
+  if (question.includes("easy")||question.includes("easiest")) return "✅ **Easiest Exams:**\n\n1. CTET – No negative marking\n2. SSC MTS – Class 10 level\n3. RRB NTPC – Basic syllabus\n4. IBPS Clerk – Moderate level";
+  if (question.includes("tough")||question.includes("hard")) return "🔥 **Toughest Exams:**\n\n1. UPSC CSE – 2-3% selection\n2. JEE Advanced – IIT gateway\n3. NEET PG – Medical PG\n4. CAT – IIM MBA";
+  if (question.includes("thank")) return "😊 You're welcome! Best of luck! 💪\n\nConsistency beats intensity. Study daily! 🎯";
   return "🤔 Try asking:\n\n• \"JEE Main syllabus\"\n• \"NEET cutoff 2024\"\n• \"Best books for UPSC\"\n• \"CAT eligibility\"\n\nOr use **Planner tab** for your study plan! 😊";
 }
 
@@ -111,11 +122,11 @@ const diffColor = {"Easy":"#22c55e","Moderate":"#f59e0b","High":"#f97316","Very 
 const quickQs = ["Hello! What can you do?","JEE Main cutoff 2024","Best books for UPSC","NEET eligibility","Toughest exam in India"];
 
 const getTheme = (dark) => ({
-  bg: dark?"#0f172a":"#f8f7f4", card: dark?"#1e293b":"#ffffff",
-  card2: dark?"#273548":"#f1f5f9", text: dark?"#f1f5f9":"#1a1a2e",
-  subtext: dark?"#94a3b8":"#64748b", border: dark?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.07)",
-  navBg: dark?"#0f172a":"#ffffff", topBg: dark?"#0f172a":"#1a1a2e",
-  muted: dark?"#475569":"#888888",
+  bg:dark?"#0f172a":"#f8f7f4", card:dark?"#1e293b":"#ffffff",
+  card2:dark?"#273548":"#f1f5f9", text:dark?"#f1f5f9":"#1a1a2e",
+  subtext:dark?"#94a3b8":"#64748b", border:dark?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.07)",
+  navBg:dark?"#0f172a":"#ffffff", topBg:dark?"#0f172a":"#1a1a2e",
+  muted:dark?"#475569":"#888888",
 });
 
 const globalStyles = `
@@ -125,7 +136,6 @@ const globalStyles = `
   @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
   @keyframes fadeIn{from{opacity:0}to{opacity:1}}
   @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-  @keyframes progress{from{width:0}to{width:var(--w)}}
   .card:active{transform:scale(0.97);}
   input:focus,textarea:focus,select:focus{outline:none;}
   ::-webkit-scrollbar{display:none;}
@@ -133,13 +143,19 @@ const globalStyles = `
 `;
 
 export default function App() {
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(()=>{
+    try { return localStorage.getItem("examnest_dark")==="true"; } catch(e){ return false; }
+  });
   const [selected, setSelected] = useState(null);
   const [tab, setTab] = useState("syllabus");
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [navTab, setNavTab] = useState("home");
   const T = getTheme(dark);
+
+  useEffect(()=>{
+    try { localStorage.setItem("examnest_dark", dark); } catch(e){}
+  },[dark]);
 
   const filtered = exams.filter(e =>
     (category==="All"||e.category===category) &&
@@ -157,12 +173,11 @@ export default function App() {
     <>
       <style>{globalStyles}</style>
       <div style={{minHeight:"100vh",background:T.bg,paddingBottom:72,color:T.text}}>
-        {navTab==="chat" ? <ChatPage setNavTab={setNavTab} T={T} dark={dark}/> :
+        {navTab==="chat"    ? <ChatPage setNavTab={setNavTab} T={T} dark={dark}/> :
          navTab==="compare" ? <ComparePage setNavTab={setNavTab} T={T} dark={dark}/> :
          navTab==="planner" ? <PlannerPage setNavTab={setNavTab} T={T} dark={dark}/> :
-         navTab==="about" ? <AboutPage goHome={()=>setNavTab("home")} count={exams.length} T={T} dark={dark}/> : (
+         navTab==="about"   ? <AboutPage goHome={()=>setNavTab("home")} count={exams.length} T={T} dark={dark}/> : (
           <>
-            {/* Top bar */}
             <div style={{background:T.topBg,padding:"16px 16px 0",position:"sticky",top:0,zIndex:50}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -197,11 +212,10 @@ export default function App() {
               </div>
             </div>
 
-            {/* Feature banners */}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,padding:"12px 16px 0"}}>
               {[
                 {tab:"compare",icon:"⚖️",label:"Compare",sub:"2 exams",bg:"linear-gradient(135deg,#0f172a,#1e3a5f)"},
-                {tab:"planner",icon:"📅",label:"Planner",sub:"Study plan",bg:"linear-gradient(135deg,#14532d,#166534)"},
+                {tab:"planner",icon:"📅",label:"Planner",sub:"Saved ✓",bg:"linear-gradient(135deg,#14532d,#166534)"},
                 {tab:"chat",icon:"🤖",label:"Ask AI",sub:"Instant help",bg:"linear-gradient(135deg,#1e1b4b,#312e81)"},
               ].map(item=>(
                 <div key={item.tab} onClick={()=>setNavTab(item.tab)} style={{background:dark?"#1e293b":item.bg,borderRadius:13,padding:"11px 10px",cursor:"pointer",textAlign:"center",boxShadow:"0 3px 12px rgba(0,0,0,0.15)"}}>
@@ -255,7 +269,6 @@ export default function App() {
           </>
         )}
 
-        {/* Bottom Nav */}
         <div style={{position:"fixed",bottom:0,left:0,right:0,background:T.navBg,borderTop:`1px solid ${T.border}`,display:"flex",zIndex:100}}>
           {[{id:"home",icon:"🏠",label:"Home"},{id:"planner",icon:"📅",label:"Planner"},{id:"compare",icon:"⚖️",label:"Compare"},{id:"chat",icon:"🤖",label:"AI Chat"},{id:"about",icon:"ℹ️",label:"About"}].map(item=>(
             <button key={item.id} onClick={()=>setNavTab(item.id)} style={{flex:1,padding:"8px 0 6px",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
@@ -270,12 +283,23 @@ export default function App() {
   );
 }
 
-// ── STUDY PLANNER + PROGRESS TRACKER ──
+// ── PLANNER PAGE — Progress saved permanently with localStorage ──
 function PlannerPage({ setNavTab, T, dark }) {
-  const [step, setStep] = useState(1); // 1=select exam, 2=set date, 3=view plan
-  const [planExam, setPlanExam] = useState(null);
-  const [examDate, setExamDate] = useState("");
-  const [progress, setProgress] = useState({}); // {topicKey: 0|1|2} 0=not started, 1=in progress, 2=done
+  // Load saved data from localStorage on first open
+  const [plannerData, setPlannerData] = useState(()=>{
+    const saved = loadFromStorage();
+    return saved || { examId:null, examDate:"", progress:{}, step:1 };
+  });
+
+  const { examId, examDate, progress, step } = plannerData;
+  const planExam = exams.find(e=>e.id===examId) || null;
+
+  // Every time data changes, save to localStorage automatically
+  const update = (patch) => {
+    const newData = {...plannerData, ...patch};
+    setPlannerData(newData);
+    saveToStorage(newData);
+  };
 
   const today = new Date();
   const daysLeft = examDate ? Math.max(0, Math.ceil((new Date(examDate)-today)/(1000*60*60*24))) : 0;
@@ -285,11 +309,11 @@ function PlannerPage({ setNavTab, T, dark }) {
   const doneCount = allTopics.filter(({key})=>progress[key]===2).length;
   const inProgressCount = allTopics.filter(({key})=>progress[key]===1).length;
   const pct = totalTopics>0 ? Math.round((doneCount/totalTopics)*100) : 0;
-
-  const dailyTopics = daysLeft>0 && totalTopics>0 ? Math.ceil((totalTopics-doneCount)/daysLeft) : 0;
+  const dailyTopics = daysLeft>0 && totalTopics>doneCount ? Math.ceil((totalTopics-doneCount)/daysLeft) : 0;
 
   const toggleTopic = (key) => {
-    setProgress(prev=>({...prev,[key]:((prev[key]||0)+1)%3}));
+    const newProgress = {...progress, [key]:((progress[key]||0)+1)%3};
+    update({progress:newProgress});
   };
 
   const statusIcon = (key) => {
@@ -299,44 +323,60 @@ function PlannerPage({ setNavTab, T, dark }) {
     return {icon:"✅",label:"Completed",color:"#22c55e"};
   };
 
+  const weekDays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
   const generateWeekPlan = () => {
-    if(!planExam||!examDate) return [];
-    const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+    if(!planExam) return [];
     const subjects = Object.keys(planExam.topics);
-    return days.map((day,i)=>{
+    return weekDays.map((day,i)=>{
       const sub = subjects[i%subjects.length];
-      const dayTopics = planExam.topics[sub].slice(0,3);
-      return {day, sub, topics:dayTopics};
+      return {day, sub, topics:planExam.topics[sub].slice(0,3)};
     });
+  };
+
+  const resetPlanner = () => {
+    const fresh = {examId:null,examDate:"",progress:{},step:1};
+    setPlannerData(fresh);
+    saveToStorage(fresh);
   };
 
   return (
     <div style={{minHeight:"100vh",background:T.bg,paddingBottom:80,color:T.text}}>
-      {/* Header */}
       <div style={{background:"linear-gradient(135deg,#14532d,#166534)",padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
         <button onClick={()=>setNavTab("home")} style={{background:"rgba(255,255,255,0.15)",border:"none",borderRadius:10,padding:"7px 12px",color:"#fff",cursor:"pointer",fontSize:13,fontFamily:"inherit"}}>← Back</button>
-        <div>
+        <div style={{flex:1}}>
           <div style={{fontFamily:"'Playfair Display',serif",fontSize:16,fontWeight:700,color:"#fff"}}>📅 Study Planner</div>
-          <div style={{fontSize:11,color:"rgba(255,255,255,0.6)"}}>Plan your prep + track progress</div>
+          <div style={{fontSize:11,color:"rgba(255,255,255,0.6)"}}>Progress auto-saved • Never resets 🔒</div>
         </div>
+        {planExam&&step===3&&(
+          <div style={{background:"rgba(255,255,255,0.2)",borderRadius:20,padding:"4px 10px",fontSize:11,color:"#fff",fontWeight:600}}>{pct}% done</div>
+        )}
       </div>
+
+      {/* Saved indicator */}
+      {planExam&&(
+        <div style={{background:dark?"#1e293b":"#f0fdf4",padding:"8px 16px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:7}}>
+          <span style={{fontSize:14}}>🔒</span>
+          <span style={{fontSize:12,color:"#16a34a",fontWeight:500}}>Progress saved — won't reset even if you close the app!</span>
+        </div>
+      )}
 
       <div style={{padding:"16px"}}>
 
         {/* STEP 1 — SELECT EXAM */}
         {step===1&&(
-          <div style={{animation:"fadeUp 0.4s ease forwards"}}>
-            <div style={{fontSize:15,fontWeight:700,color:T.text,marginBottom:4}}>Step 1: Choose your exam</div>
+          <div>
+            <div style={{fontSize:15,fontWeight:700,color:T.text,marginBottom:4}}>Choose your exam</div>
             <div style={{fontSize:12,color:T.muted,marginBottom:14}}>Select the exam you are preparing for</div>
             <div style={{display:"flex",flexDirection:"column",gap:9}}>
               {exams.map(exam=>(
-                <div key={exam.id} onClick={()=>{setPlanExam(exam);setStep(2);}} className="card" style={{background:T.card,borderRadius:14,padding:"13px 14px",cursor:"pointer",display:"flex",alignItems:"center",gap:12,boxShadow:dark?"0 2px 8px rgba(0,0,0,0.3)":"0 1px 6px rgba(0,0,0,0.07)",border:planExam?.id===exam.id?`2px solid ${exam.color}`:`2px solid transparent`,transition:"transform 0.15s"}}>
+                <div key={exam.id} onClick={()=>update({examId:exam.id,step:2})} className="card"
+                  style={{background:T.card,borderRadius:14,padding:"13px 14px",cursor:"pointer",display:"flex",alignItems:"center",gap:12,boxShadow:dark?"0 2px 8px rgba(0,0,0,0.3)":"0 1px 6px rgba(0,0,0,0.07)",transition:"transform 0.15s"}}>
                   <div style={{width:42,height:42,background:exam.color+"20",borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{exam.icon}</div>
-                  <div>
+                  <div style={{flex:1}}>
                     <div style={{fontFamily:"'Playfair Display',serif",fontSize:14,fontWeight:700,color:T.text}}>{exam.name}</div>
                     <div style={{fontSize:11,color:T.muted,marginTop:2}}>{exam.category} • {exam.difficulty}</div>
                   </div>
-                  <div style={{marginLeft:"auto",fontSize:16,color:T.muted}}>›</div>
+                  <div style={{fontSize:16,color:T.muted}}>›</div>
                 </div>
               ))}
             </div>
@@ -345,10 +385,8 @@ function PlannerPage({ setNavTab, T, dark }) {
 
         {/* STEP 2 — SET DATE */}
         {step===2&&planExam&&(
-          <div style={{animation:"fadeUp 0.4s ease forwards"}}>
-            <button onClick={()=>setStep(1)} style={{background:"none",border:"none",color:T.muted,cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:14,display:"flex",alignItems:"center",gap:5}}>← Change Exam</button>
-
-            {/* Selected exam card */}
+          <div>
+            <button onClick={()=>update({step:1})} style={{background:"none",border:"none",color:T.muted,cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:14,display:"flex",alignItems:"center",gap:5}}>← Change Exam</button>
             <div style={{background:planExam.color,borderRadius:14,padding:"14px",marginBottom:16,display:"flex",alignItems:"center",gap:12}}>
               <div style={{fontSize:32}}>{planExam.icon}</div>
               <div>
@@ -356,45 +394,39 @@ function PlannerPage({ setNavTab, T, dark }) {
                 <div style={{fontSize:12,color:"rgba(255,255,255,0.8)"}}>{planExam.full}</div>
               </div>
             </div>
-
-            <div style={{fontSize:15,fontWeight:700,color:T.text,marginBottom:4}}>Step 2: Set your exam date</div>
-            <div style={{fontSize:12,color:T.muted,marginBottom:14}}>When is your exam? We'll plan your preparation accordingly.</div>
-
+            <div style={{fontSize:15,fontWeight:700,color:T.text,marginBottom:4}}>Set your exam date</div>
+            <div style={{fontSize:12,color:T.muted,marginBottom:14}}>We'll calculate your daily study target</div>
             <div style={{background:T.card,borderRadius:14,padding:"16px",marginBottom:14,boxShadow:dark?"0 2px 8px rgba(0,0,0,0.2)":"0 1px 6px rgba(0,0,0,0.07)"}}>
               <div style={{fontSize:12,fontWeight:600,color:T.muted,marginBottom:8}}>📅 EXAM DATE</div>
-              <input type="date" value={examDate} onChange={e=>setExamDate(e.target.value)} min={new Date().toISOString().split("T")[0]}
+              <input type="date" value={examDate} onChange={e=>update({examDate:e.target.value})}
+                min={new Date().toISOString().split("T")[0]}
                 style={{width:"100%",padding:"12px",background:T.card2,border:`1px solid ${T.border}`,borderRadius:10,fontSize:14,fontFamily:"inherit",color:T.text,cursor:"pointer"}}/>
             </div>
-
             {examDate&&(
               <div style={{background:dark?"#1e293b":"#f0fdf4",borderRadius:14,padding:"14px",marginBottom:14,border:"1px solid #22c55e40"}}>
-                <div style={{fontSize:13,color:"#22c55e",fontWeight:600,marginBottom:4}}>🎯 {daysLeft} days left for {planExam.name}!</div>
+                <div style={{fontSize:13,color:"#22c55e",fontWeight:600,marginBottom:4}}>🎯 {daysLeft} days left!</div>
                 <div style={{fontSize:12,color:T.subtext}}>
-                  {daysLeft>=90?"Great! You have plenty of time. Let's plan smartly! 💪":
-                   daysLeft>=30?"Good time. Focus and be consistent! 📚":
-                   daysLeft>=7?"Time is short! Revise high-priority topics fast! ⚡":
-                   "Very few days! Focus only on most important topics! 🔥"}
+                  {daysLeft>=90?"Great! Plenty of time. Plan smartly! 💪":daysLeft>=30?"Good time. Stay consistent! 📚":daysLeft>=7?"Time is short! Focus on priority topics! ⚡":"Very few days! High-priority topics only! 🔥"}
                 </div>
               </div>
             )}
-
-            <button onClick={()=>{if(examDate)setStep(3);}} disabled={!examDate}
+            <button onClick={()=>{if(examDate)update({step:3});}} disabled={!examDate}
               style={{width:"100%",padding:"14px",background:examDate?"linear-gradient(135deg,#16a34a,#22c55e)":"#334155",border:"none",borderRadius:14,color:"#fff",fontSize:15,fontWeight:600,cursor:examDate?"pointer":"not-allowed",fontFamily:"inherit"}}>
               Generate My Study Plan →
             </button>
           </div>
         )}
 
-        {/* STEP 3 — PLAN + PROGRESS */}
+        {/* STEP 3 — PLAN + TRACKER */}
         {step===3&&planExam&&examDate&&(
-          <div style={{animation:"fadeUp 0.4s ease forwards"}}>
-            <button onClick={()=>setStep(2)} style={{background:"none",border:"none",color:T.muted,cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:14,display:"flex",alignItems:"center",gap:5}}>← Change Date</button>
+          <div>
+            <button onClick={()=>update({step:2})} style={{background:"none",border:"none",color:T.muted,cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:14,display:"flex",alignItems:"center",gap:5}}>← Change Date</button>
 
-            {/* Progress overview card */}
+            {/* Progress card */}
             <div style={{background:planExam.color,borderRadius:16,padding:"16px",marginBottom:14}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
                 <div>
-                  <div style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:"#fff"}}>{planExam.name}</div>
+                  <div style={{fontFamily:"'Playfair Display',serif",fontSize:17,fontWeight:700,color:"#fff"}}>{planExam.name}</div>
                   <div style={{fontSize:12,color:"rgba(255,255,255,0.75)",marginTop:2}}>🗓️ {daysLeft} days remaining</div>
                 </div>
                 <div style={{textAlign:"right"}}>
@@ -402,27 +434,20 @@ function PlannerPage({ setNavTab, T, dark }) {
                   <div style={{fontSize:10,color:"rgba(255,255,255,0.7)"}}>completed</div>
                 </div>
               </div>
-              {/* Progress bar */}
               <div style={{background:"rgba(0,0,0,0.2)",borderRadius:10,height:10,overflow:"hidden",marginBottom:10}}>
                 <div style={{height:"100%",borderRadius:10,background:"rgba(255,255,255,0.9)",width:`${pct}%`,transition:"width 0.5s ease"}}/>
               </div>
-              <div style={{display:"flex",gap:16}}>
-                <div style={{textAlign:"center"}}>
-                  <div style={{fontSize:18,fontWeight:700,color:"#fff"}}>{doneCount}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,0.7)"}}>✅ Done</div>
-                </div>
-                <div style={{textAlign:"center"}}>
-                  <div style={{fontSize:18,fontWeight:700,color:"#fff"}}>{inProgressCount}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,0.7)"}}>🟡 In Progress</div>
-                </div>
-                <div style={{textAlign:"center"}}>
-                  <div style={{fontSize:18,fontWeight:700,color:"#fff"}}>{totalTopics-doneCount-inProgressCount}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,0.7)"}}>⬜ Pending</div>
-                </div>
+              <div style={{display:"flex",gap:16,flexWrap:"wrap"}}>
+                {[["✅",doneCount,"Done"],["🟡",inProgressCount,"In Progress"],["⬜",totalTopics-doneCount-inProgressCount,"Pending"]].map(([icon,count,label])=>(
+                  <div key={label} style={{textAlign:"center"}}>
+                    <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>{count}</div>
+                    <div style={{fontSize:9,color:"rgba(255,255,255,0.7)"}}>{icon} {label}</div>
+                  </div>
+                ))}
                 {dailyTopics>0&&(
                   <div style={{textAlign:"center",marginLeft:"auto"}}>
-                    <div style={{fontSize:18,fontWeight:700,color:"#fff"}}>{dailyTopics}</div>
-                    <div style={{fontSize:10,color:"rgba(255,255,255,0.7)"}}>📅/day</div>
+                    <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>{dailyTopics}</div>
+                    <div style={{fontSize:9,color:"rgba(255,255,255,0.7)"}}>📅 topics/day</div>
                   </div>
                 )}
               </div>
@@ -430,27 +455,25 @@ function PlannerPage({ setNavTab, T, dark }) {
 
             {/* Weekly plan */}
             <div style={{background:T.card,borderRadius:14,padding:"14px",marginBottom:14,boxShadow:dark?"0 2px 8px rgba(0,0,0,0.2)":"0 1px 6px rgba(0,0,0,0.07)"}}>
-              <div style={{fontSize:13,fontWeight:700,color:T.text,marginBottom:10}}>📋 Weekly Study Plan</div>
-              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {generateWeekPlan().map(({day,sub,topics},i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"8px 0",borderBottom:i<6?`1px solid ${T.border}`:"none"}}>
-                    <div style={{width:70,flexShrink:0}}>
-                      <div style={{fontSize:11,fontWeight:700,color:planExam.color}}>{day}</div>
-                    </div>
-                    <div style={{flex:1}}>
-                      <div style={{fontSize:11,fontWeight:600,color:T.subtext,marginBottom:3}}>{sub}</div>
-                      <div style={{fontSize:11,color:T.muted}}>{topics.join(", ")}</div>
-                    </div>
+              <div style={{fontSize:13,fontWeight:700,color:T.text,marginBottom:10}}>📋 Weekly Study Schedule</div>
+              {generateWeekPlan().map(({day,sub,topics},i)=>(
+                <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"8px 0",borderBottom:i<6?`1px solid ${T.border}`:"none"}}>
+                  <div style={{width:65,flexShrink:0}}>
+                    <div style={{fontSize:11,fontWeight:700,color:planExam.color}}>{day}</div>
                   </div>
-                ))}
-              </div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:11,fontWeight:600,color:T.subtext,marginBottom:2}}>{sub}</div>
+                    <div style={{fontSize:11,color:T.muted}}>{topics.join(", ")}</div>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            {/* Topic progress tracker */}
-            <div style={{fontSize:14,fontWeight:700,color:T.text,marginBottom:10}}>📊 Topic Progress Tracker</div>
-            <div style={{fontSize:11,color:T.muted,marginBottom:12}}>Tap any topic to update your progress</div>
-            <div style={{display:"flex",gap:10,marginBottom:12,flexWrap:"wrap"}}>
-              {[{icon:"⬜",label:"Not Started",color:"#94a3b8"},{icon:"🟡",label:"In Progress",color:"#f59e0b"},{icon:"✅",label:"Completed",color:"#22c55e"}].map(s=>(
+            {/* Topic tracker */}
+            <div style={{fontSize:14,fontWeight:700,color:T.text,marginBottom:6}}>📊 Topic Progress Tracker</div>
+            <div style={{fontSize:11,color:T.muted,marginBottom:10}}>Tap any topic to update • Progress saves automatically 🔒</div>
+            <div style={{display:"flex",gap:12,marginBottom:12,flexWrap:"wrap"}}>
+              {[{icon:"⬜",label:"Not Started"},{icon:"🟡",label:"In Progress"},{icon:"✅",label:"Completed"}].map(s=>(
                 <div key={s.label} style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:T.muted}}>
                   <span>{s.icon}</span><span>{s.label}</span>
                 </div>
@@ -459,10 +482,10 @@ function PlannerPage({ setNavTab, T, dark }) {
 
             {Object.entries(planExam.topics).map(([subject,topics])=>(
               <div key={subject} style={{marginBottom:14}}>
-                <div style={{background:planExam.color,borderRadius:"10px 10px 0 0",padding:"8px 14px"}}>
+                <div style={{background:planExam.color,borderRadius:"10px 10px 0 0",padding:"8px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>{subject}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,0.7)"}}>
-                    {topics.filter(t=>progress[`${subject}::${t}`]===2).length}/{topics.length} completed
+                  <div style={{fontSize:10,color:"rgba(255,255,255,0.75)"}}>
+                    {topics.filter(t=>progress[`${subject}::${t}`]===2).length}/{topics.length} done
                   </div>
                 </div>
                 <div style={{background:T.card,borderRadius:"0 0 10px 10px",overflow:"hidden",boxShadow:dark?"0 2px 8px rgba(0,0,0,0.2)":"0 1px 6px rgba(0,0,0,0.07)"}}>
@@ -470,15 +493,14 @@ function PlannerPage({ setNavTab, T, dark }) {
                     const key=`${subject}::${topic}`;
                     const st=statusIcon(key);
                     return(
-                      <div key={i} onClick={()=>toggleTopic(key)} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",borderBottom:i<topics.length-1?`1px solid ${T.border}`:"none",cursor:"pointer",transition:"background 0.15s"}}
-                        onMouseEnter={e=>e.currentTarget.style.background=dark?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.02)"}
-                        onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                      <div key={i} onClick={()=>toggleTopic(key)}
+                        style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",borderBottom:i<topics.length-1?`1px solid ${T.border}`:"none",cursor:"pointer"}}>
                         <span style={{fontSize:18,flexShrink:0}}>{st.icon}</span>
                         <div style={{flex:1}}>
                           <div style={{fontSize:13,color:T.text,fontWeight:500}}>{topic}</div>
                           <div style={{fontSize:10,color:st.color,marginTop:1}}>{st.label}</div>
                         </div>
-                        <div style={{fontSize:11,color:T.muted}}>tap to update</div>
+                        <span style={{fontSize:11,color:T.muted,flexShrink:0}}>tap</span>
                       </div>
                     );
                   })}
@@ -490,12 +512,13 @@ function PlannerPage({ setNavTab, T, dark }) {
               <div style={{background:"linear-gradient(135deg,#14532d,#166534)",borderRadius:14,padding:"16px",textAlign:"center",marginTop:8}}>
                 <div style={{fontSize:36,marginBottom:8}}>🎉</div>
                 <div style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:"#fff",marginBottom:4}}>All Topics Completed!</div>
-                <div style={{fontSize:13,color:"rgba(255,255,255,0.8)"}}>Amazing work! Now focus on revision and mock tests. You've got this! 💪</div>
+                <div style={{fontSize:13,color:"rgba(255,255,255,0.8)"}}>Amazing! Now focus on revision & mock tests. You've got this! 💪</div>
               </div>
             )}
 
-            <button onClick={()=>{setStep(1);setPlanExam(null);setExamDate("");setProgress({});}} style={{width:"100%",marginTop:16,padding:"12px",background:"none",border:`1px solid ${T.border}`,borderRadius:12,color:T.muted,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>
-              🔄 Start Over with Different Exam
+            <button onClick={resetPlanner}
+              style={{width:"100%",marginTop:16,padding:"12px",background:"none",border:`1px solid ${T.border}`,borderRadius:12,color:T.muted,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>
+              🔄 Reset & Start Different Exam
             </button>
           </div>
         )}
@@ -506,8 +529,8 @@ function PlannerPage({ setNavTab, T, dark }) {
 
 // ── COMPARE PAGE ──
 function ComparePage({ setNavTab, T, dark }) {
-  const [exam1,setExam1]=useState(exams[0]);
-  const [exam2,setExam2]=useState(exams[2]);
+  const [e1,setE1]=useState(exams[0]);
+  const [e2,setE2]=useState(exams[2]);
   const rows=[
     {label:"Category",icon:"🏷️",fn:e=>e.category},{label:"Difficulty",icon:"🔥",fn:e=>e.difficulty},
     {label:"Frequency",icon:"📅",fn:e=>e.frequency},{label:"Total Marks",icon:"📊",fn:e=>e.pattern.total},
@@ -525,7 +548,7 @@ function ComparePage({ setNavTab, T, dark }) {
         </div>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,padding:"14px 14px 0"}}>
-        {[{val:exam1,set:setExam1,label:"Exam 1"},{val:exam2,set:setExam2,label:"Exam 2"}].map(({val,set,label},idx)=>(
+        {[{val:e1,set:setE1,label:"Exam 1"},{val:e2,set:setE2,label:"Exam 2"}].map(({val,set,label},idx)=>(
           <div key={idx}>
             <div style={{fontSize:11,color:T.muted,marginBottom:6,fontWeight:600}}>{label}</div>
             <div style={{background:T.card,borderRadius:12,border:`2px solid ${val.color}`,overflow:"hidden"}}>
@@ -533,9 +556,9 @@ function ComparePage({ setNavTab, T, dark }) {
                 <span style={{fontSize:18}}>{val.icon}</span>
                 <span style={{fontSize:12,fontWeight:700,color:"#fff"}}>{val.name}</span>
               </div>
-              <select value={val.id} onChange={e=>set(exams.find(x=>x.id===e.target.value))}
+              <select value={val.id} onChange={ev=>set(exams.find(x=>x.id===ev.target.value))}
                 style={{width:"100%",padding:"8px 10px",border:"none",background:T.card,fontSize:12,fontFamily:"inherit",color:T.text,cursor:"pointer"}}>
-                {exams.map(e=>(<option key={e.id} value={e.id}>{e.name}</option>))}
+                {exams.map(ex=>(<option key={ex.id} value={ex.id}>{ex.name}</option>))}
               </select>
             </div>
           </div>
@@ -549,15 +572,15 @@ function ComparePage({ setNavTab, T, dark }) {
           <div key={i} style={{background:T.card,borderRadius:13,marginBottom:9,overflow:"hidden",boxShadow:dark?"0 2px 8px rgba(0,0,0,0.3)":"0 1px 6px rgba(0,0,0,0.05)"}}>
             <div style={{background:dark?"rgba(255,255,255,0.05)":"#f8f7f4",padding:"6px 12px",fontSize:11,fontWeight:600,color:T.muted,borderBottom:`1px solid ${T.border}`}}>{row.icon} {row.label}</div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 4px 1fr"}}>
-              <div style={{padding:"10px 12px",fontSize:12,color:T.text,lineHeight:1.5}}>{row.fn(exam1)}</div>
+              <div style={{padding:"10px 12px",fontSize:12,color:T.text,lineHeight:1.5}}>{row.fn(e1)}</div>
               <div style={{background:T.border}}/>
-              <div style={{padding:"10px 12px",fontSize:12,color:T.text,lineHeight:1.5}}>{row.fn(exam2)}</div>
+              <div style={{padding:"10px 12px",fontSize:12,color:T.text,lineHeight:1.5}}>{row.fn(e2)}</div>
             </div>
           </div>
         ))}
         <div style={{background:T.card,borderRadius:13,padding:"14px",marginBottom:9}}>
           <div style={{fontSize:12,fontWeight:600,color:T.muted,marginBottom:12}}>🔥 DIFFICULTY METER</div>
-          {[exam1,exam2].map((e,i)=>(
+          {[e1,e2].map((e,i)=>(
             <div key={i} style={{marginBottom:i===0?12:0}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
                 <span style={{fontSize:12,fontWeight:600,color:T.text}}>{e.name}</span>
@@ -572,7 +595,7 @@ function ComparePage({ setNavTab, T, dark }) {
         <div style={{background:"linear-gradient(135deg,#1a1a2e,#2d1b69)",borderRadius:13,padding:"14px"}}>
           <div style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.6)",marginBottom:8}}>💡 QUICK VERDICT</div>
           <div style={{fontSize:13,color:"#fff",lineHeight:1.7}}>
-            {exam1.diffScore<exam2.diffScore?`✅ ${exam1.name} is easier than ${exam2.name}.`:exam1.diffScore>exam2.diffScore?`✅ ${exam2.name} is easier than ${exam1.name}.`:`🤝 Both have similar difficulty.`}
+            {e1.diffScore<e2.diffScore?`✅ ${e1.name} is easier than ${e2.name}.`:e1.diffScore>e2.diffScore?`✅ ${e2.name} is easier than ${e1.name}.`:`🤝 Both have similar difficulty.`}
             {" "}Choose based on your stream and career goals!
           </div>
         </div>
@@ -583,7 +606,7 @@ function ComparePage({ setNavTab, T, dark }) {
 
 // ── CHAT PAGE ──
 function ChatPage({ setNavTab, T, dark }) {
-  const [messages,setMessages]=useState([{role:"bot",text:"👋 Hi! I'm **ExamBot**!\n\nAsk me about syllabus, cutoffs, books, tips for any Indian exam.\n\nOr check the **📅 Planner tab** for your personalized study plan! 😊"}]);
+  const [messages,setMessages]=useState([{role:"bot",text:"👋 Hi! I'm **ExamBot**!\n\nAsk me about syllabus, cutoffs, books, tips for any Indian exam.\n\nTip: Your study plan progress is now **permanently saved**! 🔒 😊"}]);
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
   const bottomRef=useRef(null);
@@ -657,7 +680,7 @@ function DetailPage({exam,goHome,tab,setTab,T,dark}){
         <div style={{display:"flex",alignItems:"center",gap:13,marginBottom:14}}>
           <div style={{width:54,height:54,background:"rgba(255,255,255,0.2)",borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:27,flexShrink:0}}>{exam.icon}</div>
           <div>
-            <div style={{fontSize:10,color:"rgba(255,255,255,0.7)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:2}}>{exam.category}</div>
+            <div style={{fontSize:10,color:"rgba(255,255,255,0.7)",textTransform:"uppercase",marginBottom:2}}>{exam.category}</div>
             <div style={{fontFamily:"'Playfair Display',serif",fontSize:21,fontWeight:900,color:"#fff",lineHeight:1.1}}>{exam.name}</div>
             <div style={{fontSize:11,color:"rgba(255,255,255,0.75)",marginTop:2}}>{exam.full}</div>
           </div>
@@ -671,11 +694,7 @@ function DetailPage({exam,goHome,tab,setTab,T,dark}){
           ))}
         </div>
         <div style={{display:"flex",overflowX:"auto"}}>
-          {tabs.map(t=>(
-            <button key={t.id} onClick={()=>setTab(t.id)} style={{flexShrink:0,padding:"9px 13px",background:"none",border:"none",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:tab===t.id?600:400,color:tab===t.id?"#fff":"rgba(255,255,255,0.55)",borderBottom:`2px solid ${tab===t.id?"#fff":"transparent"}`,whiteSpace:"nowrap"}}>
-              {t.icon} {t.label}
-            </button>
-          ))}
+          {tabs.map(t=>(<button key={t.id} onClick={()=>setTab(t.id)} style={{flexShrink:0,padding:"9px 13px",background:"none",border:"none",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:tab===t.id?600:400,color:tab===t.id?"#fff":"rgba(255,255,255,0.55)",borderBottom:`2px solid ${tab===t.id?"#fff":"transparent"}`,whiteSpace:"nowrap"}}>{t.icon} {t.label}</button>))}
         </div>
       </div>
       <div style={{background:T.card,padding:"10px 16px",borderBottom:`1px solid ${T.border}`,display:"flex",gap:7}}>
@@ -704,7 +723,7 @@ function AboutPage({goHome,count,T,dark}){
           {icon:"📚",title:"Who We Are",text:"ExamNest is a free educational platform for students preparing for competitive exams across India.",color:"#f97316"},
           {icon:"🤖",title:"AI Chatbot",text:"ExamBot answers exam questions instantly — syllabus, cutoffs, books, tips — works offline!",color:"#6366f1"},
           {icon:"⚖️",title:"Exam Comparison",text:"Compare any 2 exams side by side — difficulty, salary, seats, duration and more!",color:"#0ea5e9"},
-          {icon:"📅",title:"Study Planner",text:"Set your exam date, get a personalised weekly study plan and track topic-wise progress!",color:"#16a34a"},
+          {icon:"📅",title:"Study Planner",text:"Personalised weekly plan + topic progress tracker. Progress is saved permanently — never resets! 🔒",color:"#16a34a"},
           {icon:"🌙",title:"Dark Mode",text:"Easy on eyes for night studying! Tap the moon icon in the top bar.",color:"#7c3aed"},
           {icon:"✅",title:"What We Cover",text:`${count}+ major Indian exams across Engineering, Medical, Government, Management, Law & more.`,color:"#10b981"},
         ].map((item,i)=>(
