@@ -125,15 +125,15 @@ function Particle(props) {
 // ─── PHASE 1: BOOT SCREEN ─────────────────────────────
 var BOOT_LINES = [
   {text:"EXAMNEST SYSTEM v5.0.0 — INITIALIZING",color:"#22c55e",bold:true,delay:0},
-  {text:"████████████████████ Loading core modules...",color:"#475569",delay:250},
-  {text:"[OK] Exam database loaded — 80+ exams indexed",color:"#64748b",delay:600},
-  {text:"[OK] AI ExamBot neural module — ONLINE",color:"#6366f1",delay:950},
-  {text:"[OK] Study Planner — INITIALIZED",color:"#f97316",delay:1200},
-  {text:"[OK] Compare Engine — ACTIVE",color:"#ec4899",delay:1450},
-  {text:"[OK] Dark Mode — READY",color:"#7c3aed",delay:1650},
-  {text:"[OK] localStorage — CONNECTED",color:"#14b8a6",delay:1850},
-  {text:"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",color:"#1e293b",delay:2100},
-  {text:"▶  BOOT SEQUENCE COMPLETE — LAUNCHING",color:"#c9a84c",bold:true,delay:2300},
+  {text:"████████████████████ Loading core modules...",color:"#475569",delay:800},
+  {text:"[OK] Exam database loaded — 80+ exams indexed",color:"#64748b",delay:1600},
+  {text:"[OK] AI ExamBot neural module — ONLINE",color:"#6366f1",delay:2400},
+  {text:"[OK] Study Planner — INITIALIZED",color:"#f97316",delay:3200},
+  {text:"[OK] Compare Engine — ACTIVE",color:"#ec4899",delay:4000},
+  {text:"[OK] Dark Mode — READY",color:"#7c3aed",delay:4800},
+  {text:"[OK] localStorage — CONNECTED",color:"#14b8a6",delay:5600},
+  {text:"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",color:"#1e293b",delay:64000},
+  {text:"▶  BOOT SEQUENCE COMPLETE — LAUNCHING",color:"#c9a84c",bold:true,delay:7200},
 ];
 
 function BootScreen(props) {
