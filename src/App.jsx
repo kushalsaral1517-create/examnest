@@ -184,7 +184,7 @@ function BootScreen(props) {
               fontSize:12,lineHeight:"1.9",
               color:visible.includes(i)?line.color:"transparent",
               fontWeight:line.bold?"700":"400",
-              animation:visible.includes(i)?"bootLine 0.15s ease forwards":"none",
+              animation:visible.includes(i)?"bootLine 0.5s ease forwards":"none",
               display:"flex",alignItems:"center",gap:6,
             }}>
               {visible.includes(i)&&<span style={{color:"rgba(34,197,94,0.3)"}}>›</span>}
