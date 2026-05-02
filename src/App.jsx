@@ -1,3 +1,500 @@
+import { useState, useEffect, useRef } from "react";
+
+// ══════════════════════════════════════════════════════════════
+// CINEMATIC INTRO — Add this at the TOP of your App.jsx file
+// Replace your existing export default function App() with this
+// ══════════════════════════════════════════════════════════════
+
+const cinematicStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Playfair+Display:wght@700;900&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { overflow:hidden; background:#000; }
+
+  @keyframes fadeIn      { from{opacity:0}            to{opacity:1} }
+  @keyframes fadeOut     { from{opacity:1}            to{opacity:0} }
+  @keyframes slideUp     { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes slideDown   { from{opacity:0;transform:translateY(-30px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes scaleIn     { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
+  @keyframes glowPulse   { 0%,100%{text-shadow:0 0 40px rgba(201,168,76,0.4)} 50%{text-shadow:0 0 80px rgba(201,168,76,0.9),0 0 120px rgba(201,168,76,0.4)} }
+  @keyframes scanline    { 0%{top:-10%} 100%{top:110%} }
+  @keyframes particleDrift { 0%{transform:translateY(0) translateX(0) rotate(0deg);opacity:0} 20%{opacity:1} 80%{opacity:0.5} 100%{transform:translateY(-120vh) translateX(var(--drift)) rotate(360deg);opacity:0} }
+  @keyframes borderDraw  { 0%{clip-path:inset(0 100% 0 0)} 100%{clip-path:inset(0 0% 0 0)} }
+  @keyframes logoReveal  { 0%{letter-spacing:0.8em;opacity:0} 100%{letter-spacing:0.15em;opacity:1} }
+  @keyframes taglineReveal { 0%{opacity:0;filter:blur(8px)} 100%{opacity:1;filter:blur(0)} }
+  @keyframes gridFade    { 0%{opacity:0} 100%{opacity:0.08} }
+  @keyframes vignette    { 0%{opacity:0} 100%{opacity:1} }
+  @keyframes flashWhite  { 0%{opacity:0} 30%{opacity:0.6} 100%{opacity:0} }
+  @keyframes countUp     { from{opacity:0;transform:scale(0.5)} to{opacity:1;transform:scale(1)} }
+  @keyframes shimmer     { 0%{background-position:-200% center} 100%{background-position:200% center} }
+  @keyframes orbFloat    { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(-50%,-50%) scale(1.1)} }
+  @keyframes ripple      { 0%{transform:translate(-50%,-50%) scale(0);opacity:0.8} 100%{transform:translate(-50%,-50%) scale(4);opacity:0} }
+  @keyframes textFlicker { 0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:0.4} 94%{opacity:1} 97%{opacity:0.8} 98%{opacity:1} }
+  @keyframes progressBar { from{width:0%} to{width:100%} }
+  @keyframes rotate360   { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  @keyframes counterSpin { from{transform:rotate(0deg) scale(1)} to{transform:rotate(-360deg) scale(1)} }
+  @keyframes slideInLeft { from{opacity:0;transform:translateX(-60px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes slideInRight{ from{opacity:0;transform:translateX(60px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes expandLine  { from{width:0} to{width:100%} }
+  @keyframes bgZoom      { from{transform:scale(1)} to{transform:scale(1.08)} }
+  @keyframes dissolve    { 0%{opacity:1;filter:blur(0)} 100%{opacity:0;filter:blur(20px)} }
+
+  ::-webkit-scrollbar { display:none; }
+`;
+
+const PHASES = [
+  "BOOT",       // 0 - black screen, system boot text
+  "LOGO",       // 1 - logo cinematic reveal
+  "TAGLINE",    // 2 - tagline + stats reveal
+  "TRANSITION", // 3 - epic transition to app
+  "APP",        // 4 - show actual app
+];
+
+// Particle component
+function Particle({ index }) {
+  const drift = (Math.random() - 0.5) * 200 + "px";
+  const delay = Math.random() * 4;
+  const duration = 4 + Math.random() * 6;
+  const size = 2 + Math.random() * 4;
+  const left = Math.random() * 100;
+  const colors = ["#c9a84c","#fff","#6366f1","#10b981","#f97316"];
+  const color = colors[Math.floor(Math.random() * colors.length)];
+  return (
+    <div style={{
+      position:"absolute", left:left+"%", bottom:"-20px",
+      width:size+"px", height:size+"px",
+      borderRadius:"50%", background:color,
+      "--drift": drift,
+      animation:`particleDrift ${duration}s ease-in infinite ${delay}s`,
+      pointerEvents:"none",
+    }} />
+  );
+}
+
+// Boot text lines
+const BOOT_LINES = [
+  { text: "EXAMNEST OS v4.2.0", delay: 0, color: "#22c55e" },
+  { text: "Loading kernel modules...", delay: 200, color: "#64748b" },
+  { text: "Initializing exam database [██████████] 100%", delay: 500, color: "#64748b" },
+  { text: "Loading 80+ Indian exams... [DONE]", delay: 900, color: "#22c55e" },
+  { text: "AI ExamBot module: ONLINE", delay: 1200, color: "#6366f1" },
+  { text: "Study Planner: READY", delay: 1500, color: "#f97316" },
+  { text: "Compare Engine: ACTIVE", delay: 1700, color: "#ec4899" },
+  { text: "Dark Mode: ENABLED", delay: 1900, color: "#7c3aed" },
+  { text: "▶ LAUNCHING EXAMNEST...", delay: 2300, color: "#c9a84c", bold: true },
+];
+
+function BootScreen({ onComplete }) {
+  const [visibleLines, setVisibleLines] = useState([]);
+  const [showProgress, setShowProgress] = useState(false);
+
+  useEffect(() => {
+    BOOT_LINES.forEach(function(line, i) {
+      setTimeout(function() {
+        setVisibleLines(function(prev) { return prev.concat([i]); });
+        if (i === BOOT_LINES.length - 1) {
+          setShowProgress(true);
+          setTimeout(onComplete, 1200);
+        }
+      }, line.delay);
+    });
+  }, []);
+
+  return (
+    <div style={{
+      position:"fixed", inset:0, background:"#000",
+      display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"flex-start",
+      padding:"40px 10%", fontFamily:"'Courier New',monospace",
+      animation:"fadeIn 0.3s ease forwards",
+    }}>
+      {/* Grid overlay */}
+      <div style={{ position:"absolute", inset:0, backgroundImage:"linear-gradient(rgba(34,197,94,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(34,197,94,0.03) 1px,transparent 1px)", backgroundSize:"30px 30px", animation:"gridFade 1s ease forwards" }} />
+
+      {/* Top bar */}
+      <div style={{ position:"absolute", top:20, left:"10%", right:"10%", display:"flex", justifyContent:"space-between", fontSize:11, color:"rgba(34,197,94,0.4)", letterSpacing:"0.2em" }}>
+        <span>SYSTEM INITIALIZE</span>
+        <span>{new Date().toLocaleTimeString()}</span>
+      </div>
+
+      {/* Boot lines */}
+      <div style={{ width:"100%", maxWidth:600 }}>
+        {BOOT_LINES.map(function(line, i) {
+          return (
+            <div key={i} style={{
+              fontSize: 13, lineHeight: 2,
+              color: visibleLines.includes(i) ? line.color : "transparent",
+              fontWeight: line.bold ? 700 : 400,
+              transition: "color 0.1s",
+              display: "flex", alignItems: "center", gap: 8,
+            }}>
+              {visibleLines.includes(i) && <span style={{ color:"rgba(34,197,94,0.4)" }}>$</span>}
+              {visibleLines.includes(i) ? line.text : ""}
+              {visibleLines.includes(i) && i === visibleLines[visibleLines.length-1] && (
+                <span style={{ display:"inline-block", width:8, height:14, background:"#22c55e", animation:"textFlicker 1s infinite" }} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Progress bar */}
+      {showProgress && (
+        <div style={{ position:"absolute", bottom:40, left:"10%", right:"10%" }}>
+          <div style={{ fontSize:11, color:"rgba(34,197,94,0.5)", letterSpacing:"0.2em", marginBottom:8 }}>LAUNCHING EXAMNEST</div>
+          <div style={{ height:2, background:"rgba(34,197,94,0.2)", borderRadius:1 }}>
+            <div style={{ height:"100%", background:"#22c55e", borderRadius:1, animation:"progressBar 1s linear forwards", boxShadow:"0 0 10px #22c55e" }} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LogoScreen({ onComplete }) {
+  const [step, setStep] = useState(0);
+
+  useEffect(function() {
+    var timers = [
+      setTimeout(function(){setStep(1);}, 300),
+      setTimeout(function(){setStep(2);}, 800),
+      setTimeout(function(){setStep(3);}, 1400),
+      setTimeout(function(){setStep(4);}, 2000),
+      setTimeout(onComplete, 3200),
+    ];
+    return function(){ timers.forEach(clearTimeout); };
+  }, []);
+
+  return (
+    <div style={{
+      position:"fixed", inset:0,
+      background:"radial-gradient(ellipse at center, #0a0a1a 0%, #000 70%)",
+      display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+      overflow:"hidden",
+    }}>
+      {/* Particles */}
+      {Array.from({length:40}).map(function(_,i){ return <Particle key={i} index={i} />; })}
+
+      {/* Glowing orb behind logo */}
+      {step >= 1 && (
+        <div style={{
+          position:"absolute", top:"50%", left:"50%",
+          width:400, height:400,
+          background:"radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%)",
+          transform:"translate(-50%,-50%)",
+          animation:"orbFloat 3s ease-in-out infinite",
+        }} />
+      )}
+
+      {/* Ripple rings */}
+      {step >= 2 && [0,1,2].map(function(i){
+        return (
+          <div key={i} style={{
+            position:"absolute", top:"50%", left:"50%",
+            width:300, height:300,
+            border:"1px solid rgba(201,168,76,0.2)",
+            borderRadius:"50%",
+            animation:"ripple 3s ease-out infinite",
+            animationDelay: i * 0.8 + "s",
+          }} />
+        );
+      })}
+
+      {/* Scanline */}
+      <div style={{
+        position:"absolute", left:0, right:0, height:2,
+        background:"linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent)",
+        animation:"scanline 3s linear infinite",
+        pointerEvents:"none",
+      }} />
+
+      {/* Main logo */}
+      <div style={{ textAlign:"center", position:"relative", zIndex:10 }}>
+        {/* Book icon */}
+        {step >= 1 && (
+          <div style={{
+            fontSize:64, marginBottom:24,
+            animation:"scaleIn 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards",
+            filter:"drop-shadow(0 0 30px rgba(201,168,76,0.5))",
+          }}>📚</div>
+        )}
+
+        {/* EXAMNEST text */}
+        {step >= 2 && (
+          <div style={{
+            fontFamily:"'Cormorant Garamond',serif",
+            fontSize:"clamp(42px,8vw,80px)",
+            fontWeight:700,
+            color:"#fff",
+            letterSpacing:"0.15em",
+            animation:"logoReveal 1s ease forwards",
+            background:"linear-gradient(135deg,#fff 0%,#c9a84c 50%,#fff 100%)",
+            backgroundSize:"200%",
+            WebkitBackgroundClip:"text",
+            WebkitTextFillColor:"transparent",
+            backgroundClip:"text",
+          }}>
+            EXAMNEST
+          </div>
+        )}
+
+        {/* Decorative line */}
+        {step >= 2 && (
+          <div style={{ position:"relative", margin:"16px auto", width:300, height:1 }}>
+            <div style={{
+              position:"absolute", inset:0,
+              background:"linear-gradient(90deg,transparent,#c9a84c,transparent)",
+              animation:"expandLine 0.8s ease forwards 0.3s",
+              width:0,
+            }} />
+            <div style={{ width:"100%", background:"linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent)", height:1 }} />
+          </div>
+        )}
+
+        {/* Tagline */}
+        {step >= 3 && (
+          <div style={{
+            fontFamily:"'DM Sans',sans-serif",
+            fontSize:14,
+            color:"rgba(201,168,76,0.8)",
+            letterSpacing:"0.35em",
+            textTransform:"uppercase",
+            animation:"taglineReveal 1s ease forwards",
+          }}>
+            India's Complete Exam Guide
+          </div>
+        )}
+
+        {/* Stats row */}
+        {step >= 4 && (
+          <div style={{
+            display:"flex", gap:40, marginTop:40,
+            animation:"slideUp 0.8s ease forwards",
+          }}>
+            {[["80+","Exams"],["5","Features"],["100%","Free"]].map(function(arr){
+              return (
+                <div key={arr[1]} style={{ textAlign:"center" }}>
+                  <div style={{
+                    fontFamily:"'Cormorant Garamond',serif",
+                    fontSize:32, fontWeight:700,
+                    color:"#c9a84c",
+                    animation:"glowPulse 2s ease-in-out infinite",
+                  }}>{arr[0]}</div>
+                  <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", letterSpacing:"0.2em", textTransform:"uppercase", marginTop:4 }}>{arr[1]}</div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Corner decorations */}
+      {["tl","tr","bl","br"].map(function(pos){
+        var styles = {
+          tl:{top:24,left:24,borderTop:"1px solid",borderLeft:"1px solid"},
+          tr:{top:24,right:24,borderTop:"1px solid",borderRight:"1px solid"},
+          bl:{bottom:24,left:24,borderBottom:"1px solid",borderLeft:"1px solid"},
+          br:{bottom:24,right:24,borderBottom:"1px solid",borderRight:"1px solid"},
+        };
+        return (
+          <div key={pos} style={{
+            position:"absolute", width:30, height:30,
+            borderColor:"rgba(201,168,76,0.3)",
+            animation:"fadeIn 1s ease forwards 0.5s", opacity:0,
+            ...styles[pos],
+          }} />
+        );
+      })}
+    </div>
+  );
+}
+
+function TransitionScreen({ onComplete }) {
+  const [step, setStep] = useState(0);
+
+  useEffect(function() {
+    var timers = [
+      setTimeout(function(){setStep(1);}, 100),
+      setTimeout(function(){setStep(2);}, 500),
+      setTimeout(function(){setStep(3);}, 900),
+      setTimeout(onComplete, 1400),
+    ];
+    return function(){ timers.forEach(clearTimeout); };
+  }, []);
+
+  return (
+    <div style={{
+      position:"fixed", inset:0,
+      background:"#000",
+      display:"flex", alignItems:"center", justifyContent:"center",
+      overflow:"hidden",
+    }}>
+      {/* Flash effect */}
+      {step >= 2 && (
+        <div style={{
+          position:"absolute", inset:0,
+          background:"#fff",
+          animation:"flashWhite 0.6s ease forwards",
+          pointerEvents:"none",
+        }} />
+      )}
+
+      {/* Expanding circle */}
+      {step >= 1 && (
+        <div style={{
+          position:"absolute",
+          width: step >= 3 ? "300vmax" : "0vmax",
+          height: step >= 3 ? "300vmax" : "0vmax",
+          borderRadius:"50%",
+          background:"radial-gradient(circle,#1a1a2e 0%,#0a0a1a 100%)",
+          transition:"width 0.8s cubic-bezier(0.4,0,0.2,1), height 0.8s cubic-bezier(0.4,0,0.2,1)",
+        }} />
+      )}
+
+      {/* ENTERING text */}
+      {step >= 1 && step < 3 && (
+        <div style={{
+          fontFamily:"'Cormorant Garamond',serif",
+          fontSize:48, fontWeight:300,
+          color:"rgba(201,168,76,0.8)",
+          letterSpacing:"0.5em",
+          textTransform:"uppercase",
+          animation:"fadeIn 0.4s ease forwards",
+          position:"relative", zIndex:10,
+        }}>
+          Entering
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── MAIN CINEMATIC WRAPPER ──
+// This wraps your entire app with cinematic intro
+export function CinematicWrapper({ children }) {
+  var [phase, setPhase] = useState("BOOT");
+  var [appVisible, setAppVisible] = useState(false);
+  var [skipVisible, setSkipVisible] = useState(true);
+
+  useEffect(function() {
+    // Show skip button
+    var skipTimer = setTimeout(function(){setSkipVisible(true);}, 500);
+    return function(){ clearTimeout(skipTimer); };
+  }, []);
+
+  function skip() {
+    setPhase("APP");
+    setAppVisible(true);
+  }
+
+  function goToLogo() { setPhase("LOGO"); }
+  function goToTransition() { setPhase("TRANSITION"); }
+  function goToApp() {
+    setPhase("APP");
+    setAppVisible(true);
+  }
+
+  return (
+    <div style={{position:"relative",minHeight:"100vh"}}>
+      <style>{cinematicStyles}</style>
+
+      {/* The actual app — hidden behind intro */}
+      <div style={{
+        opacity: appVisible ? 1 : 0,
+        transition:"opacity 0.8s ease",
+        pointerEvents: appVisible ? "auto" : "none",
+        minHeight:"100vh",
+      }}>
+        {children}
+      </div>
+
+      {/* Cinematic overlay */}
+      {phase !== "APP" && (
+        <div style={{position:"fixed",inset:0,zIndex:9999}}>
+          {phase === "BOOT"       && <BootScreen       onComplete={goToLogo}       />}
+          {phase === "LOGO"       && <LogoScreen       onComplete={goToTransition} />}
+          {phase === "TRANSITION" && <TransitionScreen onComplete={goToApp}        />}
+
+          {/* Skip button */}
+          {skipVisible && (
+            <button onClick={skip} style={{
+              position:"fixed", bottom:30, right:30,
+              background:"rgba(255,255,255,0.05)",
+              border:"1px solid rgba(255,255,255,0.15)",
+              borderRadius:20, padding:"8px 20px",
+              color:"rgba(255,255,255,0.4)", fontSize:12,
+              fontFamily:"'DM Sans',sans-serif",
+              letterSpacing:"0.1em", cursor:"pointer",
+              zIndex:10000,
+              transition:"all 0.2s",
+            }}
+            onMouseEnter={function(e){e.target.style.color="rgba(255,255,255,0.8)"; e.target.style.borderColor="rgba(255,255,255,0.4)";}}
+            onMouseLeave={function(e){e.target.style.color="rgba(255,255,255,0.4)"; e.target.style.borderColor="rgba(255,255,255,0.15)";}}
+            >
+              SKIP INTRO ›
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// HOW TO USE IN YOUR App.jsx:
+//
+// 1. Copy everything above into your App.jsx
+//
+// 2. In your existing App() function, wrap the return like this:
+//
+//    export default function App() {
+//      // ... all your existing state and logic ...
+//      return (
+//        <CinematicWrapper>
+//          {/* your existing JSX goes here — the <> ... </> part */}
+//          <>
+//            <style>{globalStyles}</style>
+//            <div style={{minHeight:"100vh", ...}}>
+//              ... all your existing content ...
+//            </div>
+//          </>
+//        </CinematicWrapper>
+//      );
+//    }
+// ═══════════════════════════════════════════════════════════
+
+// ── DEMO (for preview only) ──
+export default function CinematicDemo() {
+  return (
+    <CinematicWrapper>
+      <div style={{
+        minHeight:"100vh",
+        background:"linear-gradient(135deg,#1a1a2e,#16213e)",
+        display:"flex", flexDirection:"column",
+        alignItems:"center", justifyContent:"center",
+        fontFamily:"'DM Sans',sans-serif", color:"#fff",
+        textAlign:"center", padding:40,
+      }}>
+        <div style={{fontSize:48,marginBottom:20}}>📚</div>
+        <div style={{fontFamily:"'Playfair Display',serif",fontSize:36,fontWeight:700,marginBottom:12}}>
+          ExamNest
+        </div>
+        <div style={{color:"#c9a84c",fontSize:14,letterSpacing:"0.2em",textTransform:"uppercase",marginBottom:32}}>
+          India's Complete Exam Guide
+        </div>
+        <div style={{
+          background:"rgba(255,255,255,0.05)",
+          border:"1px solid rgba(255,255,255,0.1)",
+          borderRadius:16, padding:"20px 32px",
+          fontSize:14, color:"rgba(255,255,255,0.7)",
+          maxWidth:400, lineHeight:1.8,
+        }}>
+          🎉 Cinematic intro is working!<br/>
+          Now paste the <strong style={{color:"#c9a84c"}}>CinematicWrapper</strong> into your full ExamNest App.jsx
+        </div>
+      </div>
+    </CinematicWrapper>
+  );
+}
 import { useState, useRef, useEffect } from "react";
 
 const STORAGE_KEY = "examnest_v4";
