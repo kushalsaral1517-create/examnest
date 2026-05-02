@@ -148,7 +148,7 @@ function BootScreen(props) {
         setVisible(function(p){return p.concat([i]);});
         if (i===BOOT_LINES.length-1) {
           setShowBar(true);
-          timers.push(setTimeout(onComplete, 1000));
+          timers.push(setTimeout(onComplete, 3000));
         }
       }, line.delay));
     });
