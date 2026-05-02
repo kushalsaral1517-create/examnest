@@ -1,286 +1,556 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
-const STORAGE_KEY = "examnest_v4";
-function saveData(data) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {} }
-function loadData() { try { const d = localStorage.getItem(STORAGE_KEY); return d ? JSON.parse(d) : null; } catch(e) { return null; } }
+// ═══════════════════════════════════════════════════
+// EXAMNEST — ULTRA CINEMATIC INTRO + FULL APP
+// Complete file — paste everything into src/App.jsx
+// ═══════════════════════════════════════════════════
 
-// ═══════════════════════════════════════════════════════
-// ALL EXAMS DATA
-// ═══════════════════════════════════════════════════════
+const STORAGE_KEY = "examnest_v5";
+function saveData(d) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {} }
+function loadData() { try { var d = localStorage.getItem(STORAGE_KEY); return d ? JSON.parse(d) : null; } catch(e) { return null; } }
+
+// ─── EXAM DATA ───────────────────────────────────────
 const exams = [
-  // ── UPSC ──
-  { id:"upsc-cse", name:"UPSC CSE", full:"Civil Services Examination", category:"UPSC", color:"#6366f1", icon:"🏛️", difficulty:"Extremely High", diffScore:5, frequency:"Once a year", seats:"~1,000", salary:"₹56,100+ (IAS/IPS/IFS)", duration:"1-2 years prep", syllabus:["Prelims: GS Paper I, CSAT Paper II","Mains: Essay, GS I-IV, Optional (2 papers)","Interview: Personality Test (275 marks)"], topics:{"History":["Ancient India","Medieval India","Modern India","World History","Art & Culture"],"Geography":["Physical Geography","Indian Geography","World Geography","Environment"],"Polity":["Constitution","Parliament","Judiciary","Federalism","Governance"],"Economy":["Indian Economy","Budget","Planning","Agriculture","Industry"],"Current Affairs":["National","International","Science & Tech","Environment"]}, pattern:{duration:"Prelims: 4hr | Mains: 9 papers",questions:"Prelims 200 MCQs | Mains descriptive",total:"2025 marks (Mains+Interview)",negative:"Prelims: -0.33"}, cutoff:[{year:2024,general:104,obc:98,sc:88,st:84},{year:2023,general:101,obc:95,sc:85,st:81}], books:["NCERT VI-XII Foundation","Laxmikanth – Indian Polity","Spectrum – Modern Indian History","Economic Survey + India Yearbook"], eligibility:"Graduate. Age: 21-32 (Gen).", tips:["Start with NCERTs before standard books","Make concise notes from Day 1","Read The Hindu daily","Choose optional wisely"] },
-  { id:"upsc-ifs", name:"UPSC IFoS", full:"Indian Forest Service Examination", category:"UPSC", color:"#15803d", icon:"🌲", difficulty:"Extremely High", diffScore:5, frequency:"Once a year", seats:"~100", salary:"₹56,100+ (IFS)", duration:"1-2 years prep", syllabus:["Prelims: Same as UPSC CSE (GS + CSAT)","Mains: GS, Forest Related Subjects","Interview: Personality Test"], topics:{"Forestry":["Silviculture","Forest Management","Wildlife Management","Ecology"],"Botany/Zoology":["Plant Science","Animal Science","Environmental Science"],"Agriculture":["Agronomy","Soil Science","Agricultural Chemistry"]}, pattern:{duration:"Prelims: 4hr | Mains: multiple papers",questions:"Prelims: same as CSE | Mains: descriptive",total:"~1400 marks",negative:"Prelims: -0.33"}, cutoff:[{year:2024,general:110,obc:103,sc:92,st:88},{year:2023,general:107,obc:100,sc:89,st:85}], books:["NCERT books","Forest Management books","IFoS previous papers"], eligibility:"Graduate in relevant science subjects. Age: 21-32.", tips:["Prelims same as UPSC CSE — prepare together","Choose optional wisely (Forestry/Botany/Zoology)","Focus on environmental and forest ecology","Physical fitness required"] },
-  { id:"upsc-cds", name:"UPSC CDS", full:"Combined Defence Services Examination", category:"UPSC", color:"#166534", icon:"🎖️", difficulty:"High", diffScore:3, frequency:"Twice a year", seats:"~400+", salary:"₹56,100+ (Lieutenant)", duration:"6 months prep", syllabus:["English: Comprehension, Grammar","General Knowledge: History, Geography, Polity, Science, Current Affairs","Elementary Mathematics: For IMA/INA/AFA only"], topics:{"English":["Reading Comprehension","Grammar","Vocabulary","Sentence Correction"],"General Knowledge":["History","Geography","Polity","Economy","Science","Current Affairs"],"Mathematics":["Number System","Algebra","Geometry","Trigonometry","Statistics"]}, pattern:{duration:"2 hours per paper",questions:"120 per paper",total:"300 marks",negative:"Yes (-0.33)"}, cutoff:[{year:2024,general:120,obc:110,sc:95,st:90},{year:2023,general:115,obc:105,sc:90,st:85}], books:["Pathfinder CDS by Arihant","Lucent GK","RS Aggarwal Maths","Previous CDS papers"], eligibility:"Graduate (varies by service). Age: 19-24.", tips:["GK section is most important","English is moderate level","Maths only for IMA/INA/AFA","SSB interview needs personality development"] },
-  { id:"upsc-nda", name:"UPSC NDA", full:"National Defence Academy Examination", category:"UPSC", color:"#047857", icon:"⚔️", difficulty:"High", diffScore:3, frequency:"Twice a year", seats:"~400", salary:"₹56,100+ (Lieutenant)", duration:"3 years (NDA)", syllabus:["Mathematics: Algebra, Calculus, Trigonometry, Statistics, Matrices","General Ability: English, GK, Physics, Chemistry, History, Geography"], topics:{"Mathematics":["Algebra","Trigonometry","Calculus","Statistics","Matrices","Analytical Geometry"],"General Ability":["English Grammar","Physics","Chemistry","History","Geography","Current Affairs"]}, pattern:{duration:"5 hours (2 papers)",questions:"Paper I: 120, Paper II: 150",total:"900 marks",negative:"Yes (-0.33)"}, cutoff:[{year:2024,general:360,obc:340,sc:300,st:290},{year:2023,general:350,obc:330,sc:290,st:280}], books:["Pathfinder NDA/NA by Arihant","RS Aggarwal Maths","Lucent GK","Previous Year NDA Papers"], eligibility:"Class 12 passed/appearing. Age: 16.5-19.5. Only unmarried males.", tips:["Maths paper needs strong basics","GK from last 6 months current affairs","Physical fitness test is important","SSB interview is the toughest part"] },
-  { id:"upsc-capf", name:"UPSC CAPF", full:"Central Armed Police Forces Assistant Commandant", category:"UPSC", color:"#065f46", icon:"🛡️", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~350", salary:"₹56,100+ (Gr. A)", duration:"6-9 months prep", syllabus:["General Ability & Intelligence","General Studies, Essay & Comprehension","Physical Standards + Medical Test"], topics:{"General Ability":["Reasoning","Data Interpretation","Spatial Ability","Current Affairs"],"General Studies":["History","Geography","Polity","Economy","Science & Tech"],"Essay & Comprehension":["Essay Writing","Comprehension","Precis Writing"]}, pattern:{duration:"Paper I: 2hr | Paper II: 3hr",questions:"Paper I: 125 MCQs | Paper II: descriptive",total:"450 marks",negative:"Paper I: -0.33"}, cutoff:[{year:2024,general:235,obc:220,sc:200,st:190},{year:2023,general:228,obc:214,sc:195,st:184}], books:["Arihant CAPF guide","Laxmikanth Polity","Lucent GK","The Hindu newspaper"], eligibility:"Graduate. Age: 20-25.", tips:["Essay writing needs daily practice","Current affairs very important","Physical test is elimination round","Descriptive paper needs structured answers"] },
-  { id:"upsc-ese", name:"UPSC ESE/IES", full:"Engineering Services Examination", category:"UPSC", color:"#4f46e5", icon:"🔧", difficulty:"Very High", diffScore:4, frequency:"Once a year", seats:"~500", salary:"₹56,100+ (Group A)", duration:"6 months-1 year prep", syllabus:["General Studies & Engineering Aptitude","Engineering Discipline Paper I & II (branch-specific)","Objective + Subjective papers"], topics:{"General Studies":["Current Affairs","Engineering Mathematics","General Principles of Design","Disaster Management"],"Technical":["Core Engineering subjects based on discipline","Design & Manufacturing","Materials Science"]}, pattern:{duration:"Prelims: 4hr | Mains: descriptive",questions:"Prelims: 200 MCQs | Mains: 4 papers",total:"1000 marks",negative:"Prelims: -0.33"}, cutoff:[{year:2024,general:450,obc:420,sc:380,st:365},{year:2023,general:440,obc:410,sc:370,st:355}], books:["Made Easy GATE/IES material","Standard engineering textbooks","Previous IES papers"], eligibility:"B.E/B.Tech in relevant discipline. Age: 21-30.", tips:["GATE preparation overlaps significantly","Technical knowledge must be very deep","General Studies needs separate preparation","Interview carries significant weight"] },
-  { id:"upsc-cms", name:"UPSC CMS", full:"Combined Medical Services Examination", category:"UPSC", color:"#0891b2", icon:"🏥", difficulty:"Very High", diffScore:4, frequency:"Once a year", seats:"~900", salary:"₹56,100+ (Medical Officer)", duration:"6-8 months prep", syllabus:["Paper I: General Medicine & Paediatrics","Paper II: Surgery, Gynaecology & Obstetrics, Preventive & Social Medicine"], topics:{"Medicine":["General Medicine","Paediatrics","Emergency Medicine"],"Surgery":["General Surgery","Orthopaedics","ENT","Ophthalmology"],"OBG":["Obstetrics","Gynaecology"],"PSM":["Community Medicine","Epidemiology","Health Programs"]}, pattern:{duration:"4 hours (2 papers)",questions:"240 MCQs total",total:"500 marks",negative:"Yes (-0.33)"}, cutoff:[{year:2024,general:300,obc:280,sc:255,st:245},{year:2023,general:290,obc:270,sc:245,st:235}], books:["Harrison Medicine","UPSC CMS previous papers","Park's PSM","Bailey & Love Surgery"], eligibility:"MBBS from recognised institution. Age: 32 years max.", tips:["Clinical subjects carry highest weightage","PSM is very scoring","Previous UPSC CMS papers are best resource","Short notes revision strategy"] },
-  { id:"upsc-epfo", name:"UPSC EPFO", full:"Employees Provident Fund Organisation Enforcement Officer", category:"UPSC", color:"#1d4ed8", icon:"💼", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~400+", salary:"₹44,900-₹1.42 LPA", duration:"6 months prep", syllabus:["Industrial Relations & Labour Laws","Accounting & Auditing","Social Security in India","General English & GK"], topics:{"Labour Laws":["Industrial Disputes Act","EPF Act","ESI Act","Payment of Wages Act","Factories Act"],"Accounting":["Financial Accounting","Auditing","Cost Accounting"],"GK":["Current Affairs","History","Polity","Economy"]}, pattern:{duration:"2 hours",questions:"120 MCQs",total:"120 marks",negative:"Yes (-1/3)"}, cutoff:[{year:2024,general:78,obc:71,sc:62,st:58},{year:2023,general:75,obc:68,sc:59,st:55}], books:["Arihant EPFO guide","Labour Laws books","EPFO previous papers","Lucent GK"], eligibility:"Graduate. Age: 21-30 (Gen).", tips:["Labour laws are most important section","Accounting and auditing need practice","Current affairs from last 6 months","EPFO-specific rules must be studied"] },
-
-  // ── SSC ──
-  { id:"ssc-cgl", name:"SSC CGL", full:"SSC Combined Graduate Level", category:"SSC", color:"#14b8a6", icon:"📋", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"~10,000+", salary:"₹25,000-₹1.5 LPA", duration:"6 months prep", syllabus:["General Intelligence & Reasoning","General Awareness","Quantitative Aptitude","English Comprehension"], topics:{"Reasoning":["Analogy","Series","Coding-Decoding","Puzzles","Blood Relations","Direction","Syllogism"],"Quantitative Aptitude":["Number System","Percentage","Profit & Loss","Ratio","Time & Work","Geometry","Trigonometry"],"General Awareness":["Current Affairs","History","Geography","Polity","Economy","Science"],"English":["Grammar","Vocabulary","Comprehension","Error Detection"]}, pattern:{duration:"Tier I: 60 min | Tier II: 2.5 hr",questions:"Tier I: 100 | Tier II: varies",total:"Tier I: 200 | Tier II: 800",negative:"Yes"}, cutoff:[{year:2024,general:145,obc:138,sc:128,st:120},{year:2023,general:142,obc:135,sc:125,st:117}], books:["Lucent GK","RS Aggarwal Maths & Reasoning","SP Bakshi English","Kiran SSC CGL Papers"], eligibility:"Graduate. Age: 18-32.", tips:["Current affairs from last 6 months","Speed & accuracy in Quant","English grammar rules are key","Daily 2 hours practice tests"] },
-  { id:"ssc-chsl", name:"SSC CHSL", full:"SSC Combined Higher Secondary Level", category:"SSC", color:"#0d9488", icon:"📄", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"~5,000+", salary:"₹19,900-₹92,300", duration:"4-5 months prep", syllabus:["General Intelligence","General Awareness","Quantitative Aptitude","English Language"], topics:{"Reasoning":["Analogy","Puzzles","Series","Coding-Decoding"],"Quantitative":["Arithmetic","Algebra","Geometry","Statistics"],"GK":["History","Geography","Science","Current Affairs"],"English":["Grammar","Vocabulary","Comprehension"]}, pattern:{duration:"60 minutes",questions:"100 MCQs",total:"200 marks",negative:"Yes (-0.5)"}, cutoff:[{year:2024,general:165,obc:158,sc:145,st:138},{year:2023,general:160,obc:152,sc:140,st:133}], books:["Lucent GK","Arihant SSC CHSL","Kiran Previous Papers"], eligibility:"Class 12 passed. Age: 18-27.", tips:["Similar to CGL but 12th level","Focus on speed","Typing test for final selection","GK is very important"] },
-  { id:"ssc-mts", name:"SSC MTS", full:"SSC Multi Tasking Staff", category:"SSC", color:"#0e7490", icon:"🗂️", difficulty:"Easy", diffScore:1, frequency:"Once a year", seats:"~8,000+", salary:"₹18,000-₹56,900", duration:"3 months prep", syllabus:["Numerical & Mathematical Ability","Reasoning Ability","General Awareness","English Language"], topics:{"Mathematics":["Number System","Arithmetic","Basic Algebra"],"Reasoning":["Analogies","Series","Coding-Decoding"],"GK":["History","Geography","Science","Current Affairs"],"English":["Grammar","Vocabulary","Comprehension"]}, pattern:{duration:"90 minutes",questions:"90 MCQs",total:"270 marks",negative:"Yes (-1)"}, cutoff:[{year:2024,general:110,obc:100,sc:90,st:85},{year:2023,general:105,obc:95,sc:85,st:80}], books:["Arihant SSC MTS","Lucent GK","RS Aggarwal Basic Maths"], eligibility:"Class 10 passed. Age: 18-25.", tips:["Easiest SSC exam","Class 10 level maths sufficient","GK from last 3 months","English basics are sufficient"] },
-  { id:"ssc-cpo", name:"SSC CPO", full:"SSC Central Police Organisation (Sub-Inspector)", category:"SSC", color:"#155e75", icon:"👮", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"~2,000+", salary:"₹35,400-₹1.12 LPA", duration:"5-6 months prep", syllabus:["General Intelligence & Reasoning","General Knowledge & Awareness","Quantitative Aptitude","English Comprehension"], topics:{"Reasoning":["Analogy","Series","Coding-Decoding","Puzzles","Syllogism"],"GK":["History","Geography","Polity","Science","Current Affairs"],"Quantitative":["Arithmetic","Algebra","Geometry","Trigonometry","Statistics"],"English":["Grammar","Vocabulary","Comprehension","Error Detection"]}, pattern:{duration:"Paper I: 2hr | Paper II: 2hr",questions:"200 MCQs per paper",total:"200+200 marks",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:160,obc:152,sc:138,st:130},{year:2023,general:155,obc:147,sc:133,st:125}], books:["Arihant SSC CPO guide","Lucent GK","Kiran SSC CPO Papers"], eligibility:"Graduate. Age: 20-25 (SI in Delhi Police/CAPFs).", tips:["Physical test (PST/PET) is elimination round","Paper II is English only — score high","GK section is deciding factor","Current affairs from last 6 months"] },
-  { id:"ssc-gd", name:"SSC GD Constable", full:"SSC General Duty Constable", category:"SSC", color:"#164e63", icon:"🪖", difficulty:"Easy", diffScore:1, frequency:"Once a year", seats:"~50,000+", salary:"₹21,700-₹69,100", duration:"3-4 months prep", syllabus:["General Intelligence & Reasoning","General Knowledge & Awareness","Elementary Mathematics","English/Hindi"], topics:{"Mathematics":["Number System","Arithmetic","Basic Geometry"],"Reasoning":["Analogies","Series","Coding-Decoding"],"GK":["History","Geography","Science","Current Affairs"],"English/Hindi":["Grammar","Vocabulary","Basic Comprehension"]}, pattern:{duration:"60 minutes",questions:"80 MCQs",total:"160 marks",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:78,obc:72,sc:63,st:59},{year:2023,general:75,obc:69,sc:60,st:56}], books:["Arihant SSC GD guide","Kiran SSC GD Papers","Lucent GK"], eligibility:"Class 10 passed. Age: 18-23.", tips:["Physical test is most important","Class 10 level syllabus sufficient","GK from last 3 months","Physical fitness training is essential"] },
-  { id:"ssc-je", name:"SSC JE", full:"SSC Junior Engineer", category:"SSC", color:"#0c4a6e", icon:"🔩", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"~2,000+", salary:"₹35,400-₹1.12 LPA", duration:"4-6 months prep", syllabus:["General Intelligence & Reasoning","General Awareness","Technical Paper (Civil/Electrical/Mechanical)"], topics:{"Technical Civil":["Strength of Materials","Fluid Mechanics","Soil Mechanics","Structural Analysis"],"Technical Electrical":["Electrical Machines","Power Systems","Control Systems","Circuit Theory"],"General":["Reasoning","GK","Current Affairs"]}, pattern:{duration:"Paper I: 2hr | Paper II: 2hr",questions:"Paper I: 200 MCQs | Paper II: 300 marks",total:"500 marks",negative:"Paper I: -0.25"}, cutoff:[{year:2024,general:155,obc:145,sc:128,st:120},{year:2023,general:150,obc:140,sc:124,st:116}], books:["Arihant SSC JE Technical","Made Easy SSC JE","SSC JE previous papers"], eligibility:"Diploma or B.E/B.Tech in relevant discipline. Age: 18-32.", tips:["Technical paper carries most marks","Paper II is descriptive — practice writing","Previous papers are most useful","Focus on core technical subjects"] },
-  { id:"ssc-steno", name:"SSC Stenographer", full:"SSC Stenographer Grade C & D", category:"SSC", color:"#1e3a5f", icon:"📝", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"~1,000+", salary:"₹25,500-₹81,100", duration:"4 months prep", syllabus:["General Intelligence & Reasoning","General Awareness","English Language & Comprehension"], topics:{"Reasoning":["Analogy","Series","Coding-Decoding","Puzzles"],"GK":["History","Geography","Science","Current Affairs"],"English":["Grammar","Vocabulary","Comprehension","Reading Speed"]}, pattern:{duration:"2 hours",questions:"200 MCQs",total:"200 marks",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:120,obc:113,sc:99,st:92},{year:2023,general:116,obc:109,sc:95,st:88}], books:["Arihant SSC Stenographer guide","Kiran SSC Steno Papers","SP Bakshi English"], eligibility:"Class 12 passed. Age: 18-27 (Grade D), 18-30 (Grade C).", tips:["Stenography skill test is mandatory after written","Practice typing speed to 80-100 WPM","English section is most scoring","GK from last 6 months"] },
-
-  // ── BANKING ──
-  { id:"sbi-po", name:"SBI PO", full:"State Bank of India Probationary Officer", category:"Banking", color:"#1e40af", icon:"🏧", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~2,000+", salary:"₹41,960-₹1.5 LPA", duration:"6 months prep", syllabus:["Reasoning & Computer Aptitude","Data Analysis & Interpretation","General/Economy/Banking Awareness","English Language"], topics:{"Reasoning":["Puzzles","Directions","Syllogism","Input-Output","Blood Relations"],"Data Analysis":["Data Interpretation","Data Sufficiency","Missing Number","Approximation"],"Banking GK":["Banking Awareness","Economy","Financial Market","Current Affairs"],"English":["Reading Comprehension","Vocabulary","Grammar","Para Jumbles"]}, pattern:{duration:"Prelims: 1hr | Mains: 3hr",questions:"Prelims: 100 | Mains: 155+descriptive",total:"Prelims: 100 | Mains: 250",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:52,obc:49,sc:43,st:40},{year:2023,general:50,obc:47,sc:41,st:38}], books:["SBI PO previous papers","The Hindu for banking news","Arihant SBI PO guide"], eligibility:"Graduate. Age: 21-30.", tips:["Toughest bank exam in India","Economy awareness very important","Descriptive writing needs daily practice","Group discussion + interview are crucial"] },
-  { id:"sbi-clerk", name:"SBI Clerk", full:"SBI Junior Associate", category:"Banking", color:"#1d4ed8", icon:"🏦", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"~8,000+", salary:"₹20,928-₹47,920", duration:"4-5 months prep", syllabus:["Reasoning Ability & Computer Aptitude","General/Financial Awareness","Quantitative Aptitude","English Language"], topics:{"Reasoning":["Puzzles","Syllogism","Coding-Decoding","Directions"],"Quantitative":["Data Interpretation","Arithmetic","Simplification"],"English":["Reading Comprehension","Grammar","Vocabulary"],"GK":["Banking Awareness","Current Affairs","Static GK"]}, pattern:{duration:"Prelims: 1hr | Mains: 2.5hr",questions:"Prelims: 100 | Mains: 190",total:"Prelims: 100 | Mains: 200",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:72,obc:68,sc:60,st:56},{year:2023,general:70,obc:66,sc:58,st:54}], books:["SBI Clerk previous papers","RS Aggarwal Maths","Arihant English"], eligibility:"Graduate. Age: 20-28.", tips:["SBI clerk has more vacancies","Focus on speed and accuracy","Banking GK is very important","State-wise cutoffs vary significantly"] },
-  { id:"sbi-so", name:"SBI SO", full:"SBI Specialist Officer", category:"Banking", color:"#1e3a8a", icon:"👔", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~400+", salary:"₹40,000-₹1.5 LPA", duration:"5-6 months prep", syllabus:["General English (common)","Professional Knowledge (domain-specific: IT/Law/CA/HR/Marketing)","Reasoning & Quantitative (some posts)"], topics:{"Professional Knowledge IT":["DBMS","Networking","Programming","Software Engineering","Cybersecurity"],"Professional Knowledge Law":["Contract Law","Banking Regulations","RBI Guidelines","Legal Procedures"],"Professional Knowledge Finance":["Financial Analysis","Credit","Investment Banking","Risk Management"]}, pattern:{duration:"2-3 hours",questions:"100-200 MCQs",total:"100-200 marks",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:58,obc:53,sc:46,st:43},{year:2023,general:55,obc:50,sc:43,st:40}], books:["Domain-specific books","SBI SO previous papers","Arihant SBI SO guide"], eligibility:"Graduate/Postgraduate in relevant field. Age: 21-38 (varies by post).", tips:["Professional knowledge carries highest marks","Domain expertise is key differentiator","Banking GK also important","Focus only on your post's subject"] },
-  { id:"ibps-po", name:"IBPS PO", full:"IBPS Probationary Officer", category:"Banking", color:"#3b82f6", icon:"🏪", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~4,000+", salary:"₹40,000-₹1.5 LPA", duration:"6 months prep", syllabus:["Reasoning Ability","Quantitative Aptitude","English Language","General Awareness (Banking)","Computer Knowledge"], topics:{"Reasoning":["Puzzles","Seating Arrangement","Syllogism","Coding-Decoding","Blood Relations","Inequalities"],"Quantitative Aptitude":["Data Interpretation","Number Series","Quadratic Equations","Arithmetic","Data Sufficiency"],"English":["Reading Comprehension","Error Detection","Fill in Blanks","Para Jumbles","Cloze Test"],"Banking GK":["Banking Awareness","Financial Awareness","Current Affairs","Static GK"]}, pattern:{duration:"Prelims: 1hr | Mains: 3hr",questions:"Prelims: 100 | Mains: 155",total:"Prelims: 100 | Mains: 225",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:47,obc:44,sc:38,st:35},{year:2023,general:45,obc:42,sc:36,st:33}], books:["RS Aggarwal Quantitative Aptitude","Arihant Reasoning","Manorama Yearbook","Kiran IBPS PO Papers"], eligibility:"Graduate. Age: 20-30.", tips:["Banking GK is very important","High accuracy in Prelims","Mains has descriptive English","Practice data interpretation daily"] },
-  { id:"ibps-clerk", name:"IBPS Clerk", full:"IBPS Clerical Cadre", category:"Banking", color:"#2563eb", icon:"💼", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"~6,000+", salary:"₹19,900-₹47,920", duration:"4-5 months prep", syllabus:["Reasoning Ability","Numerical Ability","English Language","General/Financial Awareness","Computer Aptitude"], topics:{"Reasoning":["Puzzles","Seating Arrangement","Syllogism","Coding-Decoding"],"Numerical":["Data Interpretation","Number Series","Arithmetic","Simplification"],"English":["Reading Comprehension","Error Detection","Cloze Test"],"GK":["Banking Awareness","Current Affairs","Static GK"]}, pattern:{duration:"Prelims: 1hr | Mains: 2.5hr",questions:"Prelims: 100 | Mains: 190",total:"Prelims: 100 | Mains: 200",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:69,obc:65,sc:58,st:54},{year:2023,general:67,obc:63,sc:56,st:52}], books:["RS Aggarwal Maths","Arihant Reasoning","Kiran IBPS Clerk Papers"], eligibility:"Graduate. Age: 20-28.", tips:["Speed is crucial in Prelims","Mains has sectional cutoffs","Computer awareness is easy scoring","Practice puzzles and syllogisms daily"] },
-  { id:"ibps-rrb-po", name:"IBPS RRB PO", full:"IBPS Regional Rural Bank Officer Scale-I", category:"Banking", color:"#1e3a5f", icon:"🏘️", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"~5,000+", salary:"₹30,000-₹90,000", duration:"5 months prep", syllabus:["Reasoning Ability","Quantitative Aptitude","English/Hindi Language","General Awareness","Computer Knowledge"], topics:{"Reasoning":["Puzzles","Seating Arrangement","Syllogism","Coding-Decoding"],"Quantitative":["Data Interpretation","Number Series","Arithmetic"],"GK":["Banking Awareness","Rural Economy","Current Affairs"]}, pattern:{duration:"Prelims: 45 min | Mains: 2hr",questions:"Prelims: 80 | Mains: 200",total:"Prelims: 80 | Mains: 200",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:52,obc:48,sc:43,st:40},{year:2023,general:50,obc:46,sc:41,st:38}], books:["Arihant RRB PO guide","RRB PO previous papers","Rural banking books"], eligibility:"Graduate. Age: 18-30.", tips:["Rural banking knowledge is important","Hindi language option available","Less competition than SBI/IBPS PO","State-specific knowledge helps"] },
-  { id:"rbi-grade-b", name:"RBI Grade B", full:"Reserve Bank of India Grade B Officer", category:"Banking", color:"#7f1d1d", icon:"🏦", difficulty:"Very High", diffScore:4, frequency:"Once a year", seats:"~200+", salary:"₹55,000-₹1.5 LPA", duration:"8-10 months prep", syllabus:["Phase I: General Awareness, Reasoning, English, Quant","Phase II: Economic & Social Issues, English (Writing), Finance & Management"], topics:{"Economics":["Macro Economics","Monetary Policy","Indian Economy","International Trade","RBI Functions"],"Finance":["Financial Markets","Banking Regulations","Financial Instruments","Capital Markets"],"Management":["Management Concepts","HR Management","Organizational Behavior","Ethics"],"General":["Current Affairs","Reasoning","English Writing Skills"]}, pattern:{duration:"Phase I: 3hr | Phase II: descriptive",questions:"Phase I: 200 MCQs | Phase II: written",total:"Phase I: 200 | Phase II: 300",negative:"Phase I: -0.25"}, cutoff:[{year:2024,general:155,obc:142,sc:125,st:118},{year:2023,general:150,obc:137,sc:120,st:113}], books:["Economic Survey India","RBI Annual Report","RBI Grade B previous papers","Ramesh Singh Indian Economy"], eligibility:"Graduate with 60% marks. Age: 21-30.", tips:["Economics and Finance are most important","Read RBI reports and circulars regularly","Phase II needs excellent writing skills","General awareness must be very strong"] },
-  { id:"rbi-assistant", name:"RBI Assistant", full:"Reserve Bank of India Assistant", category:"Banking", color:"#991b1b", icon:"🔐", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~500+", salary:"₹20,700-₹53,000", duration:"5-6 months prep", syllabus:["Reasoning Ability","Numerical Ability","English Language","General Awareness","Computer Knowledge"], topics:{"Reasoning":["Puzzles","Seating Arrangement","Syllogism","Directions"],"Numerical":["Data Interpretation","Number Series","Arithmetic","Simplification"],"English":["Reading Comprehension","Grammar","Vocabulary"],"GK":["Banking Awareness","Current Affairs","RBI Functions"]}, pattern:{duration:"Prelims: 1hr | Mains: 2.5hr",questions:"Prelims: 100 | Mains: 200",total:"Prelims: 100 | Mains: 200",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:82,obc:76,sc:67,st:63},{year:2023,general:79,obc:73,sc:64,st:60}], books:["RBI Assistant previous papers","Kiran Banking guide","RS Aggarwal Maths"], eligibility:"Graduate. Age: 20-28.", tips:["RBI-specific awareness is very important","English section is scoring","Current affairs from last 6 months","Mains has language proficiency test"] },
-  { id:"sebi-grade-a", name:"SEBI Grade A", full:"Securities and Exchange Board of India Assistant Manager", category:"Banking", color:"#065f46", icon:"📈", difficulty:"Very High", diffScore:4, frequency:"Once a year", seats:"~80+", salary:"₹44,500-₹1.1 LPA", duration:"8-10 months prep", syllabus:["Paper I: General Awareness, English, Reasoning, Quantitative Aptitude","Paper II: Specialised Paper (Law/Finance/IT/Research)"], topics:{"Securities Market":["Capital Market","Derivatives","Mutual Funds","SEBI Regulations","IPO"],"Finance":["Financial Analysis","Investment Banking","Corporate Finance","Risk Management"],"Law":["Securities Laws","Companies Act","FEMA","Contract Law"],"IT":["Cybersecurity","Data Analytics","Fintech","Blockchain"]}, pattern:{duration:"Paper I: 2.5hr | Paper II: 2hr",questions:"Paper I: 100 MCQs + English | Paper II: 100 MCQs",total:"Paper I: 150 | Paper II: 100",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:120,obc:110,sc:97,st:91},{year:2023,general:116,obc:106,sc:93,st:87}], books:["SEBI Annual Report","NSE/BSE publications","SEBI Grade A previous papers","Securities Market book by NCFM"], eligibility:"Graduate/CA/CS/CFA/LLB. Age: 30 years max.", tips:["Securities market knowledge is critical","SEBI regulations must be studied in detail","Phase II interview carries high weight","Read SEBI bulletins and annual reports"] },
-  { id:"nabard-grade-a", name:"NABARD Grade A", full:"National Bank for Agriculture & Rural Development Grade A", category:"Banking", color:"#166534", icon:"🌾", difficulty:"Very High", diffScore:4, frequency:"Once a year", seats:"~150+", salary:"₹44,500-₹1.1 LPA", duration:"8-10 months prep", syllabus:["Preliminary: General Mental Ability, Reasoning, English, Quant, Economics, Agriculture","Main: Economic & Social Issues, Agriculture/Rural Development, English Writing"], topics:{"Agriculture":["Indian Agriculture","Crop Production","Irrigation","Agricultural Finance","Food Security"],"Rural Development":["NABARD Schemes","Rural Credit","SHGs","Microfinance","Priority Sector Lending"],"Economics":["Agricultural Economics","Indian Economy","Rural Economy","Development Economics"]}, pattern:{duration:"Prelims: 2hr | Mains: descriptive",questions:"Prelims: 120 MCQs | Mains: written",total:"Prelims: 120 | Mains: 150+interview",negative:"Prelims: -0.25"}, cutoff:[{year:2024,general:88,obc:82,sc:72,st:68},{year:2023,general:85,obc:79,sc:69,st:65}], books:["Economic Survey India","Agriculture in India books","NABARD Annual Report","NABARD Grade A previous papers"], eligibility:"Graduate with 60% marks OR Post Graduate. Age: 25-35 (Gen).", tips:["Agriculture and rural development knowledge is key","NABARD schemes must be thoroughly studied","Economics paper needs strong preparation","Current affairs related to agriculture important"] },
-  { id:"lic-aao", name:"LIC AAO", full:"Life Insurance Corporation Administrative Officer", category:"Insurance", color:"#b45309", icon:"☂️", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~600+", salary:"₹32,795-₹65,315", duration:"5-6 months prep", syllabus:["Reasoning Ability","Quantitative Aptitude","General Knowledge & Current Affairs","English Language & Comprehension"], topics:{"Reasoning":["Puzzles","Seating Arrangement","Syllogism","Blood Relations"],"Quantitative":["Data Interpretation","Number Series","Arithmetic","DI"],"GK":["Insurance Industry","Current Affairs","Banking GK","Static GK"],"English":["Reading Comprehension","Error Detection","Cloze Test"]}, pattern:{duration:"Prelims: 1hr | Mains: 2hr",questions:"Prelims: 100 | Mains: 120",total:"Prelims: 100 | Mains: 300",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:68,obc:63,sc:55,st:52},{year:2023,general:65,obc:60,sc:52,st:49}], books:["LIC AAO previous papers","Arihant Insurance guide","Kiran LIC AAO Papers"], eligibility:"Graduate with 60% marks. Age: 21-30.", tips:["Insurance industry knowledge is essential","GK about LIC schemes and products","English section is very scoring","Interview carries significant marks"] },
-
-  // ── RAILWAY ──
-  { id:"rrb-ntpc", name:"RRB NTPC", full:"Railway Recruitment Board NTPC", category:"Railway", color:"#7c3aed", icon:"🚂", difficulty:"Moderate", diffScore:2, frequency:"Every 2-3 years", seats:"~35,000+", salary:"₹19,900-₹35,400", duration:"4-5 months prep", syllabus:["Mathematics","General Intelligence & Reasoning","General Awareness"], topics:{"Mathematics":["Number System","Fractions","Algebra","Geometry","Trigonometry","Statistics"],"Reasoning":["Analogies","Completion of Number","Coding-Decoding","Mathematical Operations","Syllogism"],"GK":["Current Events","Indian Geography","Indian History","Indian Polity","Railways"]}, pattern:{duration:"90 minutes",questions:"100 MCQs",total:"100 marks",negative:"Yes (-1/3)"}, cutoff:[{year:2024,general:65,obc:61,sc:55,st:52},{year:2023,general:63,obc:59,sc:53,st:50}], books:["Arihant RRB NTPC","Lucent GK","RS Aggarwal Maths","RRB Previous Papers"], eligibility:"Class 12 or Graduate (varies by post). Age: 18-33.", tips:["GK is most important section","Railway-specific GK is frequently asked","Maths up to Class 10 level","Speed matters — practice timed tests"] },
-  { id:"rrb-group-d", name:"RRB Group D", full:"Railway Recruitment Board Group D", category:"Railway", color:"#5b21b6", icon:"🚆", difficulty:"Easy", diffScore:1, frequency:"Every 2-3 years", seats:"~1 lakh+", salary:"₹18,000-₹56,900", duration:"3-4 months prep", syllabus:["Mathematics","General Intelligence & Reasoning","General Science","General Awareness & Current Affairs"], topics:{"Mathematics":["Number System","Arithmetic","Algebra","Basic Geometry"],"Reasoning":["Analogies","Series","Coding-Decoding","Syllogism"],"Science":["Physics","Chemistry","Biology"],"GK":["Current Affairs","History","Geography","Polity"]}, pattern:{duration:"90 minutes",questions:"100 MCQs",total:"100 marks",negative:"Yes (-1/3)"}, cutoff:[{year:2024,general:52,obc:48,sc:42,st:39},{year:2023,general:49,obc:45,sc:39,st:36}], books:["Arihant RRB Group D","Lucent GK","Kiran Railway Group D"], eligibility:"Class 10 passed. Age: 18-33.", tips:["Largest recruitment in Railways","Class 10 level is sufficient","Physical test (PET) is elimination round","Science section needs good preparation"] },
-  { id:"rrb-alp", name:"RRB ALP", full:"Railway Recruitment Board Loco Pilot", category:"Railway", color:"#6d28d9", icon:"🚇", difficulty:"Moderate", diffScore:2, frequency:"Every 2-3 years", seats:"~10,000+", salary:"₹19,900-₹35,400", duration:"4-5 months prep", syllabus:["Mathematics","General Intelligence & Reasoning","Basic Science & Engineering","General Awareness on Current Affairs"], topics:{"Mathematics":["Number System","Algebra","Geometry","Trigonometry"],"Science & Engineering":["Physics","Chemistry","Electrical","Electronics","Mechanical","Automobile"],"Reasoning":["Analogies","Series","Coding-Decoding"],"GK":["Current Affairs","Railways","Science & Tech"]}, pattern:{duration:"60 minutes (CBT1) | 2.5hr (CBT2)",questions:"CBT1: 75 | CBT2: 100+75",total:"CBT1: 75 | CBT2: 175",negative:"Yes (-1/3)"}, cutoff:[{year:2024,general:55,obc:51,sc:45,st:42},{year:2023,general:53,obc:49,sc:43,st:40}], books:["Arihant RRB ALP guide","Technical trade books","RRB ALP previous papers"], eligibility:"Class 10 + ITI in relevant trade. Age: 18-28.", tips:["Technical section is most important","Trade certificate paper determines final merit","Physics and basic engineering are key","Previous papers are most useful"] },
-  { id:"rrb-je", name:"RRB JE", full:"Railway Recruitment Board Junior Engineer", category:"Railway", color:"#4c1d95", icon:"🛤️", difficulty:"Moderate", diffScore:2, frequency:"Every 2-3 years", seats:"~14,000+", salary:"₹35,400-₹1.12 LPA", duration:"5-6 months prep", syllabus:["Mathematics","General Intelligence","General Awareness","General Science","Technical Subjects (branch-specific)"], topics:{"Mathematics":["Number System","Algebra","Geometry","Trigonometry"],"General Science":["Physics","Chemistry","Life Sciences"],"Technical":["Core engineering subjects based on discipline"],"GK":["Current Affairs","Indian History","Geography"]}, pattern:{duration:"90 minutes",questions:"100 MCQs",total:"100 marks",negative:"Yes (-1/3)"}, cutoff:[{year:2024,general:55,obc:52,sc:46,st:43},{year:2023,general:53,obc:50,sc:44,st:41}], books:["Arihant RRB JE Technical","RRB previous year papers","Lucent GK"], eligibility:"Diploma/B.Tech in relevant engineering. Age: 18-33.", tips:["Technical section has highest weightage","General Science basics are important","Previous papers are most important resource","Practice online mock tests"] },
-  { id:"rrb-rpf", name:"RRB RPF SI", full:"Railway Protection Force Sub-Inspector", category:"Railway", color:"#3b0764", icon:"👮‍♂️", difficulty:"Moderate", diffScore:2, frequency:"Every 2-3 years", seats:"~2,000+", salary:"₹35,400-₹1.12 LPA", duration:"4-5 months prep", syllabus:["General Awareness","Arithmetic","General Intelligence & Reasoning"], topics:{"GK":["Current Affairs","History","Geography","Polity","Railway GK"],"Arithmetic":["Number System","Arithmetic","Basic Algebra","Statistics"],"Reasoning":["Analogies","Series","Coding-Decoding","Directions"]}, pattern:{duration:"90 minutes",questions:"120 MCQs",total:"120 marks",negative:"Yes (-1/3)"}, cutoff:[{year:2024,general:75,obc:70,sc:62,st:58},{year:2023,general:72,obc:67,sc:59,st:55}], books:["Arihant RPF guide","Lucent GK","Kiran RPF Papers"], eligibility:"Graduate. Age: 20-25.", tips:["Physical test is elimination round","GK and current affairs are deciding","Railway GK is very important","Consistent daily preparation needed"] },
-
-  // ── DEFENCE ──
-  { id:"afcat", name:"AFCAT", full:"Air Force Common Admission Test", category:"Defence", color:"#0c4a6e", icon:"✈️", difficulty:"High", diffScore:3, frequency:"Twice a year", seats:"~250+", salary:"₹56,100+ (Flying Officer)", duration:"6 months prep", syllabus:["General Awareness","Verbal Ability in English","Numerical Ability","Reasoning & Military Aptitude"], topics:{"General Awareness":["History","Geography","Polity","Economy","Science","Military Current Affairs"],"Verbal Ability":["Grammar","Vocabulary","Comprehension","Idioms & Phrases"],"Numerical Ability":["Arithmetic","Algebra","Geometry","Data Interpretation"],"Military Aptitude":["Spatial Reasoning","Rotational Figures","Hidden Figures"]}, pattern:{duration:"2 hours",questions:"100 MCQs",total:"300 marks",negative:"Yes (-1)"}, cutoff:[{year:2024,general:170,obc:155,sc:140,st:132},{year:2023,general:165,obc:150,sc:135,st:127}], books:["Arihant AFCAT guide","Previous year AFCAT papers","Lucent GK"], eligibility:"Graduate with 60% marks. Age: 20-24 (flying), 20-26 (ground duty).", tips:["Military aptitude section is unique","Current affairs about defence is important","AFSB interview after written exam","Physical fitness is essential"] },
-  { id:"ib-acio", name:"IB ACIO", full:"Intelligence Bureau Assistant Central Intelligence Officer", category:"Defence", color:"#1c1917", icon:"🔍", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~2,000+", salary:"₹27,900-₹81,100", duration:"5-6 months prep", syllabus:["General Awareness","Quantitative Aptitude","Logical/Analytical Ability","English Language","General Studies (Tier II)"], topics:{"GK":["Current Affairs","History","Geography","Science & Tech","Indian Polity"],"Quantitative":["Arithmetic","Algebra","Data Interpretation","Statistics"],"Reasoning":["Logical Reasoning","Analytical Reasoning","Verbal Reasoning"],"English":["Grammar","Vocabulary","Reading Comprehension"]}, pattern:{duration:"Tier I: 1hr | Tier II: 1hr (descriptive)",questions:"Tier I: 100 MCQs | Tier II: essays+translation",total:"Tier I: 100 | Tier II: 50",negative:"Tier I: -0.25"}, cutoff:[{year:2024,general:68,obc:62,sc:55,st:52},{year:2023,general:65,obc:59,sc:52,st:49}], books:["Arihant IB ACIO guide","IB ACIO previous papers","Lucent GK"], eligibility:"Graduate. Age: 18-27.", tips:["GK is the most scoring section","Tier II essay needs practice","Current affairs from last 12 months","Interview tests analytical thinking"] },
-  { id:"coast-guard-ac", name:"Coast Guard AC", full:"Indian Coast Guard Assistant Commandant", category:"Defence", color:"#0369a1", icon:"⚓", difficulty:"High", diffScore:3, frequency:"Twice a year", seats:"~50+", salary:"₹56,100+ (Assistant Commandant)", duration:"6 months prep", syllabus:["General Science & Mathematics","English","Reasoning & Aptitude","General Knowledge"], topics:{"Science & Maths":["Physics","Chemistry","Mathematics","Computer Science"],"English":["Grammar","Vocabulary","Comprehension"],"GK":["Current Affairs","Maritime GK","Defence Current Affairs","Geography"],"Reasoning":["Logical Reasoning","Spatial Ability","Numerical Ability"]}, pattern:{duration:"2 hours",questions:"100 MCQs",total:"100 marks",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:62,obc:57,sc:50,st:47},{year:2023,general:59,obc:54,sc:47,st:44}], books:["Arihant Coast Guard guide","Previous Coast Guard papers","Maritime GK books"], eligibility:"Graduate with 60% marks. Age: 21-25.", tips:["Maritime and defence GK is very important","Physical fitness standards are very high","CGAT (aptitude test) is first hurdle","Mental ability and spatial reasoning focus"] },
-  { id:"agniveer-army", name:"Army Agniveer", full:"Indian Army Agniveer Recruitment", category:"Defence", color:"#4d7c0f", icon:"🪖", difficulty:"Moderate", diffScore:2, frequency:"Twice a year", seats:"~25,000+", salary:"₹30,000-₹40,000/month", duration:"3-4 months prep", syllabus:["General Knowledge","Mathematics","General Science","Computer Science","English/Hindi"], topics:{"GK":["History","Geography","Polity","Current Affairs","Indian Army"],"Mathematics":["Arithmetic","Algebra","Geometry","Trigonometry"],"Science":["Physics","Chemistry","Biology"],"English":["Grammar","Vocabulary","Comprehension"]}, pattern:{duration:"60 minutes",questions:"50 MCQs",total:"100 marks",negative:"Yes (-0.5)"}, cutoff:[{year:2024,general:65,obc:60,sc:53,st:50},{year:2023,general:62,obc:57,sc:50,st:47}], books:["Arihant Agniveer guide","Kiran Agniveer Papers","Lucent GK"], eligibility:"Class 10/12 (varies by post). Age: 17.5-21.", tips:["Physical fitness is equally important","Ral Test (physical) is first stage","Common Entrance Exam is online","4-year short service commission"] },
-
-  // ── MANAGEMENT ──
-  { id:"cat", name:"CAT", full:"Common Admission Test", category:"Management", color:"#ec4899", icon:"📊", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~5,000 (IIMs)", salary:"₹15-50 LPA", duration:"2 years (MBA)", syllabus:["VARC: Reading Comprehension, Para Summary, Para Jumbles","DILR: Data Interpretation, Logical Reasoning","QA: Arithmetic, Algebra, Geometry, Number System"], topics:{"VARC":["Reading Comprehension","Para Summary","Para Jumbles","Odd Sentence Out","Critical Reasoning"],"DILR":["Data Interpretation","Logical Reasoning","Puzzles","Arrangements","Games & Tournaments"],"QA":["Arithmetic","Algebra","Geometry","Number System","Modern Maths"]}, pattern:{duration:"2 hours",questions:"66 questions",total:"198 marks",negative:"Yes (-1 per wrong MCQ)"}, cutoff:[{year:2024,general:99,obc:97,sc:90,st:85},{year:2023,general:99,obc:96,sc:88,st:83}], books:["Arun Sharma QA & DI","Verbal Ability by Arun Sharma","TIME/CL study material","Previous year CAT papers"], eligibility:"Graduate with min 50% marks (45% SC/ST).", tips:["Accuracy > Speed in this exam","VARC: Read editorials daily","DILR: Practice set-based questions","Attempt 3-4 mocks per week from August"] },
-  { id:"xat", name:"XAT", full:"Xavier Aptitude Test", category:"Management", color:"#db2777", icon:"📈", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~1,000 (XLRI)", salary:"₹20-50 LPA", duration:"2 years (MBA)", syllabus:["Verbal & Logical Ability","Decision Making","Quantitative Ability & Data Interpretation","General Knowledge"], topics:{"VARC":["Reading Comprehension","Vocabulary","Critical Reasoning","Logical Ability"],"Decision Making":["Business Decisions","Ethical Dilemmas","Analytical Reasoning","Situational Analysis"],"QA & DI":["Arithmetic","Algebra","Data Interpretation","Data Sufficiency"],"GK":["Current Affairs","Business GK","Economics"]}, pattern:{duration:"3.5 hours",questions:"75 + 25 GK",total:"75 marks + GK",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:95,obc:90,sc:80,st:75},{year:2023,general:93,obc:88,sc:78,st:73}], books:["XAT Decision Making by Arihant","CAT/XAT previous papers","TIME XAT material"], eligibility:"Graduate from recognised university.", tips:["Decision Making is unique to XAT","Essay writing is part of XLRI selection","GK section has no negative marking","XAT is harder than CAT in reasoning"] },
-  { id:"iift", name:"IIFT", full:"Indian Institute of Foreign Trade Entrance", category:"Management", color:"#9d174d", icon:"🌍", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~400 (IIFT Delhi & Kolkata)", salary:"₹15-40 LPA", duration:"2 years (MBA IB)", syllabus:["English Grammar & Comprehension","General Knowledge & Awareness","Logical Reasoning & Data Interpretation","Quantitative Analysis"], topics:{"English":["Reading Comprehension","Grammar","Vocabulary","Critical Reasoning"],"GK":["International Trade","Business GK","Current Affairs","Indian Economy"],"Reasoning & DI":["Data Interpretation","Logical Reasoning","Puzzles","Data Sufficiency"],"Quantitative":["Arithmetic","Algebra","Geometry","Probability"]}, pattern:{duration:"2 hours",questions:"~100 MCQs",total:"~100 marks",negative:"Yes (varies)"}, cutoff:[{year:2024,general:49,obc:44,sc:39,st:37},{year:2023,general:47,obc:42,sc:37,st:35}], books:["IIFT previous year papers","Current Affairs Monthly","Arihant IIFT guide"], eligibility:"Graduate with 50% marks. Age: No bar.", tips:["GK on international trade is very important","Sectional cutoffs are present","Reading business newspapers daily","Time management is critical"] },
-  { id:"snap", name:"SNAP", full:"Symbiosis National Aptitude Test", category:"Management", color:"#be185d", icon:"📉", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"~3,000 (Symbiosis)", salary:"₹8-25 LPA", duration:"2 years (MBA)", syllabus:["General English","Analytical & Logical Reasoning","Quantitative, Data Interpretation & Data Sufficiency"], topics:{"English":["Reading Comprehension","Grammar","Vocabulary","Para Jumbles"],"Reasoning":["Logical Reasoning","Analytical Ability","Data Sufficiency"],"QA & DI":["Arithmetic","Algebra","Data Interpretation","Number Series"]}, pattern:{duration:"60 minutes",questions:"60 MCQs",total:"60 marks",negative:"Yes (-25%)"}, cutoff:[{year:2024,general:98,obc:95,sc:85,st:80},{year:2023,general:96,obc:93,sc:83,st:78}], books:["Arihant SNAP guide","Previous year SNAP papers","TIME/CL material"], eligibility:"Graduate with 50% marks.", tips:["Shorter exam — speed is key","Can attempt up to 3 times in a year","Accuracy very important due to negative marking","Logical reasoning has high weightage"] },
-  { id:"nmat", name:"NMAT", full:"NMIMS Management Aptitude Test", category:"Management", color:"#831843", icon:"📐", difficulty:"Moderate", diffScore:2, frequency:"Once a year (3 attempts)", seats:"~600 (NMIMS)", salary:"₹12-30 LPA", duration:"2 years (MBA)", syllabus:["Language Skills","Quantitative Skills","Logical Reasoning"], topics:{"Language Skills":["Reading Comprehension","Grammar","Vocabulary","Para Completion"],"Quantitative":["Arithmetic","Algebra","Geometry","Data Interpretation"],"Logical Reasoning":["Deductive Reasoning","Critical Reasoning","Analytical Ability"]}, pattern:{duration:"2 hours",questions:"108 MCQs",total:"108 marks",negative:"No"}, cutoff:[{year:2024,general:218,obc:210,sc:195,st:190},{year:2023,general:215,obc:207,sc:192,st:187}], books:["Arihant NMAT guide","Official NMAT practice tests","Previous NMAT papers"], eligibility:"Graduate with 50% marks.", tips:["No negative marking — attempt all","Can retake up to 3 times","Best score considered for admission","Adaptive test — each question matters"] },
-  { id:"cmat", name:"CMAT", full:"Common Management Admission Test", category:"Management", color:"#7e22ce", icon:"📋", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"Varies (AICTE colleges)", salary:"₹6-18 LPA", duration:"2 years (MBA)", syllabus:["Quantitative Techniques & Data Interpretation","Logical Reasoning","Language Comprehension","General Awareness","Innovation & Entrepreneurship"], topics:{"Quantitative":["Arithmetic","Algebra","Data Interpretation","Statistics"],"Reasoning":["Logical Reasoning","Analytical Ability","Critical Thinking"],"Language":["Reading Comprehension","Grammar","Vocabulary"],"GK & Innovation":["Current Affairs","Business GK","Entrepreneurship"]}, pattern:{duration:"3 hours",questions:"100 MCQs",total:"400 marks",negative:"Yes (-1)"}, cutoff:[{year:2024,general:280,obc:260,sc:230,st:220},{year:2023,general:270,obc:250,sc:220,st:210}], books:["Arihant CMAT guide","Previous CMAT papers","Pearson CMAT"], eligibility:"Graduate with 50% marks.", tips:["NTA conducts this exam","Innovation section is unique","GK from last 12 months","Good for AICTE-approved colleges"] },
-  { id:"mat", name:"MAT", full:"Management Aptitude Test", category:"Management", color:"#6b21a8", icon:"💹", difficulty:"Moderate", diffScore:2, frequency:"4 times a year", seats:"Varies by college", salary:"₹6-20 LPA", duration:"2 years (MBA)", syllabus:["Language Comprehension","Mathematical Skills","Data Analysis & Sufficiency","Intelligence & Critical Reasoning","Indian & Global Environment"], topics:{"Language Comprehension":["Reading Comprehension","Grammar","Vocabulary","Verbal Ability"],"Mathematical Skills":["Arithmetic","Algebra","Geometry","Data Interpretation"],"Reasoning":["Critical Reasoning","Logical Deduction","Visual Reasoning"],"GK":["Indian Economy","Business GK","Current Affairs"]}, pattern:{duration:"2.5 hours",questions:"200 MCQs",total:"200 marks",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:80,obc:75,sc:65,st:60},{year:2023,general:78,obc:73,sc:63,st:58}], books:["Arihant MAT guide","RS Aggarwal Maths","Previous MAT papers"], eligibility:"Graduate from any discipline.", tips:["Easier than CAT/XAT","Can take multiple times in a year","Good option for Tier-2 MBA colleges","Indian & Global Environment needs GK"] },
-  { id:"ipmat", name:"IPMAT", full:"Integrated Programme in Management Aptitude Test", category:"Management", color:"#a21caf", icon:"🎓", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~150 (IIM Indore/Rohtak)", salary:"₹15-40 LPA", duration:"5 years (Integrated MBA)", syllabus:["Quantitative Ability (MCQ + Short Answer)","Verbal Ability (MCQ)","Logical Reasoning (IIM Rohtak)"], topics:{"Quantitative Ability":["Arithmetic","Algebra","Geometry","Number Theory","Data Interpretation"],"Verbal Ability":["Reading Comprehension","Grammar","Vocabulary","Para Completion"],"Logical Reasoning":["Puzzles","Coding-Decoding","Series","Syllogism"]}, pattern:{duration:"2 hours",questions:"100 MCQs + Short Answer",total:"400 marks",negative:"Yes for MCQ"}, cutoff:[{year:2024,general:260,obc:240,sc:210,st:200},{year:2023,general:250,obc:230,sc:200,st:190}], books:["IPMAT previous year papers","Arihant IPMAT guide","RS Aggarwal Maths"], eligibility:"Class 12 with 60% marks. Age: Up to 20 years.", tips:["Class 12 level maths is tested deeply","Verbal ability needs wide reading","Short answer section needs speed","No negative marking for short answers"] },
-
-  // ── LAW ──
-  { id:"clat-ug", name:"CLAT UG", full:"Common Law Admission Test Undergraduate", category:"Law", color:"#b45309", icon:"⚖️", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~2,500 (NLUs)", salary:"₹6-25 LPA", duration:"5 years (LLB)", syllabus:["English Language","Current Affairs & GK","Legal Reasoning","Logical Reasoning","Quantitative Techniques"], topics:{"English":["Reading Comprehension","Vocabulary","Grammar","Critical Reasoning"],"Legal Reasoning":["Legal Principles","Legal Maxims","Constitutional Law","Torts","Contracts"],"Current Affairs":["National","International","Legal Affairs","Important Judgements"],"Logical Reasoning":["Analogy","Syllogism","Assumptions","Conclusions"]}, pattern:{duration:"2 hours",questions:"120 MCQs",total:"120 marks",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:95,obc:82,sc:65,st:57},{year:2023,general:93,obc:80,sc:63,st:55}], books:["Arihant CLAT guide","AP Bhardwaj Legal Aptitude","Previous year CLAT papers","The Hindu for Current Affairs"], eligibility:"Class 12 with min 45% marks (40% SC/ST).", tips:["Legal reasoning needs regular practice","Current affairs from last 12 months","Reading comprehension is key","No maths beyond Class 10 level"] },
-  { id:"clat-pg", name:"CLAT PG", full:"Common Law Admission Test Postgraduate", category:"Law", color:"#92400e", icon:"📜", difficulty:"Very High", diffScore:4, frequency:"Once a year", seats:"~500 (NLU LLM seats)", salary:"₹10-30 LPA", duration:"1 year (LLM)", syllabus:["Constitutional Law","Jurisprudence","Contract Law","Torts","Criminal Law","International Law","Legal Theory"], topics:{"Constitutional Law":["Fundamental Rights","DPSP","Constitutional Amendments","Judicial Review"],"Jurisprudence":["Natural Law","Positivism","Realism","Critical Legal Theory"],"Contract Law":["Formation","Performance","Remedies","Quasi-Contracts"],"Criminal Law":["IPC","CrPC","Evidence Act","Criminal Justice"]}, pattern:{duration:"2 hours",questions:"120 MCQs",total:"120 marks",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:78,obc:70,sc:60,st:56},{year:2023,general:75,obc:67,sc:57,st:53}], books:["Bare Acts","Previous CLAT PG papers","Dr. JN Pandey Constitutional Law","Ratanlal & Dhirajlal Criminal Law"], eligibility:"LLB with 55% marks (50% SC/ST).", tips:["Must read bare acts thoroughly","Constitutional law carries most marks","Jurisprudence needs conceptual clarity","Practice MCQs from previous papers"] },
-  { id:"ailet", name:"AILET", full:"All India Law Entrance Test", category:"Law", color:"#78350f", icon:"🔨", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~100 (NLU Delhi)", salary:"₹8-25 LPA", duration:"5 years (LLB)", syllabus:["English","General Knowledge & Current Affairs","Legal Aptitude","Reasoning","Elementary Mathematics"], topics:{"English":["Reading Comprehension","Grammar","Vocabulary","Para Jumbles"],"Legal Aptitude":["Legal Principles","Legal GK","Constitutional Law","Legal Reasoning"],"GK":["Current Affairs","Static GK","Science & Tech"],"Reasoning":["Logical Reasoning","Analytical Reasoning"]}, pattern:{duration:"1.5 hours",questions:"150 MCQs",total:"150 marks",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:105,obc:95,sc:80,st:72},{year:2023,general:102,obc:92,sc:77,st:69}], books:["Arihant AILET guide","Legal GK book","Previous AILET papers"], eligibility:"Class 12 with 50% marks. Age: Max 20 years.", tips:["Only for NLU Delhi admission","Tougher than CLAT generally","Legal GK needs dedicated study","Reading speed is very important"] },
-  { id:"aibe", name:"AIBE", full:"All India Bar Examination", category:"Law", color:"#7c2d12", icon:"⚖️", difficulty:"Moderate", diffScore:2, frequency:"Twice a year", seats:"All LLB graduates", salary:"Varies (Legal Practice)", duration:"1-2 months prep", syllabus:["Constitutional Law","IPC","CrPC","CPC","Evidence Act","Contract Act","Family Law","Company Law","Administrative Law","Professional Ethics"], topics:{"Core Laws":["IPC (Criminal Law)","CrPC (Criminal Procedure)","CPC (Civil Procedure)","Evidence Act","Contract Act"],"Constitutional":["Constitutional Law","Administrative Law","Human Rights"],"Specialized":["Family Law","Company Law","Labour Law","Taxation"],"Ethics":["Bar Council Rules","Professional Ethics","Legal Aid"]}, pattern:{duration:"3.5 hours",questions:"100 MCQs",total:"100 marks (45% to pass)",negative:"No"}, cutoff:[{year:2024,general:45,obc:40,sc:40,st:40},{year:2023,general:45,obc:40,sc:40,st:40}], books:["Bare Acts of all subjects","AIBE previous year papers","Law guides by leading publishers"], eligibility:"LLB degree. Must pass to practice law in India.", tips:["No negative marking — attempt all","Open book exam — practice with bare acts","45% passing marks required","Must complete within 2 years of enrollment"] },
-  { id:"pcs-j", name:"PCS-J / Judicial Services", full:"Provincial Civil Services (Judicial) Examination", category:"Law", color:"#1c1917", icon:"🏛️", difficulty:"Very High", diffScore:4, frequency:"Once a year (by state)", seats:"Varies by state", salary:"₹53,100-₹1.42 LPA", duration:"1-2 years prep", syllabus:["Substantive Law: Constitutional, Civil, Criminal, Family","Procedural Law: CPC, CrPC, Evidence Act","Essay and Language paper (Hindi/English)"], topics:{"Substantive Law":["Constitutional Law","Contract Law","Criminal Law (IPC)","Family Law","Transfer of Property"],"Procedural Law":["CPC (Civil Procedure)","CrPC (Criminal Procedure)","Evidence Act","Limitation Act"],"Language":["Hindi Essay","English Essay","Language Proficiency"]}, pattern:{duration:"Prelims: 2hr | Mains: multiple papers",questions:"Prelims: MCQs | Mains: descriptive",total:"Prelims: 200 | Mains: 1000+",negative:"Varies by state"}, cutoff:[{year:2024,general:85,obc:78,sc:68,st:64},{year:2023,general:82,obc:75,sc:65,st:61}], books:["Bare Acts of all subjects","Universal's Judicial Services Guide","PCS-J previous papers by state"], eligibility:"LLB with 55% marks. Age: 21-35 (varies by state).", tips:["Read bare acts thoroughly every day","Procedural law is very important","Write answers in exam format daily","Language paper needs special attention"] },
-
-  // ── ENGINEERING ──
-  { id:"jee-main", name:"JEE Main", full:"Joint Entrance Examination Main", category:"Engineering", color:"#f97316", icon:"⚙️", difficulty:"High", diffScore:3, frequency:"Twice a year", seats:"~11 lakh", salary:"₹8-25 LPA", duration:"4 years", syllabus:["Physics: Mechanics, Thermodynamics, Electrostatics, Optics, Modern Physics","Chemistry: Physical, Organic & Inorganic Chemistry","Mathematics: Algebra, Calculus, Coordinate Geometry, Trigonometry"], topics:{"Physics":["Mechanics","Thermodynamics","Electrostatics","Optics","Modern Physics","Waves","Current Electricity"],"Chemistry":["Physical Chemistry","Organic Chemistry","Inorganic Chemistry","Chemical Bonding","Equilibrium"],"Mathematics":["Algebra","Calculus","Coordinate Geometry","Trigonometry","Statistics","Vectors"]}, pattern:{duration:"3 hours",questions:"90 MCQs",total:"300 marks",negative:"Yes (-1 per wrong)"}, cutoff:[{year:2024,general:90.7,obc:75.3,sc:54.0,st:44.1},{year:2023,general:88.4,obc:72.1,sc:51.9,st:42.0}], books:["HC Verma Concepts of Physics","NCERT Chemistry XI & XII","RD Sharma / Arihant Maths","DC Pandey Electricity & Magnetism"], eligibility:"Class 12 with PCM. Min 75% marks (65% SC/ST).", tips:["Master NCERT before advanced books","Solve 10+ years previous papers","Focus on weak chapters","Attempt mocks under exam conditions"] },
-  { id:"jee-adv", name:"JEE Advanced", full:"Joint Entrance Examination Advanced", category:"Engineering", color:"#ea580c", icon:"🏆", difficulty:"Extremely High", diffScore:5, frequency:"Once a year", seats:"~17,000", salary:"₹15-50 LPA", duration:"4 years", syllabus:["Physics: Full JEE syllabus at deeper level","Chemistry: Full JEE syllabus at deeper level","Mathematics: Full JEE syllabus at deeper level"], topics:{"Physics":["Mechanics (Advanced)","Thermodynamics (Advanced)","Electrostatics (Advanced)","Optics (Advanced)","Modern Physics"],"Chemistry":["Physical Chemistry (Advanced)","Organic Chemistry (Advanced)","Inorganic Chemistry (Advanced)"],"Mathematics":["Algebra (Advanced)","Calculus (Advanced)","Coordinate Geometry (Advanced)","Complex Numbers"]}, pattern:{duration:"6 hours (2 papers)",questions:"54 per paper",total:"360 marks",negative:"Yes (varies)"}, cutoff:[{year:2024,general:109,obc:98,sc:54,st:54},{year:2023,general:91,obc:82,sc:45,st:45}], books:["IIT JEE previous year papers","Irodov Problems in Physics","Morrison Boyd Organic Chemistry","Hall & Knight Higher Algebra"], eligibility:"Top 2.5 lakh JEE Main qualifiers. Max 2 attempts.", tips:["Concept clarity over quantity","Practice IIT previous papers extensively","Time management is critical","Don't ignore any topic"] },
-  { id:"bitsat", name:"BITSAT", full:"Birla Institute of Technology & Science Admission Test", category:"Engineering", color:"#fb923c", icon:"🔭", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~2,000", salary:"₹8-20 LPA", duration:"4 years", syllabus:["Physics: Class 11 & 12","Chemistry: Class 11 & 12","Mathematics: Class 11 & 12","English Proficiency & Logical Reasoning"], topics:{"Physics":["Mechanics","Electrostatics","Optics","Modern Physics"],"Chemistry":["Physical Chemistry","Organic Chemistry","Inorganic Chemistry"],"Mathematics":["Algebra","Calculus","Trigonometry","Probability"],"English & LR":["Grammar","Vocabulary","Logical Reasoning"]}, pattern:{duration:"3 hours",questions:"130 MCQs",total:"390 marks",negative:"Yes (-1 per wrong)"}, cutoff:[{year:2024,general:310,obc:290,sc:270,st:260},{year:2023,general:300,obc:280,sc:260,st:250}], books:["NCERT XI & XII all subjects","Arihant BITSAT guide","Previous year BITSAT papers"], eligibility:"Class 12 with PCM. Min 75% aggregate.", tips:["Speed is key — 130 questions in 180 min","English & LR are easy scoring","Practice online mock tests","No sectional time limit"] },
+  { id:"jee-main", name:"JEE Main", full:"Joint Entrance Examination Main", category:"Engineering", color:"#f97316", icon:"⚙️", difficulty:"High", diffScore:3, frequency:"Twice a year", seats:"~11 lakh", salary:"₹8-25 LPA", duration:"4 years", syllabus:["Physics: Mechanics, Thermodynamics, Electrostatics, Optics, Modern Physics","Chemistry: Physical, Organic & Inorganic Chemistry","Mathematics: Algebra, Calculus, Coordinate Geometry, Trigonometry"], topics:{"Physics":["Mechanics","Thermodynamics","Electrostatics","Optics","Modern Physics","Waves","Current Electricity"],"Chemistry":["Physical Chemistry","Organic Chemistry","Inorganic Chemistry","Chemical Bonding","Equilibrium"],"Mathematics":["Algebra","Calculus","Coordinate Geometry","Trigonometry","Statistics","Vectors"]}, pattern:{duration:"3 hours",questions:"90 MCQs",total:"300 marks",negative:"Yes (-1)"}, cutoff:[{year:2024,general:90.7,obc:75.3,sc:54.0,st:44.1},{year:2023,general:88.4,obc:72.1,sc:51.9,st:42.0}], books:["HC Verma – Concepts of Physics","NCERT Chemistry XI & XII","RD Sharma / Arihant Maths","DC Pandey – Electricity & Magnetism"], eligibility:"Class 12 with PCM. Min 75% marks.", tips:["Master NCERT before advanced books","Solve 10+ years previous papers","Focus on weak chapters","Attempt mocks under exam conditions"] },
+  { id:"jee-adv", name:"JEE Advanced", full:"Joint Entrance Examination Advanced", category:"Engineering", color:"#ea580c", icon:"🏆", difficulty:"Extremely High", diffScore:5, frequency:"Once a year", seats:"~17,000", salary:"₹15-50 LPA", duration:"4 years", syllabus:["Physics: Full JEE syllabus at deeper level","Chemistry: Full JEE syllabus at deeper level","Mathematics: Full JEE syllabus at deeper level"], topics:{"Physics":["Mechanics (Advanced)","Thermodynamics (Advanced)","Electrostatics (Advanced)","Optics (Advanced)","Modern Physics"],"Chemistry":["Physical Chemistry (Advanced)","Organic Chemistry (Advanced)","Inorganic Chemistry (Advanced)"],"Mathematics":["Algebra (Advanced)","Calculus (Advanced)","Coordinate Geometry (Advanced)","Complex Numbers"]}, pattern:{duration:"6 hours (2 papers)",questions:"54 per paper",total:"360 marks",negative:"Yes (varies)"}, cutoff:[{year:2024,general:109,obc:98,sc:54,st:54},{year:2023,general:91,obc:82,sc:45,st:45}], books:["IIT JEE previous year papers","Irodov – Problems in Physics","Morrison Boyd – Organic Chemistry","Hall & Knight – Higher Algebra"], eligibility:"Top 2.5 lakh JEE Main qualifiers. Max 2 attempts.", tips:["Concept clarity over quantity","Practice IIT previous papers extensively","Time management is critical","Don't ignore any topic"] },
+  { id:"neet-ug", name:"NEET UG", full:"National Eligibility cum Entrance Test UG", category:"Medical", color:"#10b981", icon:"🩺", difficulty:"Very High", diffScore:4, frequency:"Once a year", seats:"~1.08 lakh", salary:"₹6-20 LPA", duration:"5.5 years", syllabus:["Physics: Class 11 & 12 NCERT","Chemistry: Physical, Organic, Inorganic (NCERT)","Biology: Botany & Zoology (NCERT XI & XII)"], topics:{"Biology":["Cell Biology","Genetics","Ecology","Human Physiology","Plant Physiology","Reproduction","Evolution","Biotechnology"],"Chemistry":["Physical Chemistry","Organic Chemistry","Inorganic Chemistry","Biomolecules"],"Physics":["Mechanics","Thermodynamics","Optics","Modern Physics","Electrostatics"]}, pattern:{duration:"3 hours 20 min",questions:"200 (attempt 180)",total:"720 marks",negative:"Yes (-1)"}, cutoff:[{year:2024,general:720,obc:137,sc:107,st:107},{year:2023,general:720,obc:129,sc:100,st:100}], books:["NCERT Biology XI & XII","DC Pandey – Physics for NEET","OP Tandon – Physical Chemistry","MTG Objective NCERT at Your Fingertips"], eligibility:"Class 12 with PCB. Min age 17.", tips:["NCERT is the bible — every line matters","Biology carries 360/720 marks","Revise with spaced repetition","Attempt full mocks weekly"] },
+  { id:"upsc-cse", name:"UPSC CSE", full:"Civil Services Examination", category:"UPSC", color:"#6366f1", icon:"🏛️", difficulty:"Extremely High", diffScore:5, frequency:"Once a year", seats:"~1,000", salary:"₹56,100+ (IAS)", duration:"1-2 years prep", syllabus:["Prelims: GS Paper I, CSAT Paper II","Mains: Essay, GS I-IV, Optional (2 papers)","Interview: Personality Test (275 marks)"], topics:{"History":["Ancient India","Medieval India","Modern India","World History","Art & Culture"],"Geography":["Physical Geography","Indian Geography","World Geography","Environment"],"Polity":["Constitution","Parliament","Judiciary","Federalism","Governance"],"Economy":["Indian Economy","Budget","Planning","Agriculture","Industry"],"Current Affairs":["National","International","Science & Tech","Environment"]}, pattern:{duration:"Prelims: 4hr | Mains: 9 papers",questions:"Prelims 200 MCQs | Mains descriptive",total:"2025 marks (Mains+Interview)",negative:"Prelims: -0.33"}, cutoff:[{year:2024,general:104,obc:98,sc:88,st:84},{year:2023,general:101,obc:95,sc:85,st:81}], books:["NCERT VI-XII Foundation","Laxmikanth – Indian Polity","Spectrum – Modern Indian History","Economic Survey + India Yearbook"], eligibility:"Graduate. Age: 21-32 (Gen).", tips:["Start with NCERTs before standard books","Make concise notes from Day 1","Read The Hindu daily","Choose optional wisely"] },
+  { id:"ssc-cgl", name:"SSC CGL", full:"SSC Combined Graduate Level", category:"SSC", color:"#14b8a6", icon:"📋", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"~10,000+", salary:"₹25,000-₹1.5 LPA", duration:"6 months prep", syllabus:["General Intelligence & Reasoning","General Awareness","Quantitative Aptitude","English Comprehension"], topics:{"Reasoning":["Analogy","Series","Coding-Decoding","Puzzles","Blood Relations","Direction","Syllogism"],"Quantitative Aptitude":["Number System","Percentage","Profit & Loss","Ratio","Time & Work","Geometry","Trigonometry"],"General Awareness":["Current Affairs","History","Geography","Polity","Economy","Science"],"English":["Grammar","Vocabulary","Comprehension","Error Detection"]}, pattern:{duration:"Tier I: 60 min | Tier II: 2.5 hr",questions:"Tier I: 100 | Tier II: varies",total:"Tier I: 200 | Tier II: 800",negative:"Yes"}, cutoff:[{year:2024,general:145,obc:138,sc:128,st:120},{year:2023,general:142,obc:135,sc:125,st:117}], books:["Lucent GK","RS Aggarwal – Maths & Reasoning","SP Bakshi – English","Kiran SSC CGL Papers"], eligibility:"Graduate. Age: 18-32.", tips:["Current affairs from last 6 months","Speed & accuracy in Quant","English grammar rules are key","Daily 2 hours practice tests"] },
+  { id:"cat", name:"CAT", full:"Common Admission Test", category:"Management", color:"#ec4899", icon:"📊", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~5,000 (IIMs)", salary:"₹15-50 LPA", duration:"2 years (MBA)", syllabus:["VARC: Reading Comprehension, Para Summary, Para Jumbles","DILR: Data Interpretation, Logical Reasoning","QA: Arithmetic, Algebra, Geometry, Number System"], topics:{"VARC":["Reading Comprehension","Para Summary","Para Jumbles","Odd Sentence Out","Critical Reasoning"],"DILR":["Data Interpretation","Logical Reasoning","Puzzles","Arrangements","Games & Tournaments"],"QA":["Arithmetic","Algebra","Geometry","Number System","Modern Maths"]}, pattern:{duration:"2 hours",questions:"66 questions",total:"198 marks",negative:"Yes (-1 per wrong MCQ)"}, cutoff:[{year:2024,general:99,obc:97,sc:90,st:85},{year:2023,general:99,obc:96,sc:88,st:83}], books:["Arun Sharma – QA & DI","Verbal Ability by Arun Sharma","TIME/CL study material","Previous year CAT papers"], eligibility:"Graduate with min 50% marks (45% SC/ST).", tips:["Accuracy > Speed in this exam","VARC: Read editorials daily","DILR: Practice set-based questions","Attempt 3-4 mocks per week from August"] },
   { id:"gate", name:"GATE", full:"Graduate Aptitude Test in Engineering", category:"Engineering", color:"#f59e0b", icon:"🔬", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"Varies by PSU", salary:"₹6-12 LPA", duration:"2 years (M.Tech)", syllabus:["Core Engineering Subject (branch-specific)","Engineering Mathematics","General Aptitude (Verbal + Numerical)"], topics:{"Engineering Mathematics":["Linear Algebra","Calculus","Differential Equations","Probability","Numerical Methods"],"General Aptitude":["Verbal Ability","Numerical Ability","Reasoning"],"Core Subject":["Data Structures","Algorithms","Operating Systems","Computer Networks","Database"]}, pattern:{duration:"3 hours",questions:"65 questions",total:"100 marks",negative:"Yes (MCQs only)"}, cutoff:[{year:2024,general:31.7,obc:28.5,sc:21.1,st:21.1},{year:2023,general:30.0,obc:27.0,sc:20.0,st:20.0}], books:["Made Easy / ACE Academy notes","Standard textbooks by subject","Previous 15 years GATE papers"], eligibility:"B.E/B.Tech/B.Sc(Research) 3rd year or passed.", tips:["Analyze syllabus weightage first","Engineering Maths is high scoring","Practice numerical answer type questions","Solve subject-wise previous year questions"] },
-  { id:"viteee", name:"VITEEE", full:"VIT Engineering Entrance Examination", category:"Engineering", color:"#fbbf24", icon:"🏫", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"~15,000", salary:"₹5-15 LPA", duration:"4 years", syllabus:["Physics: Class 11 & 12","Chemistry: Class 11 & 12","Mathematics/Biology","English & Aptitude"], topics:{"Physics":["Mechanics","Electrostatics","Optics","Modern Physics"],"Chemistry":["Physical Chemistry","Organic Chemistry","Inorganic Chemistry"],"Mathematics":["Algebra","Calculus","Geometry"]}, pattern:{duration:"2.5 hours",questions:"125 MCQs",total:"125 marks",negative:"No"}, cutoff:[{year:2024,general:80,obc:70,sc:60,st:55},{year:2023,general:75,obc:65,sc:55,st:50}], books:["NCERT XI & XII","VIT previous year papers","Arihant VITEEE guide"], eligibility:"Class 12 with PCM/PCB. Min 60% marks.", tips:["No negative marking — attempt all","NCERT sufficient for most topics","Speed matters in this exam","English section is easy — don't skip"] },
-  { id:"wbjee", name:"WBJEE", full:"West Bengal Joint Entrance Examination", category:"Engineering", color:"#0ea5e9", icon:"🐯", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"~40,000+", salary:"₹4-10 LPA", duration:"4 years", syllabus:["Physics: West Bengal HS Syllabus","Chemistry: West Bengal HS Syllabus","Mathematics: West Bengal HS Syllabus"], topics:{"Physics":["Mechanics","Electrostatics","Optics","Modern Physics"],"Chemistry":["Physical Chemistry","Organic Chemistry","Inorganic Chemistry"],"Mathematics":["Algebra","Calculus","Coordinate Geometry","Trigonometry"]}, pattern:{duration:"4 hours (2 papers)",questions:"155 MCQs",total:"200 marks",negative:"Yes (-0.25 for Category 1)"}, cutoff:[{year:2024,general:155,obc:140,sc:120,st:112},{year:2023,general:150,obc:135,sc:115,st:107}], books:["WB HS Board Books","WBJEE previous papers","Arihant WBJEE guide"], eligibility:"Class 12 with PCM from WB board. Min 45% marks.", tips:["WB board books are most important","Has negative marking — be careful","Maths paper is the differentiator","Practice previous 10 years papers"] },
-  { id:"mhtcet", name:"MHT CET", full:"Maharashtra Common Entrance Test", category:"Engineering", color:"#dc2626", icon:"🦁", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"~1 lakh+", salary:"₹4-10 LPA", duration:"4 years", syllabus:["Physics: Maharashtra State Board Syllabus","Chemistry: Maharashtra State Board Syllabus","Mathematics: Maharashtra State Board Syllabus"], topics:{"Physics":["Mechanics","Thermodynamics","Optics","Electrostatics","Modern Physics"],"Chemistry":["Physical Chemistry","Organic Chemistry","Inorganic Chemistry"],"Mathematics":["Algebra","Calculus","Coordinate Geometry","Trigonometry"]}, pattern:{duration:"3 hours",questions:"150 MCQs",total:"200 marks",negative:"No"}, cutoff:[{year:2024,general:93,obc:88,sc:76,st:71},{year:2023,general:91,obc:86,sc:74,st:69}], books:["Maharashtra State Board Books XI & XII","MHT CET previous papers","Target MHT CET guide"], eligibility:"Class 12 with PCM/PCB. Min 50% marks.", tips:["Maharashtra board syllabus is key","No negative marking","State board books are most important","Solve last 5 years papers"] },
-  { id:"comedk", name:"COMEDK UGET", full:"Consortium of Medical Engineering & Dental Colleges Karnataka", category:"Engineering", color:"#7c3aed", icon:"🏗️", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"~20,000", salary:"₹4-10 LPA", duration:"4 years", syllabus:["Physics: Class 11 & 12","Chemistry: Class 11 & 12","Mathematics: Class 11 & 12"], topics:{"Physics":["Mechanics","Thermodynamics","Optics","Electrostatics"],"Chemistry":["Physical Chemistry","Organic Chemistry","Inorganic Chemistry"],"Mathematics":["Algebra","Calculus","Coordinate Geometry"]}, pattern:{duration:"3 hours",questions:"180 MCQs",total:"180 marks",negative:"No"}, cutoff:[{year:2024,general:120,obc:105,sc:90,st:85},{year:2023,general:115,obc:100,sc:85,st:80}], books:["NCERT XI & XII","Previous COMEDK papers","Arihant guide"], eligibility:"Class 12 with PCM. Min 45% marks.", tips:["No negative marking — attempt all","For Karnataka engineering colleges","NCERT is sufficient","Practice timed mocks"] },
-
-  // ── MEDICAL ──
-  { id:"neet-ug", name:"NEET UG", full:"National Eligibility cum Entrance Test UG", category:"Medical", color:"#10b981", icon:"🩺", difficulty:"Very High", diffScore:4, frequency:"Once a year", seats:"~1.08 lakh", salary:"₹6-20 LPA", duration:"5.5 years", syllabus:["Physics: Class 11 & 12 NCERT","Chemistry: Physical, Organic, Inorganic (NCERT)","Biology: Botany & Zoology (NCERT XI & XII)"], topics:{"Biology":["Cell Biology","Genetics","Ecology","Human Physiology","Plant Physiology","Reproduction","Evolution","Biotechnology"],"Chemistry":["Physical Chemistry","Organic Chemistry","Inorganic Chemistry","Biomolecules"],"Physics":["Mechanics","Thermodynamics","Optics","Modern Physics","Electrostatics"]}, pattern:{duration:"3 hours 20 min",questions:"200 (attempt 180)",total:"720 marks",negative:"Yes (-1 per wrong)"}, cutoff:[{year:2024,general:720,obc:137,sc:107,st:107},{year:2023,general:720,obc:129,sc:100,st:100}], books:["NCERT Biology XI & XII","DC Pandey Physics for NEET","OP Tandon Physical Chemistry","MTG Objective NCERT at Your Fingertips"], eligibility:"Class 12 with PCB. Min age 17.", tips:["NCERT is the bible — every line matters","Biology carries 360/720 marks","Revise with spaced repetition","Attempt full mocks weekly"] },
-  { id:"neet-pg", name:"NEET PG", full:"National Eligibility cum Entrance Test Postgraduate", category:"Medical", color:"#059669", icon:"👨‍⚕️", difficulty:"Very High", diffScore:4, frequency:"Once a year", seats:"~50,000", salary:"₹12-40 LPA", duration:"3 years (MD/MS)", syllabus:["All 19 MBBS subjects","Pre-clinical, Para-clinical & Clinical subjects"], topics:{"Medicine":["Cardiology","Gastroenterology","Neurology","Nephrology","Endocrinology"],"Surgery":["General Surgery","Orthopedics","ENT","Ophthalmology"],"OBG":["Obstetrics","Gynecology","Family Planning"],"Pathology":["General Pathology","Systemic Pathology","Hematology"]}, pattern:{duration:"3.5 hours",questions:"200 MCQs",total:"800 marks",negative:"Yes (-25% per wrong)"}, cutoff:[{year:2024,general:376,obc:338,sc:319,st:319},{year:2023,general:360,obc:324,sc:306,st:306}], books:["Robbins Pathology","Harrison Medicine","Dams/PrepLadder notes","Previous year NEET PG papers"], eligibility:"MBBS degree with 1 year internship completed.", tips:["Subject-wise revision is key","High-yield: Medicine, Surgery, OBG","Use question banks daily","Revise 3-4 times before exam"] },
-  { id:"ini-cet", name:"INI-CET", full:"AIIMS/JIPMER PG Entrance (Institute of National Importance CET)", category:"Medical", color:"#34d399", icon:"🏥", difficulty:"Extremely High", diffScore:5, frequency:"Twice a year", seats:"~700", salary:"₹15-50 LPA", duration:"3 years", syllabus:["All MBBS subjects at advanced level","Research methodology","Biostatistics","Recent advances in medicine"], topics:{"Clinical":["Medicine","Surgery","OBG","Pediatrics","Psychiatry"],"Basic Sciences":["Anatomy","Physiology","Biochemistry","Pathology","Pharmacology"],"Research":["Biostatistics","Research Methodology","Recent Advances"]}, pattern:{duration:"1.5 hours",questions:"100 MCQs",total:"100 marks",negative:"Yes (-1/3)"}, cutoff:[{year:2024,general:75,obc:67,sc:60,st:60},{year:2023,general:72,obc:65,sc:58,st:58}], books:["AIIMS/INI-CET previous year papers","Dams study material","Across AIIMS specific MCQs"], eligibility:"MBBS from recognised institution.", tips:["Image-based questions are very common","Focus on recent advances","AIIMS has unique question style","Practice previous 10 years papers"] },
-  { id:"fmge", name:"FMGE", full:"Foreign Medical Graduate Examination", category:"Medical", color:"#6ee7b7", icon:"🌍", difficulty:"High", diffScore:3, frequency:"Twice a year", seats:"All eligible FMGs", salary:"₹6-20 LPA", duration:"N/A", syllabus:["All 19 MBBS subjects","Same as NEET PG syllabus broadly"], topics:{"Clinical":["Medicine","Surgery","OBG","Pediatrics","Psychiatry","Dermatology"],"Basic Sciences":["Anatomy","Physiology","Biochemistry","Pathology","Pharmacology","Microbiology"]}, pattern:{duration:"3.5 hours",questions:"300 MCQs",total:"300 marks",negative:"No"}, cutoff:[{year:2024,general:150,obc:150,sc:150,st:150},{year:2023,general:150,obc:150,sc:150,st:150}], books:["FMGE previous year papers","Across FMGE book","Dams FMGE material"], eligibility:"MBBS from foreign medical college. Must pass to practice in India.", tips:["No negative marking — attempt all","Minimum 50% required to pass","Basic sciences are most important","Practice question banks daily"] },
-  { id:"gpat", name:"GPAT", full:"Graduate Pharmacy Aptitude Test", category:"Medical", color:"#0f766e", icon:"💊", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~5,000+", salary:"₹5-15 LPA", duration:"6 months prep", syllabus:["Pharmaceutics","Pharmaceutical Chemistry","Pharmacology","Pharmacognosy","Clinical Pharmacy & Therapeutics"], topics:{"Pharmaceutics":["Physical Pharmacy","Dosage Forms","Biopharmaceutics","Pharmacokinetics"],"Pharmaceutical Chemistry":["Medicinal Chemistry","Pharmaceutical Analysis","Drug Design"],"Pharmacology":["General Pharmacology","CNS Drugs","Cardiovascular Drugs","Antimicrobials"],"Pharmacognosy":["Natural Products","Phytochemistry","Herbal Medicine"]}, pattern:{duration:"3 hours",questions:"125 MCQs",total:"500 marks",negative:"Yes (-1)"}, cutoff:[{year:2024,general:250,obc:225,sc:187,st:187},{year:2023,general:240,obc:215,sc:180,st:180}], books:["Remington's Pharmaceutical Sciences","Goodman & Gilman Pharmacology","GPAT previous papers","Cooper & Gunn Dispensing"], eligibility:"B.Pharm from recognised institution.", tips:["Pharmacology is highest weightage section","Medicinal chemistry needs structure memorization","Previous papers are the best practice","Focus on NTA GPAT pattern"] },
-
-  // ── DESIGN & ARCHITECTURE ──
-  { id:"nift", name:"NIFT", full:"National Institute of Fashion Technology Entrance Test", category:"Design", color:"#7c3aed", icon:"👗", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~2,000+", salary:"₹5-20 LPA", duration:"4 years", syllabus:["Creative Ability Test: Drawing, Design","General Ability Test: English, Maths, GK, Case Study"], topics:{"Creative Ability":["Sketching","Color Application","2D & 3D Visualization","Creative Expression"],"General Ability":["English Comprehension","Quantitative Ability","Communication Ability","Analytical Ability","GK & Current Affairs"]}, pattern:{duration:"CAT: 3hr | GAT: 2hr",questions:"CAT: subjective | GAT: 100 MCQs",total:"CAT + GAT combined",negative:"No for CAT, Yes for GAT"}, cutoff:[{year:2024,general:72,obc:65,sc:55,st:50},{year:2023,general:70,obc:63,sc:53,st:48}], books:["NIFT previous year papers","Fashion history books","Basic drawing & sketching guides"], eligibility:"Class 12 passed. Age: Max 23 years.", tips:["Creative ability test needs daily practice","GAT needs GK and English skills","Fashion awareness is important","Portfolio quality matters a lot"] },
-  { id:"nid-dat", name:"NID DAT", full:"National Institute of Design Design Aptitude Test", category:"Design", color:"#6d28d9", icon:"🎨", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~150", salary:"₹6-25 LPA", duration:"4 years", syllabus:["Drawing & Sketching","Design Thinking","Creativity & Observation","Communication Skills"], topics:{"Drawing":["Perspective Drawing","Sketching","Shading","Color Theory"],"Design Thinking":["Problem Solving","Observation","Creativity","Innovation"],"Communication":["Visual Communication","Presentation","Design Communication"]}, pattern:{duration:"Prelims: 3hr | Mains: Studio test",questions:"Subjective + Studio test",total:"Based on jury",negative:"No"}, cutoff:[{year:2024,general:55,obc:48,sc:38,st:35},{year:2023,general:53,obc:46,sc:36,st:33}], books:["NID previous year papers","Design sketching books","Draw every day — no substitute"], eligibility:"Class 12 from any stream. No age bar.", tips:["Practice drawing daily — non-negotiable","Observe design around you","Originality valued over perfection","Study products, packaging, environments"] },
-  { id:"uceed", name:"UCEED", full:"Undergraduate Common Entrance Examination for Design", category:"Design", color:"#5b21b6", icon:"✏️", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~150 (IITs)", salary:"₹8-25 LPA", duration:"4 years (B.Des)", syllabus:["Visualization & Spatial Ability","Observation & Design Sensitivity","Environmental & Social Awareness","Analytical & Logical Reasoning","Language & Creativity"], topics:{"Visualization":["Spatial Reasoning","Mental Rotation","3D to 2D","Pattern Recognition"],"Design Sensitivity":["Observation Skills","Aesthetic Sensitivity","Design Elements"],"Reasoning":["Analytical Reasoning","Critical Thinking","Logical Ability"],"Drawing":["Sketching","Rendering","Composition"]}, pattern:{duration:"3 hours",questions:"Part A: MCQ + NAT | Part B: Drawing",total:"300 marks",negative:"Yes for Part A MCQ"}, cutoff:[{year:2024,general:160,obc:140,sc:110,st:105},{year:2023,general:155,obc:135,sc:105,st:100}], books:["UCEED previous year papers","Design drawing books","Spatial reasoning practice sets"], eligibility:"Class 12 passed. Age: Max 20 years.", tips:["Drawing section is very important","Spatial visualization needs regular practice","Observe design in everyday life","No specific textbook — practice is key"] },
-  { id:"ceed", name:"CEED", full:"Common Entrance Examination for Design (Masters)", category:"Design", color:"#4c1d95", icon:"🖌️", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~200 (IITs/IISc)", salary:"₹10-30 LPA", duration:"2 years (M.Des)", syllabus:["Visualization & Spatial Ability","Environmental & Social Awareness","Design Thinking & Problem Solving","Analytical & Logical Reasoning","Language & Creativity"], topics:{"Design Thinking":["Problem Framing","User Research","Ideation","Prototyping"],"Visualization":["Spatial Reasoning","Drawing","3D Visualization"],"Reasoning":["Critical Thinking","Analytical Ability","Lateral Thinking"]}, pattern:{duration:"3 hours",questions:"Part A: MCQ | Part B: Design Tasks",total:"100 marks",negative:"Yes for Part A"}, cutoff:[{year:2024,general:38,obc:33,sc:26,st:24},{year:2023,general:36,obc:31,sc:24,st:22}], books:["CEED previous year papers","Design theory books","Portfolio development guide"], eligibility:"Graduate in any discipline. Age: No bar.", tips:["Portfolio is essential for admission","Part B studio task requires creativity","Design exposure through internships helps","Practice drawing regularly"] },
-  { id:"nata", name:"NATA", full:"National Aptitude Test in Architecture", category:"Architecture", color:"#0369a1", icon:"🏛️", difficulty:"High", diffScore:3, frequency:"Twice a year", seats:"~40,000+", salary:"₹5-15 LPA", duration:"5 years (B.Arch)", syllabus:["Drawing & Composition","Visual Perception & Cognition","Mathematics (Class 11 & 12)","General Aptitude"], topics:{"Drawing":["Perspective Drawing","Architectural Drawing","Sketching","Composition"],"Mathematics":["Algebra","Trigonometry","Coordinate Geometry","Calculus"],"Aptitude":["Visual Perception","Spatial Ability","Critical Thinking","Observation"]}, pattern:{duration:"3 hours",questions:"Part A: Drawing | Part B: MCQ",total:"200 marks",negative:"No"}, cutoff:[{year:2024,general:110,obc:98,sc:82,st:75},{year:2023,general:105,obc:94,sc:78,st:71}], books:["NATA previous year papers","Drawing & sketching practice books","B.Arch entrance guide by Arihant"], eligibility:"Class 12 with Maths. Min 50% marks.", tips:["Drawing is the most important component","Practice perspective drawing daily","Maths up to Class 12 level","Observe architecture and buildings around you"] },
-
-  // ── SCIENCE & RESEARCH ──
-  { id:"iit-jam", name:"IIT JAM", full:"Joint Admission Test for MSc", category:"Science", color:"#0891b2", icon:"🧪", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~3,000 (IITs & IISc)", salary:"₹6-15 LPA", duration:"2 years (MSc)", syllabus:["Subject-specific (Physics/Chemistry/Maths/Biology/Geology/Economics)"], topics:{"Physics":["Mathematical Physics","Classical Mechanics","Electrostatics","Quantum Mechanics","Thermodynamics"],"Chemistry":["Physical Chemistry","Organic Chemistry","Inorganic Chemistry"],"Mathematics":["Analysis","Algebra","Topology","Differential Equations"]}, pattern:{duration:"3 hours",questions:"60 questions (MCQ + NAT + MSQ)",total:"100 marks",negative:"Yes for MCQ only"}, cutoff:[{year:2024,general:20,obc:18,sc:10,st:10},{year:2023,general:19,obc:17,sc:9,st:9}], books:["BSc textbooks of chosen subject","Previous year JAM papers","GateForum/Made Easy material"], eligibility:"Bachelor's degree with relevant subject. Final year eligible.", tips:["Subject mastery is key","Previous years are most important resource","NAT questions need calculation speed","Choose paper wisely based on your strength"] },
-  { id:"csir-net", name:"CSIR NET", full:"CSIR National Eligibility Test", category:"Science", color:"#0e7490", icon:"🔭", difficulty:"Very High", diffScore:4, frequency:"Twice a year", seats:"No limit (JRF & Lectureship)", salary:"₹37,000+ (JRF)", duration:"2-3 years prep", syllabus:["Life Sciences / Physical Sciences / Chemical Sciences / Mathematical Sciences / Earth Sciences"], topics:{"Life Sciences":["Cell Biology","Genetics","Biochemistry","Ecology","Evolution","Physiology"],"Physical Sciences":["Mathematical Physics","Classical Mechanics","Quantum Mechanics","Electronics"],"Chemical Sciences":["Physical Chemistry","Organic Chemistry","Inorganic Chemistry","Analytical Chemistry"]}, pattern:{duration:"3 hours",questions:"Part A: 20, Part B+C: varies",total:"200 marks",negative:"Yes (varies)"}, cutoff:[{year:2024,general:55,obc:49,sc:36,st:36},{year:2023,general:53,obc:47,sc:34,st:34}], books:["Standard BSc/MSc textbooks","CSIR NET previous papers","Trueman's Biology for Life Sciences"], eligibility:"MSc or equivalent with 55% marks.", tips:["Part A (General Aptitude) is same for all subjects","Part C needs deep conceptual knowledge","Previous papers are the best resource","Focus on high-weightage topics"] },
-  { id:"jest", name:"JEST", full:"Joint Entrance Screening Test (Physics/CS)", category:"Science", color:"#1e40af", icon:"⚛️", difficulty:"Very High", diffScore:4, frequency:"Once a year", seats:"~500 (IISc/IISERs/various institutes)", salary:"₹37,000+ (JRF)", duration:"5 years (PhD)", syllabus:["Physics: Classical Mechanics, Electromagnetism, Quantum Mechanics, Statistical Physics, Mathematical Physics","Computer Science: Programming, Algorithms, Data Structures, Theory of Computation"], topics:{"Classical Physics":["Classical Mechanics","Electromagnetism","Thermodynamics","Statistical Mechanics"],"Quantum Physics":["Quantum Mechanics","Atomic Physics","Nuclear Physics","Condensed Matter"],"Mathematical Physics":["Complex Analysis","Differential Equations","Linear Algebra","Group Theory"]}, pattern:{duration:"3 hours",questions:"~50 MCQs + Numerical",total:"~150 marks",negative:"Yes for MCQ"}, cutoff:[{year:2024,general:55,obc:50,sc:40,st:38},{year:2023,general:52,obc:47,sc:37,st:35}], books:["Griffiths Electrodynamics","Sakurai Quantum Mechanics","Pathria Statistical Mechanics","JEST previous year papers"], eligibility:"MSc Physics/CS or BE/BTech. Age: No bar.", tips:["Deep conceptual understanding required","Previous years from all institutes","Mathematical rigor is essential","Focus on quantum mechanics and statistical physics"] },
-
-  // ── TEACHING ──
-  { id:"ugc-net", name:"UGC NET", full:"UGC National Eligibility Test", category:"Teaching", color:"#16a34a", icon:"🎓", difficulty:"High", diffScore:3, frequency:"Twice a year", seats:"No limit", salary:"₹57,700+ (Professor)", duration:"6 months prep", syllabus:["Paper I: Teaching Aptitude, Research, Communication, Reasoning, GK","Paper II: Subject-specific (from 81 subjects)"], topics:{"Teaching Aptitude":["Teaching Methods","Learner Characteristics","Teaching Aids","Evaluation"],"Research":["Research Methods","Statistics","Thesis Writing","Research Ethics"],"Reasoning":["Logical Reasoning","Mathematical Reasoning","Data Interpretation"],"Subject Paper II":["Varies by chosen subject — postgraduate level topics"]}, pattern:{duration:"3 hours",questions:"Paper I: 50 | Paper II: 100",total:"300 marks",negative:"No"}, cutoff:[{year:2024,general:40,obc:35,sc:35,st:35},{year:2023,general:38,obc:33,sc:33,st:33}], books:["Trueman's UGC NET Paper I","Subject-specific books","Previous year UGC NET papers"], eligibility:"Masters degree with 55% marks (50% SC/ST/PWD).", tips:["Paper I is same for all subjects","Teaching & Research aptitude needs practice","Paper II needs thorough subject knowledge","No negative marking — attempt all"] },
-  { id:"ctet", name:"CTET", full:"Central Teacher Eligibility Test", category:"Teaching", color:"#15803d", icon:"📚", difficulty:"Moderate", diffScore:2, frequency:"Twice a year", seats:"No limit", salary:"₹35,000-₹1.1 LPA", duration:"3 months prep", syllabus:["Child Development & Pedagogy","Language I (compulsory)","Language II (compulsory)","Mathematics / Science / Social Studies"], topics:{"Child Development":["Growth & Development","Learning Theories","Inclusive Education","Assessment","Motivation"],"Language":["Reading","Writing","Grammar","Comprehension","Language Acquisition"],"Mathematics":["Number System","Geometry","Measurement","Data Handling","Pedagogy"],"EVS/Science":["Environment","Living World","Matter","Pedagogy"]}, pattern:{duration:"2.5 hours",questions:"150 MCQs",total:"150 marks",negative:"No"}, cutoff:[{year:2024,general:90,obc:82,sc:75,st:75},{year:2023,general:88,obc:80,sc:73,st:73}], books:["Child Development by Arihant","NCERT textbooks Class 1-8","Previous year CTET papers","Disha CTET guide"], eligibility:"Class 12 with 50% + D.El.Ed OR Graduation + B.Ed.", tips:["No negative marking — attempt all","Child Development has highest weightage","Pedagogy questions need conceptual clarity","Language sections test teaching methods"] },
-  { id:"kvs", name:"KVS", full:"Kendriya Vidyalaya Sangathan Teacher Recruitment", category:"Teaching", color:"#14532d", icon:"🏫", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~5,000+", salary:"₹35,400-₹1.12 LPA", duration:"4-5 months prep", syllabus:["General English","General Hindi","General Knowledge & Current Affairs","Reasoning Ability","Teaching Methodology & Pedagogy","Subject Knowledge (for PGT/TGT)"], topics:{"Teaching Methodology":["Child Psychology","Pedagogy","Evaluation","Inclusive Education"],"General":["English","Hindi","GK","Reasoning"],"Subject Knowledge":["Depends on post applied — PRT/TGT/PGT level"]}, pattern:{duration:"2.5-3 hours",questions:"150-180 MCQs",total:"150-180 marks",negative:"No"}, cutoff:[{year:2024,general:105,obc:97,sc:85,st:80},{year:2023,general:102,obc:94,sc:82,st:77}], books:["KVS recruitment previous papers","Child Development guides","Subject-specific books for TGT/PGT","Lucent GK"], eligibility:"B.Ed + relevant graduation/PG + CTET/STET qualified.", tips:["Teaching methodology has high weightage","Subject knowledge determines merit","No negative marking — attempt all","Read KVS service conditions"] },
-  { id:"nvs", name:"NVS", full:"Navodaya Vidyalaya Samiti Teacher Recruitment", category:"Teaching", color:"#166534", icon:"📖", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~3,000+", salary:"₹35,400-₹1.12 LPA", duration:"4-5 months prep", syllabus:["General Awareness","Reasoning & Mental Ability","General English","General Hindi","Teaching Methodology","Subject-specific Knowledge"], topics:{"Teaching Methodology":["Child Psychology","Pedagogy","Evaluation","Inclusive Education","Special Education"],"General":["English","Hindi","GK","Current Affairs","Reasoning"],"Subject Knowledge":["Depends on post — PRT/TGT/PGT level"]}, pattern:{duration:"3 hours",questions:"150 MCQs",total:"150 marks",negative:"No"}, cutoff:[{year:2024,general:108,obc:100,sc:88,st:83},{year:2023,general:105,obc:97,sc:85,st:80}], books:["NVS recruitment previous papers","Child Development guides","Subject-specific books","Lucent GK"], eligibility:"B.Ed + relevant graduation/PG + CTET/STET qualified.", tips:["Similar to KVS but residential school focus","Subject knowledge is very important","Teaching methodology needs conceptual clarity","No negative marking"] },
-
-  // ── COMMERCE ──
+  { id:"clat", name:"CLAT", full:"Common Law Admission Test", category:"Law", color:"#b45309", icon:"⚖️", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~2,500 (NLUs)", salary:"₹6-25 LPA", duration:"5 years (LLB)", syllabus:["English Language","Current Affairs & GK","Legal Reasoning","Logical Reasoning","Quantitative Techniques"], topics:{"English":["Reading Comprehension","Vocabulary","Grammar","Critical Reasoning"],"Legal Reasoning":["Legal Principles","Legal Maxims","Constitutional Law","Torts","Contracts"],"Current Affairs":["National","International","Legal Affairs","Important Judgements"],"Logical Reasoning":["Analogy","Syllogism","Assumptions","Conclusions"]}, pattern:{duration:"2 hours",questions:"120 MCQs",total:"120 marks",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:95,obc:82,sc:65,st:57},{year:2023,general:93,obc:80,sc:63,st:55}], books:["Arihant CLAT guide","AP Bhardwaj – Legal Aptitude","Previous year CLAT papers","The Hindu for Current Affairs"], eligibility:"Class 12 with min 45% marks (40% SC/ST).", tips:["Legal reasoning needs regular practice","Current affairs from last 12 months","Reading comprehension is key","No maths beyond Class 10 level"] },
+  { id:"rbi-grade-b", name:"RBI Grade B", full:"Reserve Bank of India Grade B Officer", category:"Banking", color:"#7f1d1d", icon:"🏦", difficulty:"Very High", diffScore:4, frequency:"Once a year", seats:"~200+", salary:"₹55,000-₹1.5 LPA", duration:"8-10 months prep", syllabus:["Phase I: General Awareness, Reasoning, English, Quant","Phase II: Economic & Social Issues, English Writing, Finance & Management"], topics:{"Economics":["Macro Economics","Monetary Policy","Indian Economy","International Trade","RBI Functions"],"Finance":["Financial Markets","Banking Regulations","Financial Instruments","Capital Markets"],"Management":["Management Concepts","HR Management","Organizational Behavior","Ethics"],"General":["Current Affairs","Reasoning","English Writing Skills"]}, pattern:{duration:"Phase I: 3hr | Phase II: descriptive",questions:"Phase I: 200 MCQs | Phase II: written",total:"Phase I: 200 | Phase II: 300",negative:"Phase I: -0.25"}, cutoff:[{year:2024,general:155,obc:142,sc:125,st:118},{year:2023,general:150,obc:137,sc:120,st:113}], books:["Economic Survey India","RBI Annual Report","RBI Grade B previous papers","Ramesh Singh Indian Economy"], eligibility:"Graduate with 60% marks. Age: 21-30.", tips:["Economics and Finance are most important","Read RBI reports and circulars regularly","Phase II needs excellent writing skills","General awareness must be very strong"] },
   { id:"ca-foundation", name:"CA Foundation", full:"Chartered Accountancy Foundation", category:"Commerce", color:"#b91c1c", icon:"💰", difficulty:"Moderate", diffScore:2, frequency:"Twice a year", seats:"No limit", salary:"₹6-25 LPA (after CA)", duration:"4 months prep", syllabus:["Paper 1: Principles & Practice of Accounting","Paper 2: Business Laws & Business Correspondence","Paper 3: Business Mathematics & Logical Reasoning & Statistics","Paper 4: Business Economics & Business & Commercial Knowledge"], topics:{"Accounting":["Accounting Standards","Financial Statements","Partnership","Company Accounts"],"Business Laws":["Indian Contract Act","Sale of Goods Act","Company Law","Business Communication"],"Mathematics":["Algebra","Matrices","Calculus","Statistics","Probability"],"Economics":["Micro Economics","Macro Economics","Indian Economy","Business Knowledge"]}, pattern:{duration:"3 hours per paper",questions:"Paper 1 & 2: Descriptive | Paper 3 & 4: MCQ",total:"400 marks",negative:"Yes for MCQ papers"}, cutoff:[{year:2024,general:200,obc:200,sc:200,st:200},{year:2023,general:200,obc:200,sc:200,st:200}], books:["ICAI Study Material","ICAI Practice Manual","CA Foundation previous papers","Padhuka CA Foundation guide"], eligibility:"Class 12 passed from any stream. No age limit.", tips:["ICAI study material is the primary resource","Accounting and Maths need maximum practice","Paper 3 is objective — accuracy is key","Join a coaching institute for best results"] },
-  { id:"cs-foundation", name:"CSEET", full:"Company Secretary Executive Entrance Test", category:"Commerce", color:"#991b1b", icon:"📒", difficulty:"Moderate", diffScore:2, frequency:"4 times a year", seats:"No limit", salary:"₹6-20 LPA (after CS)", duration:"3-4 months prep", syllabus:["Business Communication","Legal Aptitude & Logical Reasoning","Economic & Business Environment","Current Affairs"], topics:{"Business Communication":["Communication Theory","Business Writing","Presentation Skills","Interpersonal Communication"],"Legal Aptitude":["Legal Reasoning","Constitution","Company Law basics","Regulatory Framework"],"Economics":["Micro Economics","Macro Economics","Indian Economy","Business Environment"],"Current Affairs":["National","International","Business & Corporate","Technology"]}, pattern:{duration:"2 hours",questions:"140 MCQs (online, no negative)",total:"140 marks",negative:"No"}, cutoff:[{year:2024,general:80,obc:75,sc:65,st:62},{year:2023,general:77,obc:72,sc:62,st:59}], books:["ICSI Study Material","CS Executive previous papers","Business Communication books"], eligibility:"Class 12 passed. No age limit.", tips:["No negative marking — attempt all","Online objective test only","Read ICSI study material thoroughly","Current affairs are very important"] },
-  { id:"cuet-ug", name:"CUET UG", full:"Common University Entrance Test Undergraduate", category:"Commerce", color:"#7e22ce", icon:"🎓", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"Varies by central university", salary:"Varies by programme", duration:"3-4 months prep", syllabus:["Section IA: Language (13 languages)","Section IB: Additional Languages (19 languages)","Section II: Domain subjects (27 subjects)","Section III: General Test"], topics:{"Language":["Reading Comprehension","Grammar","Vocabulary","Literary Aptitude"],"Domain Subjects":["Physics","Chemistry","Mathematics","Biology","History","Geography","Economics","Political Science","Psychology","Sociology","Business Studies","Accountancy"],"General Test":["General Knowledge","Current Affairs","Logical Reasoning","Quantitative Ability"]}, pattern:{duration:"45-60 min per section",questions:"40-50 per section",total:"Varies",negative:"Yes (-1)"}, cutoff:[{year:2024,general:200,obc:185,sc:160,st:152},{year:2023,general:195,obc:180,sc:155,st:147}], books:["CUET previous year papers","NCERT books for domain subjects","Arihant CUET guide"], eligibility:"Class 12 passed. Age: No bar.", tips:["Domain subject paper is most important","Choose domain subjects matching your stream","General Test is common scoring section","NCERT books are sufficient for most subjects"] },
-
-  // ── HOSPITALITY ──
-  { id:"nchmct", name:"NCHMCT JEE", full:"National Council for Hotel Management JEE", category:"Hospitality", color:"#c2410c", icon:"🏨", difficulty:"Moderate", diffScore:2, frequency:"Once a year", seats:"~10,000+", salary:"₹4-15 LPA", duration:"3 years", syllabus:["Numerical Ability & Analytical Aptitude","Reasoning & Logical Deduction","General Knowledge & Current Affairs","English Language","Aptitude for Service Sector"], topics:{"Numerical Ability":["Arithmetic","Algebra","Data Interpretation","Statistics"],"Reasoning":["Logical Reasoning","Spatial Ability","Critical Thinking"],"GK":["Current Affairs","Hospitality Industry","Food & Beverage","Static GK"],"English":["Grammar","Vocabulary","Comprehension","Service Communication"]}, pattern:{duration:"3 hours",questions:"200 MCQs",total:"200 marks",negative:"Yes (-0.25)"}, cutoff:[{year:2024,general:130,obc:115,sc:95,st:88},{year:2023,general:125,obc:110,sc:90,st:83}], books:["Arihant NCHMCT JEE guide","Previous year papers","GK capsule for hospitality"], eligibility:"Class 12 passed. Age: Max 22 years.", tips:["Aptitude for service sector is unique section","GK from hospitality industry is important","English is very important for hospitality","Practice previous papers extensively"] },
-
-  // ── STATE PSC ──
-  { id:"mpsc", name:"MPSC", full:"Maharashtra Public Service Commission", category:"State PSC", color:"#c2410c", icon:"🦁", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~500+", salary:"₹40,000-₹1.5 LPA", duration:"1-1.5 years prep", syllabus:["Prelims: GS Paper I, CSAT","Mains: GS I-IV, Marathi, English, Optional","Interview: Personality Test"], topics:{"History":["Indian History","Maharashtra History","World History"],"Geography":["Indian Geography","Maharashtra Geography","World Geography"],"Polity":["Indian Polity","Maharashtra Government","Panchayati Raj"],"Economy":["Indian Economy","Maharashtra Economy","Agriculture"]}, pattern:{duration:"Prelims: 4hr | Mains: multiple papers",questions:"Prelims: 200 MCQs | Mains: descriptive",total:"Prelims: 200 | Mains: varies",negative:"Prelims: -0.25"}, cutoff:[{year:2024,general:210,obc:195,sc:175,st:165},{year:2023,general:205,obc:190,sc:170,st:160}], books:["Unique Publications Maharashtra GK","MPSC previous papers","Laxmikanth Polity","NCERT books"], eligibility:"Graduate. Age: 19-38 (varies).", tips:["Maharashtra-specific GK is very important","Marathi language paper is mandatory","Study MPSC specific current affairs","Previous papers are most useful"] },
-  { id:"bpsc", name:"BPSC", full:"Bihar Public Service Commission", category:"State PSC", color:"#92400e", icon:"🐘", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~600+", salary:"₹40,000-₹1.5 LPA", duration:"1 year prep", syllabus:["Prelims: General Studies","Mains: GS I-III, Hindi, Optional","Interview: Personality Test"], topics:{"History":["Indian History","Bihar History","Freedom Struggle"],"Geography":["India Geography","Bihar Geography","Environment"],"Polity":["Indian Constitution","Bihar Government","Panchayati Raj"],"Economy":["Bihar Economy","Agriculture","MGNREGA","Social Schemes"]}, pattern:{duration:"Prelims: 2hr | Mains: multiple papers",questions:"Prelims: 150 MCQs | Mains: descriptive",total:"Prelims: 150 | Mains: varies",negative:"Prelims: No"}, cutoff:[{year:2024,general:105,obc:98,sc:85,st:80},{year:2023,general:100,obc:93,sc:80,st:75}], books:["Bihar GK book","BPSC previous papers","Laxmikanth Polity","NCERT History"], eligibility:"Graduate. Age: 20-37 (varies).", tips:["Bihar-specific GK is very important","No negative marking in Prelims","Mains needs good writing skills","Focus on Bihar government schemes"] },
-  { id:"uppsc", name:"UPPSC", full:"Uttar Pradesh Public Service Commission", category:"State PSC", color:"#166534", icon:"🏰", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~500+", salary:"₹40,000-₹1.5 LPA", duration:"1-1.5 years prep", syllabus:["Prelims: GS + CSAT","Mains: GS I-IV, Hindi, Optional","Interview: Personality Test"], topics:{"History":["UP History","Indian History","World History"],"Geography":["UP Geography","India Geography"],"Polity":["Indian Polity","UP Government","Local Bodies"],"Economy":["UP Economy","Agriculture","Industry"],"Culture":["UP Culture","Literature","Art Forms"]}, pattern:{duration:"Prelims: 4hr | Mains: multiple papers",questions:"Prelims: 200 MCQs | Mains: descriptive",total:"Prelims: 200 | Mains: varies",negative:"Prelims: -0.33"}, cutoff:[{year:2024,general:130,obc:122,sc:108,st:102},{year:2023,general:126,obc:118,sc:104,st:98}], books:["UP GK book by Arihant","UPPSC previous papers","Laxmikanth Polity","UP government reports"], eligibility:"Graduate. Age: 21-40 (varies).", tips:["UP-specific GK and current affairs essential","Culture and literature of UP is important","Hindi language proficiency needed","Study UP government schemes"] },
-  { id:"rpsc", name:"RPSC", full:"Rajasthan Public Service Commission", category:"State PSC", color:"#b45309", icon:"🏜️", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~400+", salary:"₹40,000-₹1.5 LPA", duration:"1 year prep", syllabus:["Prelims: GS + CSAT","Mains: GS I-IV, Hindi, Optional","Interview: Personality Test"], topics:{"History":["Rajasthan History","Indian History","Medieval History"],"Geography":["Rajasthan Geography","India Geography","Desert Ecology"],"Polity":["Indian Polity","Rajasthan Government","Panchayati Raj"],"Culture":["Rajasthan Culture","Art Forms","Festivals","Literature"]}, pattern:{duration:"Prelims: 3hr | Mains: multiple papers",questions:"Prelims: 150 MCQs | Mains: descriptive",total:"Prelims: 150 | Mains: varies",negative:"Prelims: -0.33"}, cutoff:[{year:2024,general:115,obc:108,sc:95,st:90},{year:2023,general:112,obc:105,sc:92,st:87}], books:["Rajasthan GK books","RPSC previous papers","Laxmikanth Polity","Hindi Literature"], eligibility:"Graduate. Age: 21-40 (varies).", tips:["Rajasthan-specific GK is very important","Hindi language proficiency needed","Desert ecology and culture are unique topics","Previous papers are most useful"] },
-  { id:"mppsc", name:"MPPSC", full:"Madhya Pradesh Public Service Commission", category:"State PSC", color:"#065f46", icon:"🌳", difficulty:"High", diffScore:3, frequency:"Once a year", seats:"~300+", salary:"₹40,000-₹1.5 LPA", duration:"1 year prep", syllabus:["Prelims: GS + CSAT","Mains: GS I-IV, Hindi, Optional","Interview: Personality Test"], topics:{"History":["MP History","Indian History","Freedom Struggle"],"Geography":["MP Geography","India Geography","Environment"],"Polity":["Indian Polity","MP Government","Tribal Issues"],"Economy":["MP Economy","Agriculture","Forest Economy"]}, pattern:{duration:"Prelims: 3hr | Mains: multiple papers",questions:"Prelims: 200 MCQs | Mains: descriptive",total:"Prelims: 200 | Mains: varies",negative:"Prelims: -0.25"}, cutoff:[{year:2024,general:125,obc:117,sc:103,st:98},{year:2023,general:121,obc:113,sc:99,st:94}], books:["MP GK books","MPPSC previous papers","Laxmikanth Polity","NCERT books"], eligibility:"Graduate. Age: 21-40 (varies).", tips:["MP-specific GK is very important","Tribal issues are important for MP","Environment and forest ecology focus","Hindi paper needs special preparation"] },
-  { id:"tnpsc", name:"TNPSC", full:"Tamil Nadu Public Service Commission", category:"State PSC", color:"#7c2d12", icon:"🏝️", difficulty:"High", diffScore:3, frequency:"Various (Group exams)", seats:"Varies by group", salary:"₹20,000-₹1.5 LPA", duration:"6-12 months prep", syllabus:["General Studies","Aptitude & Mental Ability","Subject-specific (varies by group)","Tamil Language"], topics:{"Tamil Nadu GK":["TN History","TN Culture","TN Government","TN Economy","TN Geography"],"General Studies":["Indian History","Geography","Polity","Economy","Science","Current Affairs"],"Tamil Language":["Tamil Grammar","Tamil Literature","Tamil Culture"],"Aptitude":["Reasoning","Mathematics","Data Interpretation"]}, pattern:{duration:"Prelims: 3hr | Mains: multiple papers",questions:"Prelims: 200 MCQs | Mains: descriptive",total:"Prelims: 200 | Mains: varies",negative:"Prelims: -1/3"}, cutoff:[{year:2024,general:140,obc:132,sc:116,st:110},{year:2023,general:136,obc:128,sc:112,st:106}], books:["TN GK books","TNPSC previous papers","Tamil Grammar books","Laxmikanth Polity"], eligibility:"Varies by group. Graduate or Class 10/12 based.", tips:["Tamil language paper is mandatory","TN-specific GK is very important","Group exams have different eligibility","Start with Group 4 for experience"] },
+  { id:"nda", name:"NDA", full:"National Defence Academy Examination", category:"Defence", color:"#047857", icon:"⚔️", difficulty:"High", diffScore:3, frequency:"Twice a year", seats:"~400", salary:"₹56,100+ (Lieutenant)", duration:"3 years (NDA)", syllabus:["Mathematics: Algebra, Calculus, Trigonometry, Statistics, Matrices","General Ability: English, GK, Physics, Chemistry, History, Geography"], topics:{"Mathematics":["Algebra","Trigonometry","Calculus","Statistics","Matrices","Analytical Geometry"],"General Ability":["English Grammar","Physics","Chemistry","History","Geography","Current Affairs"]}, pattern:{duration:"5 hours (2 papers)",questions:"Paper I: 120, Paper II: 150",total:"900 marks",negative:"Yes (-0.33)"}, cutoff:[{year:2024,general:360,obc:340,sc:300,st:290},{year:2023,general:350,obc:330,sc:290,st:280}], books:["Pathfinder NDA/NA by Arihant","RS Aggarwal – Maths","Lucent GK","Previous Year NDA Papers"], eligibility:"Class 12 passed/appearing. Age: 16.5-19.5. Only unmarried males.", tips:["Maths paper needs strong basics","GK from last 6 months current affairs","Physical fitness test is important","SSB interview is the toughest part"] },
+  { id:"afcat", name:"AFCAT", full:"Air Force Common Admission Test", category:"Defence", color:"#0c4a6e", icon:"✈️", difficulty:"High", diffScore:3, frequency:"Twice a year", seats:"~250+", salary:"₹56,100+ (Flying Officer)", duration:"6 months prep", syllabus:["General Awareness","Verbal Ability in English","Numerical Ability","Reasoning & Military Aptitude"], topics:{"General Awareness":["History","Geography","Polity","Economy","Science","Military Current Affairs"],"Verbal Ability":["Grammar","Vocabulary","Comprehension","Idioms & Phrases"],"Numerical Ability":["Arithmetic","Algebra","Geometry","Data Interpretation"],"Military Aptitude":["Spatial Reasoning","Rotational Figures","Hidden Figures"]}, pattern:{duration:"2 hours",questions:"100 MCQs",total:"300 marks",negative:"Yes (-1)"}, cutoff:[{year:2024,general:170,obc:155,sc:140,st:132},{year:2023,general:165,obc:150,sc:135,st:127}], books:["Arihant AFCAT guide","Previous year AFCAT papers","Lucent GK"], eligibility:"Graduate with 60% marks. Age: 20-24 (flying), 20-26 (ground duty).", tips:["Military aptitude section is unique","Current affairs about defence is important","AFSB interview after written exam","Physical fitness is essential"] },
+  { id:"ctet", name:"CTET", full:"Central Teacher Eligibility Test", category:"Teaching", color:"#16a34a", icon:"📚", difficulty:"Moderate", diffScore:2, frequency:"Twice a year", seats:"No limit", salary:"₹35,000-₹1.1 LPA", duration:"3 months prep", syllabus:["Child Development & Pedagogy","Language I (compulsory)","Language II (compulsory)","Mathematics / Science / Social Studies"], topics:{"Child Development":["Growth & Development","Learning Theories","Inclusive Education","Assessment","Motivation"],"Language":["Reading","Writing","Grammar","Comprehension","Language Acquisition"],"Mathematics":["Number System","Geometry","Measurement","Data Handling","Pedagogy"],"EVS/Science":["Environment","Living World","Matter","Pedagogy"]}, pattern:{duration:"2.5 hours",questions:"150 MCQs",total:"150 marks",negative:"No"}, cutoff:[{year:2024,general:90,obc:82,sc:75,st:75},{year:2023,general:88,obc:80,sc:73,st:73}], books:["Child Development by Arihant","NCERT textbooks Class 1-8","Previous year CTET papers","Disha CTET guide"], eligibility:"Class 12 with 50% + D.El.Ed OR Graduation + B.Ed.", tips:["No negative marking — attempt all","Child Development has highest weightage","Pedagogy questions need conceptual clarity","Language sections test teaching methods"] },
+  { id:"nata", name:"NATA", full:"National Aptitude Test in Architecture", category:"Architecture", color:"#0369a1", icon:"🏗️", difficulty:"High", diffScore:3, frequency:"Twice a year", seats:"~40,000+", salary:"₹5-15 LPA", duration:"5 years (B.Arch)", syllabus:["Drawing & Composition","Visual Perception & Cognition","Mathematics (Class 11 & 12)","General Aptitude"], topics:{"Drawing":["Perspective Drawing","Architectural Drawing","Sketching","Composition"],"Mathematics":["Algebra","Trigonometry","Coordinate Geometry","Calculus"],"Aptitude":["Visual Perception","Spatial Ability","Critical Thinking","Observation"]}, pattern:{duration:"3 hours",questions:"Part A: Drawing | Part B: MCQ",total:"200 marks",negative:"No"}, cutoff:[{year:2024,general:110,obc:98,sc:82,st:75},{year:2023,general:105,obc:94,sc:78,st:71}], books:["NATA previous year papers","Drawing & sketching practice books","B.Arch entrance guide by Arihant"], eligibility:"Class 12 with Maths. Min 50% marks.", tips:["Drawing is the most important component","Practice perspective drawing daily","Maths up to Class 12 level","Observe architecture and buildings around you"] },
 ];
 
-const categories = [
-  "All","UPSC","SSC","Banking","Railway","Defence","Insurance","Management","Law",
-  "Engineering","Medical","Design","Architecture","Science","Teaching","Commerce","Hospitality","State PSC"
-];
-
-const catIcons = {
-  "All":"🇮🇳","UPSC":"🏛️","SSC":"📋","Banking":"🏦","Railway":"🚂","Defence":"⚔️","Insurance":"☂️",
-  "Management":"📊","Law":"⚖️","Engineering":"⚙️","Medical":"🩺","Design":"🎨",
-  "Architecture":"🏗️","Science":"🔬","Teaching":"📚","Commerce":"💰","Hospitality":"🏨","State PSC":"🏢"
-};
-
-const diffColor = {
-  "Easy":"#22c55e","Moderate":"#f59e0b","High":"#f97316","Very High":"#ef4444","Extremely High":"#7c3aed"
-};
-
-const quickQs = [
-  "Hello! What can you do?","JEE Main cutoff 2024","Best books for UPSC","NEET eligibility",
-  "Toughest exam in India","Best banking exam","Top defence exams"
-];
+const categories = ["All","Engineering","Medical","UPSC","SSC","Banking","Defence","Management","Law","Teaching","Commerce","Architecture"];
+const catIcons = {"All":"🇮🇳","Engineering":"⚙️","Medical":"🩺","UPSC":"🏛️","SSC":"📋","Banking":"🏦","Defence":"⚔️","Management":"📊","Law":"⚖️","Teaching":"📚","Commerce":"💰","Architecture":"🏗️"};
+const diffColor = {"Easy":"#22c55e","Moderate":"#f59e0b","High":"#f97316","Very High":"#ef4444","Extremely High":"#7c3aed"};
 
 function getBotReply(question) {
-  const q = question.toLowerCase();
+  var q = question.toLowerCase();
   for (var i = 0; i < exams.length; i++) {
     var exam = exams[i];
     if (q.includes(exam.name.toLowerCase()) || q.includes(exam.id.replace(/-/g," "))) {
-      if (q.includes("cutoff")||q.includes("score")) {
-        var c = exam.cutoff[0];
-        return "📊 **"+exam.name+" Cutoff "+c.year+":**\n\n• General: "+c.general+"\n• OBC: "+c.obc+"\n• SC: "+c.sc+"\n• ST: "+c.st+"\n\n⚠️ Verify from official website.";
-      }
+      if (q.includes("cutoff")||q.includes("score")) { var c=exam.cutoff[0]; return "📊 **"+exam.name+" Cutoff "+c.year+":**\n\n• General: "+c.general+"\n• OBC: "+c.obc+"\n• SC: "+c.sc+"\n• ST: "+c.st+"\n\n⚠️ Verify from official website."; }
       if (q.includes("syllabus")||q.includes("topics")) return "📖 **"+exam.name+" Syllabus:**\n\n"+exam.syllabus.map(function(s){return "• "+s;}).join("\n");
       if (q.includes("book")||q.includes("material")) return "📚 **Books for "+exam.name+":**\n\n"+exam.books.map(function(b){return "• "+b;}).join("\n");
-      if (q.includes("eligib")||q.includes("age")||q.includes("qualify")) return "✅ **"+exam.name+" Eligibility:**\n\n"+exam.eligibility;
-      if (q.includes("pattern")||q.includes("marks")||q.includes("duration")) return "📋 **"+exam.name+" Pattern:**\n\n• Duration: "+exam.pattern.duration+"\n• Questions: "+exam.pattern.questions+"\n• Total: "+exam.pattern.total+"\n• Negative: "+exam.pattern.negative;
-      if (q.includes("tip")||q.includes("prepare")||q.includes("how")) return "💡 **"+exam.name+" Tips:**\n\n"+exam.tips.map(function(t,i){return (i+1)+". "+t;}).join("\n");
+      if (q.includes("eligib")||q.includes("age")) return "✅ **"+exam.name+" Eligibility:**\n\n"+exam.eligibility;
+      if (q.includes("pattern")||q.includes("marks")) return "📋 **"+exam.name+" Pattern:**\n\n• Duration: "+exam.pattern.duration+"\n• Questions: "+exam.pattern.questions+"\n• Total: "+exam.pattern.total+"\n• Negative: "+exam.pattern.negative;
+      if (q.includes("tip")||q.includes("prepare")) return "💡 **"+exam.name+" Tips:**\n\n"+exam.tips.map(function(t,i){return (i+1)+". "+t;}).join("\n");
       return "📌 **"+exam.name+":**\n\n• Category: "+exam.category+"\n• Difficulty: "+exam.difficulty+"\n• Marks: "+exam.pattern.total+"\n• Seats: "+exam.seats+"\n• Eligibility: "+exam.eligibility;
     }
   }
-  if (q.includes("hello")||q.includes("hi")||q.includes("hey")||q.includes("namaste")) return "👋 **Hello! I'm ExamBot!**\n\nI know about **"+exams.length+"+ Indian exams!**\n\nAsk me about:\n• 📖 Syllabus\n• 📊 Cutoffs\n• 📚 Books\n• 💡 Tips\n• ✅ Eligibility\n\nFor UPSC, SSC, Banking, Railway, Defence, Engineering, Medical, Law and more! 😊";
-  if (q.includes("how many")||q.includes("total exam")) return "📚 ExamNest covers **"+exams.length+"+ Indian exams** across "+categories.length+" categories including UPSC, SSC, Banking, Railway, Defence, Engineering, Medical, Law, Management, Design and more!";
-  if (q.includes("easy")||q.includes("easiest")) return "✅ **Easiest Exams in India:**\n\n1. RRB Group D – Class 10 level\n2. SSC MTS – Class 10, no negative\n3. SSC GD – Basic level\n4. IBPS Clerk – Banking clerk level\n5. AIBE – Open book, pass/fail";
-  if (q.includes("tough")||q.includes("hard")||q.includes("difficult")) return "🔥 **Toughest Exams in India:**\n\n1. UPSC CSE – 0.1% selection rate\n2. JEE Advanced – IIT gateway\n3. RBI Grade B – Premium banking\n4. SEBI Grade A – Capital markets\n5. UPSC ESE – Engineering services\n6. INI-CET – Top medical PG";
-  if (q.includes("bank")||q.includes("banking")) return "🏦 **Top Banking Exams:**\n\n1. RBI Grade B – Most premium\n2. SEBI Grade A – Capital markets\n3. NABARD Grade A – Agriculture banking\n4. SBI PO – Toughest public bank\n5. IBPS PO – Multiple banks\n6. SBI/IBPS Clerk – Entry level\n\nAll require Graduation!";
-  if (q.includes("defence")||q.includes("army")||q.includes("navy")||q.includes("airforce")) return "⚔️ **Top Defence Exams:**\n\n1. UPSC NDA – After Class 12\n2. UPSC CDS – After Graduation\n3. AFCAT – Air Force\n4. UPSC CAPF – Central Police\n5. Coast Guard AC – Maritime\n6. Army/Navy Agniveer – Short service\n\nAll require physical fitness + SSB interview!";
-  if (q.includes("upsc")||q.includes("civil service")) return "🏛️ **UPSC Exams:**\n\n1. UPSC CSE – IAS/IPS/IFS\n2. UPSC IFoS – Indian Forest Service\n3. UPSC CDS – Defence services\n4. UPSC NDA – National Defence Academy\n5. UPSC CAPF – Armed Police\n6. UPSC ESE – Engineering services\n7. UPSC CMS – Medical services\n8. UPSC EPFO – Provident Fund";
-  if (q.includes("ssc")||q.includes("staff selection")) return "📋 **SSC Exams:**\n\n1. SSC CGL – Graduate level (best)\n2. SSC CHSL – 12th level\n3. SSC CPO – Police Sub-Inspector\n4. SSC JE – Junior Engineer\n5. SSC MTS – Class 10 level\n6. SSC GD Constable – Security\n7. SSC Stenographer – Typing skills";
-  if (q.includes("state psc")||q.includes("psc")) return "🏢 **Top State PSC Exams:**\n\n1. MPSC – Maharashtra (toughest)\n2. UPPSC – Uttar Pradesh\n3. BPSC – Bihar\n4. RPSC – Rajasthan\n5. MPPSC – Madhya Pradesh\n6. TNPSC – Tamil Nadu\n\nAll have state-specific GK component!";
-  if (q.includes("thank")) return "😊 You're welcome! Best of luck! 💪\n\nRemember: **Consistency beats intensity.** Study daily and you will succeed! 🎯";
-  return "🤔 I know about "+exams.length+"+ exams! Try asking:\n\n• \"UPSC CSE syllabus\"\n• \"RBI Grade B cutoff\"\n• \"Best books for CAT\"\n• \"SSC CGL eligibility\"\n• \"IB ACIO tips\"\n• \"How many exams are covered?\"\n\nOr use **Compare tab** to compare 2 exams! 😊";
+  if (q.includes("hello")||q.includes("hi")) return "👋 **Hello! I'm ExamBot!**\n\nAsk me about any Indian exam — syllabus, cutoffs, books, tips, eligibility! 😊";
+  if (q.includes("tough")||q.includes("hard")) return "🔥 **Toughest Exams:**\n\n1. UPSC CSE\n2. JEE Advanced\n3. RBI Grade B\n4. CAT\n5. GATE";
+  if (q.includes("easy")) return "✅ **Easier Exams:**\n\n1. SSC MTS\n2. CTET\n3. RRB Group D\n4. IBPS Clerk";
+  if (q.includes("thank")) return "😊 You're welcome! Best of luck! 💪\n\nConsistency beats intensity. Study daily! 🎯";
+  return "🤔 Try asking:\n\n• \"JEE Main syllabus\"\n• \"NEET cutoff 2024\"\n• \"Best books for UPSC\"\n• \"CAT eligibility\"\n\nOr use Compare tab! 😊";
 }
 
 const getTheme = function(dark) {
-  return {
-    bg:dark?"#0f172a":"#f8f7f4", card:dark?"#1e293b":"#ffffff",
-    card2:dark?"#273548":"#f1f5f9", text:dark?"#f1f5f9":"#1a1a2e",
-    subtext:dark?"#94a3b8":"#64748b", border:dark?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.07)",
-    navBg:dark?"#0f172a":"#ffffff", topBg:dark?"#0f172a":"#1a1a2e",
-    muted:dark?"#475569":"#888888"
-  };
+  return {bg:dark?"#0f172a":"#f8f7f4",card:dark?"#1e293b":"#ffffff",card2:dark?"#273548":"#f1f5f9",text:dark?"#f1f5f9":"#1a1a2e",subtext:dark?"#94a3b8":"#64748b",border:dark?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.07)",navBg:dark?"#0f172a":"#ffffff",topBg:dark?"#0f172a":"#1a1a2e",muted:dark?"#475569":"#888888"};
 };
 
-const globalStyles = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap');
+// ─── CINEMATIC STYLES ─────────────────────────────────
+const allStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@700;900&display=swap');
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{font-family:'DM Sans',sans-serif;}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  html,body{font-family:'DM Sans',sans-serif;overscroll-behavior:none;}
+
+  /* ── CINEMATIC ANIMATIONS ── */
+  @keyframes fadeIn       {from{opacity:0}to{opacity:1}}
+  @keyframes fadeOut      {from{opacity:1}to{opacity:0}}
+  @keyframes slideUp      {from{opacity:0;transform:translateY(50px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes slideDown    {from{opacity:0;transform:translateY(-40px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes scaleIn      {from{opacity:0;transform:scale(0.7)}to{opacity:1;transform:scale(1)}}
+  @keyframes scaleOut     {from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.3)}}
+  @keyframes glowPulse    {0%,100%{filter:drop-shadow(0 0 20px rgba(201,168,76,0.5))}50%{filter:drop-shadow(0 0 60px rgba(201,168,76,1)) drop-shadow(0 0 100px rgba(201,168,76,0.4))}}
+  @keyframes textGlow     {0%,100%{text-shadow:0 0 30px rgba(201,168,76,0.4)}50%{text-shadow:0 0 80px rgba(201,168,76,1),0 0 140px rgba(201,168,76,0.5)}}
+  @keyframes scanline     {0%{top:-5%}100%{top:105%}}
+  @keyframes particle     {0%{transform:translateY(0) rotate(0deg);opacity:0}15%{opacity:1}85%{opacity:0.6}100%{transform:translateY(-110vh) translateX(var(--x)) rotate(var(--r));opacity:0}}
+  @keyframes logoLetters  {0%{letter-spacing:1.5em;opacity:0;filter:blur(12px)}100%{letter-spacing:0.25em;opacity:1;filter:blur(0)}}
+  @keyframes lineExpand   {from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  @keyframes tagReveal    {0%{opacity:0;transform:translateY(20px);filter:blur(6px)}100%{opacity:1;transform:translateY(0);filter:blur(0)}}
+  @keyframes orbPulse     {0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.15}50%{transform:translate(-50%,-50%) scale(1.2);opacity:0.25}}
+  @keyframes ringExpand   {0%{transform:translate(-50%,-50%) scale(0);opacity:0.6}100%{transform:translate(-50%,-50%) scale(5);opacity:0}}
+  @keyframes bootLine     {from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes cursor       {0%,100%{opacity:1}50%{opacity:0}}
+  @keyframes progress     {from{width:0%}to{width:100%}}
+  @keyframes wipeRight    {from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0% 0 0)}}
+  @keyframes flashWhite   {0%{opacity:0}20%{opacity:0.8}100%{opacity:0}}
+  @keyframes portalOpen   {0%{transform:scale(0);border-radius:50%}100%{transform:scale(50);border-radius:50%}}
+  @keyframes countNum     {from{opacity:0;transform:scale(0.3) rotate(-10deg)}to{opacity:1;transform:scale(1) rotate(0deg)}}
+  @keyframes shimmerMove  {0%{background-position:-200% center}100%{background-position:200% center}}
+  @keyframes fadeAppear   {0%{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes bounce       {0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  @keyframes rotateCW     {from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @keyframes textFlicker  {0%,89%,91%,96%,100%{opacity:1}90%,95%{opacity:0.3}}
+  @keyframes bgKenBurns   {from{transform:scale(1) translate(0,0)}to{transform:scale(1.06) translate(-1%,-1%)}}
+
+  /* ── APP ANIMATIONS ── */
   .card:active{transform:scale(0.97);}
   input:focus,textarea:focus,select:focus{outline:none;}
   ::-webkit-scrollbar{display:none;}
 `;
 
-export default function App() {
-  var darkInit = false;
-  try { darkInit = localStorage.getItem("examnest_dark") === "true"; } catch(e) {}
-  var [dark, setDark] = useState(darkInit);
-  var [selected, setSelected] = useState(null);
-  var [tab, setTab] = useState("syllabus");
-  var [category, setCategory] = useState("All");
-  var [search, setSearch] = useState("");
-  var [navTab, setNavTab] = useState("home");
-  var T = getTheme(dark);
+// ─── PARTICLE ─────────────────────────────────────────
+function Particle(props) {
+  var i = props.index;
+  var x = ((Math.random()-0.5)*250)+"px";
+  var r = (Math.random()*720-360)+"deg";
+  var delay = Math.random()*5;
+  var dur = 5+Math.random()*7;
+  var size = 1.5+Math.random()*4;
+  var left = Math.random()*100;
+  var colors = ["#c9a84c","#e8c97e","#fff","#6366f1","#10b981","#f97316","#ec4899"];
+  var color = colors[Math.floor(Math.random()*colors.length)];
+  return (
+    <div style={{
+      position:"absolute", left:left+"%", bottom:"-10px",
+      width:size+"px", height:size+"px",
+      borderRadius:"50%", background:color,
+      pointerEvents:"none",
+      "--x":x, "--r":r,
+      animation:"particle "+dur+"s ease-in infinite "+delay+"s",
+      boxShadow:"0 0 "+(size*2)+"px "+color,
+    }}/>
+  );
+}
+
+// ─── PHASE 1: BOOT SCREEN ─────────────────────────────
+var BOOT_LINES = [
+  {text:"EXAMNEST SYSTEM v5.0.0 — INITIALIZING",color:"#22c55e",bold:true,delay:0},
+  {text:"████████████████████ Loading core modules...",color:"#475569",delay:250},
+  {text:"[OK] Exam database loaded — 80+ exams indexed",color:"#64748b",delay:600},
+  {text:"[OK] AI ExamBot neural module — ONLINE",color:"#6366f1",delay:950},
+  {text:"[OK] Study Planner — INITIALIZED",color:"#f97316",delay:1200},
+  {text:"[OK] Compare Engine — ACTIVE",color:"#ec4899",delay:1450},
+  {text:"[OK] Dark Mode — READY",color:"#7c3aed",delay:1650},
+  {text:"[OK] localStorage — CONNECTED",color:"#14b8a6",delay:1850},
+  {text:"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",color:"#1e293b",delay:2100},
+  {text:"▶  BOOT SEQUENCE COMPLETE — LAUNCHING",color:"#c9a84c",bold:true,delay:2300},
+];
+
+function BootScreen(props) {
+  var onComplete = props.onComplete;
+  var [visible, setVisible] = useState([]);
+  var [showBar, setShowBar] = useState(false);
 
   useEffect(function() {
-    try { localStorage.setItem("examnest_dark", String(dark)); } catch(e) {}
-  }, [dark]);
+    var timers = [];
+    BOOT_LINES.forEach(function(line,i) {
+      timers.push(setTimeout(function(){
+        setVisible(function(p){return p.concat([i]);});
+        if (i===BOOT_LINES.length-1) {
+          setShowBar(true);
+          timers.push(setTimeout(onComplete, 1000));
+        }
+      }, line.delay));
+    });
+    return function(){timers.forEach(clearTimeout);};
+  }, []);
+
+  return (
+    <div style={{
+      position:"fixed",inset:0,
+      background:"#000",
+      display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"flex-start",
+      padding:"10% 8%",
+      animation:"fadeIn 0.4s ease forwards",
+    }}>
+      {/* grid */}
+      <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(34,197,94,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(34,197,94,0.04) 1px,transparent 1px)",backgroundSize:"28px 28px",animation:"fadeIn 1s ease forwards"}}/>
+
+      {/* top bar */}
+      <div style={{position:"absolute",top:24,left:"8%",right:"8%",display:"flex",justifyContent:"space-between",fontSize:10,color:"rgba(34,197,94,0.35)",letterSpacing:"0.25em",fontFamily:"'Courier New',monospace"}}>
+        <span>EXAMNEST OS</span><span>INDIA EXAM PLATFORM</span><span>{new Date().toLocaleTimeString()}</span>
+      </div>
+
+      {/* corner decorations */}
+      {[{top:24,left:"8%",borderTop:"1px solid",borderLeft:"1px solid"},{top:24,right:"8%",borderTop:"1px solid",borderRight:"1px solid"},{bottom:24,left:"8%",borderBottom:"1px solid",borderLeft:"1px solid"},{bottom:24,right:"8%",borderBottom:"1px solid",borderRight:"1px solid"}].map(function(s,i){
+        return <div key={i} style={{position:"absolute",width:20,height:20,borderColor:"rgba(34,197,94,0.25)",...s}}/>;
+      })}
+
+      {/* lines */}
+      <div style={{width:"100%",maxWidth:580,fontFamily:"'Courier New',monospace"}}>
+        {BOOT_LINES.map(function(line,i) {
+          return (
+            <div key={i} style={{
+              fontSize:12,lineHeight:"1.9",
+              color:visible.includes(i)?line.color:"transparent",
+              fontWeight:line.bold?"700":"400",
+              animation:visible.includes(i)?"bootLine 0.15s ease forwards":"none",
+              display:"flex",alignItems:"center",gap:6,
+            }}>
+              {visible.includes(i)&&<span style={{color:"rgba(34,197,94,0.3)"}}>›</span>}
+              {visible.includes(i)?line.text:""}
+              {visible.includes(i)&&i===visible[visible.length-1]&&(
+                <span style={{display:"inline-block",width:6,height:13,background:"#22c55e",animation:"cursor 0.7s infinite",marginLeft:4}}/>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* progress */}
+      {showBar&&(
+        <div style={{position:"absolute",bottom:40,left:"8%",right:"8%"}}>
+          <div style={{fontSize:10,color:"rgba(201,168,76,0.6)",letterSpacing:"0.25em",marginBottom:8,fontFamily:"'Courier New',monospace"}}>LAUNCHING EXAMNEST...</div>
+          <div style={{height:2,background:"rgba(201,168,76,0.15)",borderRadius:2}}>
+            <div style={{height:"100%",background:"linear-gradient(90deg,#c9a84c,#e8c97e)",borderRadius:2,animation:"progress 0.9s linear forwards",boxShadow:"0 0 12px #c9a84c"}}/>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── PHASE 2: CINEMATIC LOGO ──────────────────────────
+function LogoScreen(props) {
+  var onComplete = props.onComplete;
+  var [step, setStep] = useState(0);
+
+  useEffect(function() {
+    var timers = [
+      setTimeout(function(){setStep(1);},200),
+      setTimeout(function(){setStep(2);},700),
+      setTimeout(function(){setStep(3);},1300),
+      setTimeout(function(){setStep(4);},1900),
+      setTimeout(function(){setStep(5);},2600),
+      setTimeout(onComplete,3800),
+    ];
+    return function(){timers.forEach(clearTimeout);};
+  }, []);
+
+  return (
+    <div style={{
+      position:"fixed",inset:0,
+      background:"radial-gradient(ellipse at 30% 40%,#0d0d2b 0%,#000 60%)",
+      display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+      overflow:"hidden",
+    }}>
+      {/* Animated background gradient */}
+      <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 70% 60%,rgba(99,102,241,0.08) 0%,transparent 60%)",animation:"bgKenBurns 4s ease-in-out infinite alternate"}}/>
+
+      {/* Particles */}
+      {Array.from({length:60}).map(function(_,i){return <Particle key={i} index={i}/>;}) }
+
+      {/* Scanline sweep */}
+      <div style={{position:"absolute",left:0,right:0,height:"1px",background:"linear-gradient(90deg,transparent 0%,rgba(201,168,76,0.4) 40%,rgba(255,255,255,0.2) 50%,rgba(201,168,76,0.4) 60%,transparent 100%)",animation:"scanline 2.5s linear infinite",pointerEvents:"none",zIndex:5}}/>
+
+      {/* Orbital rings */}
+      {step>=2&&[180,280,380].map(function(size,i){
+        return (
+          <div key={i} style={{
+            position:"absolute",top:"50%",left:"50%",
+            width:size,height:size,
+            border:"1px solid rgba(201,168,76,"+(0.12-i*0.03)+")",
+            borderRadius:"50%",
+            transform:"translate(-50%,-50%)",
+            animation:"rotateCW "+(20+i*8)+"s linear infinite",
+          }}/>
+        );
+      })}
+
+      {/* Glow orb */}
+      {step>=1&&(
+        <div style={{position:"absolute",top:"50%",left:"50%",width:500,height:500,background:"radial-gradient(circle,rgba(201,168,76,0.12) 0%,transparent 65%)",animation:"orbPulse 3s ease-in-out infinite",pointerEvents:"none"}}/>
+      )}
+
+      {/* Ripple rings on reveal */}
+      {step>=2&&[0,1,2].map(function(i){
+        return (
+          <div key={i} style={{position:"absolute",top:"50%",left:"50%",width:120,height:120,border:"2px solid rgba(201,168,76,0.5)",borderRadius:"50%",animation:"ringExpand 2.5s ease-out infinite",animationDelay:(i*0.7)+"s"}}/>
+        );
+      })}
+
+      {/* Main content */}
+      <div style={{textAlign:"center",position:"relative",zIndex:10}}>
+
+        {/* Icon */}
+        {step>=1&&(
+          <div style={{
+            fontSize:72,marginBottom:28,
+            animation:"scaleIn 0.9s cubic-bezier(0.34,1.56,0.64,1) forwards",
+            filter:"drop-shadow(0 0 40px rgba(201,168,76,0.7))",
+            display:"inline-block",
+          }}>📚</div>
+        )}
+
+        {/* EXAMNEST */}
+        {step>=2&&(
+          <div style={{
+            fontFamily:"'Cormorant Garamond',serif",
+            fontSize:"clamp(48px,9vw,96px)",
+            fontWeight:600,
+            letterSpacing:"0.25em",
+            animation:"logoLetters 1.2s cubic-bezier(0.16,1,0.3,1) forwards",
+            background:"linear-gradient(135deg,#e8c97e 0%,#fff 35%,#c9a84c 65%,#fff 80%,#e8c97e 100%)",
+            backgroundSize:"300%",
+            WebkitBackgroundClip:"text",
+            WebkitTextFillColor:"transparent",
+            backgroundClip:"text",
+            animation2:"shimmerMove 3s linear infinite",
+          }}>
+            EXAMNEST
+          </div>
+        )}
+
+        {/* Decorative line */}
+        {step>=3&&(
+          <div style={{position:"relative",width:"min(400px,85vw)",margin:"18px auto",height:1,overflow:"hidden"}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,transparent,#c9a84c,#fff,#c9a84c,transparent)",transformOrigin:"left",animation:"lineExpand 0.8s ease forwards"}}/>
+          </div>
+        )}
+
+        {/* Tagline */}
+        {step>=3&&(
+          <div style={{
+            fontFamily:"'Cormorant Garamond',serif",
+            fontSize:"clamp(13px,2.5vw,18px)",
+            fontStyle:"italic",
+            color:"rgba(201,168,76,0.85)",
+            letterSpacing:"0.2em",
+            animation:"tagReveal 1s ease forwards",
+            marginBottom:8,
+          }}>
+            India's Most Complete Exam Platform
+          </div>
+        )}
+
+        {step>=3&&(
+          <div style={{
+            fontFamily:"'DM Sans',sans-serif",
+            fontSize:11,
+            color:"rgba(255,255,255,0.3)",
+            letterSpacing:"0.4em",
+            textTransform:"uppercase",
+            animation:"tagReveal 1s ease forwards 0.2s",opacity:0,
+          }}>
+            UPSC · JEE · NEET · CAT · SSC · BANKING · LAW
+          </div>
+        )}
+
+        {/* Stats */}
+        {step>=4&&(
+          <div style={{display:"flex",gap:"clamp(24px,6vw,56px)",marginTop:40,justifyContent:"center",animation:"slideUp 0.9s ease forwards"}}>
+            {[["80+","Exams"],["5","Features"],["100%","Free"],["∞","Updated"]].map(function(arr){
+              return (
+                <div key={arr[1]} style={{textAlign:"center"}}>
+                  <div style={{
+                    fontFamily:"'Cormorant Garamond',serif",
+                    fontSize:"clamp(24px,5vw,40px)",
+                    fontWeight:700,
+                    color:"#c9a84c",
+                    animation:"textGlow 2s ease-in-out infinite",
+                    lineHeight:1,
+                  }}>{arr[0]}</div>
+                  <div style={{fontSize:9,color:"rgba(255,255,255,0.35)",letterSpacing:"0.25em",textTransform:"uppercase",marginTop:6}}>{arr[1]}</div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Enter button */}
+        {step>=5&&(
+          <div style={{marginTop:40,animation:"slideUp 0.8s ease forwards"}}>
+            <div style={{fontSize:11,color:"rgba(255,255,255,0.3)",letterSpacing:"0.3em",animation:"textFlicker 3s infinite"}}>
+              ▼ ENTERING NOW ▼
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Corner marks */}
+      {[
+        {top:20,left:20,borderTop:"1px solid",borderLeft:"1px solid"},
+        {top:20,right:20,borderTop:"1px solid",borderRight:"1px solid"},
+        {bottom:20,left:20,borderBottom:"1px solid",borderLeft:"1px solid"},
+        {bottom:20,right:20,borderBottom:"1px solid",borderRight:"1px solid"},
+      ].map(function(s,i){
+        return <div key={i} style={{position:"absolute",width:28,height:28,borderColor:"rgba(201,168,76,0.25)",animation:"fadeIn 1.5s ease forwards",...s}}/>;
+      })}
+
+      {/* Film grain overlay */}
+      <div style={{position:"absolute",inset:0,backgroundImage:"url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E\")",opacity:0.4,pointerEvents:"none"}}/>
+    </div>
+  );
+}
+
+// ─── PHASE 3: PORTAL TRANSITION ───────────────────────
+function PortalTransition(props) {
+  var onComplete = props.onComplete;
+  var [step, setStep] = useState(0);
+
+  useEffect(function() {
+    var t1 = setTimeout(function(){setStep(1);},100);
+    var t2 = setTimeout(function(){setStep(2);},500);
+    var t3 = setTimeout(onComplete, 1200);
+    return function(){clearTimeout(t1);clearTimeout(t2);clearTimeout(t3);};
+  }, []);
+
+  return (
+    <div style={{position:"fixed",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#000",overflow:"hidden"}}>
+      {/* Flash */}
+      {step>=2&&<div style={{position:"absolute",inset:0,background:"rgba(255,255,255,0.7)",animation:"flashWhite 0.5s ease forwards",pointerEvents:"none"}}/>}
+      {/* Expanding portal circle */}
+      {step>=1&&(
+        <div style={{
+          position:"absolute",top:"50%",left:"50%",
+          width:100,height:100,
+          borderRadius:"50%",
+          background:"radial-gradient(circle,#1a1a2e 0%,#0a0a1a 100%)",
+          transform:"translate(-50%,-50%)",
+          animation:step>=2?"portalOpen 0.8s cubic-bezier(0.4,0,0.2,1) forwards":"scaleIn 0.3s ease forwards",
+        }}/>
+      )}
+    </div>
+  );
+}
+
+// ─── CINEMATIC WRAPPER ────────────────────────────────
+function CinematicIntro(props) {
+  var onDone = props.onDone;
+  var [phase, setPhase] = useState("boot");
+
+  // Check if already seen this session
+  useEffect(function() {
+    try {
+      if (sessionStorage.getItem("examnest_intro_seen")) {
+        onDone();
+      }
+    } catch(e) {}
+  }, []);
+
+  function handleDone() {
+    try { sessionStorage.setItem("examnest_intro_seen","1"); } catch(e) {}
+    onDone();
+  }
+
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:9999}}>
+      <style>{allStyles}</style>
+      {phase==="boot"      && <BootScreen       onComplete={function(){setPhase("logo");}}   />}
+      {phase==="logo"      && <LogoScreen       onComplete={function(){setPhase("portal");}} />}
+      {phase==="portal"    && <PortalTransition onComplete={handleDone}                      />}
+
+      {/* Skip */}
+      <button onClick={handleDone} style={{
+        position:"fixed",bottom:28,right:28,
+        background:"rgba(255,255,255,0.04)",
+        border:"1px solid rgba(255,255,255,0.12)",
+        borderRadius:20,padding:"7px 18px",
+        color:"rgba(255,255,255,0.35)",fontSize:11,
+        fontFamily:"'DM Sans',sans-serif",
+        letterSpacing:"0.12em",cursor:"pointer",zIndex:10001,
+        transition:"all 0.2s",
+      }}
+      onMouseEnter={function(e){e.currentTarget.style.color="rgba(255,255,255,0.7)";e.currentTarget.style.borderColor="rgba(201,168,76,0.4)";}}
+      onMouseLeave={function(e){e.currentTarget.style.color="rgba(255,255,255,0.35)";e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";}}
+      >
+        SKIP INTRO ›
+      </button>
+    </div>
+  );
+}
+
+// ─── MAIN APP ─────────────────────────────────────────
+export default function App() {
+  var darkInit = false;
+  try { darkInit = localStorage.getItem("examnest_dark")==="true"; } catch(e) {}
+  var [showIntro, setShowIntro] = useState(true);
+  var [appReady, setAppReady]   = useState(false);
+  var [dark, setDark]           = useState(darkInit);
+  var [selected, setSelected]   = useState(null);
+  var [tab, setTab]             = useState("syllabus");
+  var [category, setCategory]   = useState("All");
+  var [search, setSearch]       = useState("");
+  var [navTab, setNavTab]       = useState("home");
+  var T = getTheme(dark);
+
+  useEffect(function(){ try{localStorage.setItem("examnest_dark",String(dark));}catch(e){} },[dark]);
+
+  function introDone() {
+    setShowIntro(false);
+    setTimeout(function(){setAppReady(true);},100);
+  }
 
   var filtered = exams.filter(function(e) {
-    var matchCat = category === "All" || e.category === category;
+    var matchCat = category==="All"||e.category===category;
     var s = search.toLowerCase();
-    var matchSearch = e.name.toLowerCase().includes(s) || e.full.toLowerCase().includes(s) || e.category.toLowerCase().includes(s);
-    return matchCat && matchSearch;
+    var matchSearch = e.name.toLowerCase().includes(s)||e.full.toLowerCase().includes(s)||e.category.toLowerCase().includes(s);
+    return matchCat&&matchSearch;
   });
 
-  function openExam(exam) { setSelected(exam); setTab("syllabus"); window.scrollTo(0,0); }
-  function goHome() { setSelected(null); setNavTab("home"); }
+  function openExam(exam){setSelected(exam);setTab("syllabus");window.scrollTo(0,0);}
+  function goHome(){setSelected(null);setNavTab("home");}
 
-  if (selected) return <DetailPage exam={selected} goHome={goHome} tab={tab} setTab={setTab} T={T} dark={dark} />;
+  if (selected) return <DetailPage exam={selected} goHome={goHome} tab={tab} setTab={setTab} T={T} dark={dark}/>;
 
   return (
     <>
-      <style>{globalStyles}</style>
-      <div style={{minHeight:"100vh",background:T.bg,paddingBottom:72,color:T.text}}>
+      <style>{allStyles}</style>
 
-        {navTab === "chat"    ? <ChatPage    setNavTab={setNavTab} T={T} dark={dark} /> :
-         navTab === "compare" ? <ComparePage setNavTab={setNavTab} T={T} dark={dark} /> :
-         navTab === "planner" ? <PlannerPage setNavTab={setNavTab} T={T} dark={dark} /> :
-         navTab === "about"   ? <AboutPage   goHome={function(){setNavTab("home");}} count={exams.length} T={T} dark={dark} /> : (
+      {/* Cinematic Intro */}
+      {showIntro && <CinematicIntro onDone={introDone}/>}
 
+      {/* Main App — fades in after intro */}
+      <div style={{
+        minHeight:"100vh",background:T.bg,paddingBottom:72,color:T.text,
+        opacity:appReady?1:0,
+        transform:appReady?"translateY(0)":"translateY(20px)",
+        transition:"opacity 0.8s ease, transform 0.8s ease",
+      }}>
+        {navTab==="chat"    ?<ChatPage    setNavTab={setNavTab} T={T} dark={dark}/>:
+         navTab==="compare" ?<ComparePage setNavTab={setNavTab} T={T} dark={dark}/>:
+         navTab==="planner" ?<PlannerPage setNavTab={setNavTab} T={T} dark={dark}/>:
+         navTab==="about"   ?<AboutPage   setNavTab={setNavTab} count={exams.length} T={T} dark={dark}/>:(
           <div>
+            {/* Top bar */}
             <div style={{background:T.topBg,padding:"16px 16px 0",position:"sticky",top:0,zIndex:50}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
                   <div style={{width:32,height:32,background:"rgba(255,255,255,0.1)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>📚</div>
                   <div>
-                    <div style={{fontFamily:"'Playfair Display',serif",fontSize:17,fontWeight:700,color:"#fff",lineHeight:1}}>ExamNest</div>
-                    <div style={{fontSize:9,color:"#c9a84c",letterSpacing:"0.12em",textTransform:"uppercase"}}>{exams.length}+ Exams · India</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,fontWeight:600,color:"#fff",lineHeight:1,letterSpacing:"0.05em"}}>ExamNest</div>
+                    <div style={{fontSize:9,color:"#c9a84c",letterSpacing:"0.15em",textTransform:"uppercase"}}>{exams.length}+ Exams · India</div>
                   </div>
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:10}}>
                   <div onClick={function(){setDark(!dark);}} style={{cursor:"pointer",display:"flex",alignItems:"center",gap:5}}>
-                    <span style={{fontSize:16}}>{dark ? "☀️" : "🌙"}</span>
+                    <span style={{fontSize:16}}>{dark?"☀️":"🌙"}</span>
                     <div style={{width:40,height:22,background:dark?"#6366f1":"rgba(255,255,255,0.2)",borderRadius:11,position:"relative"}}>
-                      <div style={{position:"absolute",top:3,left:dark?18:3,width:16,height:16,background:"#fff",borderRadius:"50%",transition:"left 0.3s ease",boxShadow:"0 1px 4px rgba(0,0,0,0.3)"}} />
+                      <div style={{position:"absolute",top:3,left:dark?18:3,width:16,height:16,background:"#fff",borderRadius:"50%",transition:"left 0.3s ease",boxShadow:"0 1px 4px rgba(0,0,0,0.3)"}}/>
                     </div>
                   </div>
                   <button onClick={function(){setNavTab("chat");}} style={{background:"linear-gradient(135deg,#6366f1,#ec4899)",border:"none",borderRadius:20,padding:"6px 12px",fontSize:11,color:"#fff",fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>🤖 AI</button>
                 </div>
               </div>
-
               <div style={{position:"relative",marginBottom:12}}>
                 <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"rgba(255,255,255,0.4)"}}>🔍</span>
-                <input
-                  value={search}
-                  onChange={function(e) { setSearch(e.target.value); }}
-                  placeholder={"Search " + exams.length + "+ exams — UPSC, JEE, NEET, CA, NDA..."}
-                  style={{width:"100%",padding:"11px 36px 11px 36px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:12,color:"#fff",fontSize:14,fontFamily:"inherit"}}
-                />
-                {search && <span onClick={function(){setSearch("");}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"rgba(255,255,255,0.5)",cursor:"pointer"}}>✕</span>}
+                <input value={search} onChange={function(e){setSearch(e.target.value);}} placeholder={"Search "+exams.length+"+ Indian exams..."} style={{width:"100%",padding:"11px 36px 11px 36px",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:12,color:"#fff",fontSize:14,fontFamily:"inherit"}}/>
+                {search&&<span onClick={function(){setSearch("");}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"rgba(255,255,255,0.5)",cursor:"pointer"}}>✕</span>}
               </div>
-
               <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:12}}>
-                {categories.map(function(c) {
-                  var count = c === "All" ? exams.length : exams.filter(function(e){return e.category===c;}).length;
+                {categories.map(function(c){
                   return (
                     <button key={c} onClick={function(){setCategory(c);}} style={{flexShrink:0,padding:"5px 11px",borderRadius:20,border:"none",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:500,background:category===c?"#c9a84c":"rgba(255,255,255,0.1)",color:category===c?"#1a1a2e":"rgba(255,255,255,0.7)"}}>
-                      {catIcons[c]} {c} ({count})
+                      {catIcons[c]} {c}
                     </button>
                   );
                 })}
               </div>
             </div>
 
+            {/* Feature banners */}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,padding:"12px 16px 0"}}>
-              {[
-                {tab:"compare",icon:"⚖️",label:"Compare",sub:"2 exams",bg:"linear-gradient(135deg,#0f172a,#1e3a5f)"},
-                {tab:"planner",icon:"📅",label:"Planner",sub:"Saved ✓",bg:"linear-gradient(135deg,#14532d,#166534)"},
-                {tab:"chat",icon:"🤖",label:"Ask AI",sub:"Instant help",bg:"linear-gradient(135deg,#1e1b4b,#312e81)"},
-              ].map(function(item) {
+              {[{tab:"compare",icon:"⚖️",label:"Compare",sub:"2 exams",bg:"linear-gradient(135deg,#0f172a,#1e3a5f)"},{tab:"planner",icon:"📅",label:"Planner",sub:"Saved ✓",bg:"linear-gradient(135deg,#14532d,#166534)"},{tab:"chat",icon:"🤖",label:"Ask AI",sub:"Instant help",bg:"linear-gradient(135deg,#1e1b4b,#312e81)"}].map(function(item){
                 return (
                   <div key={item.tab} onClick={function(){setNavTab(item.tab);}} style={{background:dark?"#1e293b":item.bg,borderRadius:13,padding:"11px 10px",cursor:"pointer",textAlign:"center",boxShadow:"0 3px 12px rgba(0,0,0,0.15)"}}>
                     <div style={{fontSize:20,marginBottom:3}}>{item.icon}</div>
@@ -292,26 +562,21 @@ export default function App() {
             </div>
 
             <div style={{padding:"12px 16px 4px"}}>
-              {search || category !== "All" ? (
-                <div style={{fontSize:12,color:T.muted}}>
-                  {filtered.length} exam{filtered.length!==1?"s":""} found
-                  {category !== "All" ? " in " + category : ""}
-                  {search ? " for \"" + search + "\"" : ""}
-                </div>
-              ) : (
+              {search||category!=="All"?(
+                <div style={{fontSize:12,color:T.muted}}>{filtered.length} exam{filtered.length!==1?"s":""} found</div>
+              ):(
                 <div>
-                  <div style={{fontSize:19,fontWeight:700,fontFamily:"'Playfair Display',serif",color:T.text}}>All India Exams 🇮🇳</div>
-                  <div style={{fontSize:12,color:T.muted,marginTop:2}}>{exams.length}+ exams across {categories.length-1} categories • Tap for details</div>
+                  <div style={{fontSize:19,fontWeight:700,fontFamily:"'Playfair Display',serif",color:T.text}}>All Exams 🇮🇳</div>
+                  <div style={{fontSize:12,color:T.muted,marginTop:2}}>{exams.length}+ exams · Tap for full details</div>
                 </div>
               )}
             </div>
 
             <div style={{padding:"8px 16px",display:"flex",flexDirection:"column",gap:10}}>
-              {filtered.map(function(exam, i) {
+              {filtered.map(function(exam,i){
                 return (
-                  <div key={exam.id} className="card" onClick={function(){openExam(exam);}}
-                    style={{background:T.card,borderRadius:16,overflow:"hidden",cursor:"pointer",boxShadow:dark?"0 2px 10px rgba(0,0,0,0.3)":"0 2px 10px rgba(0,0,0,0.06)",animation:"fadeUp 0.4s ease forwards "+Math.min(i*0.03,0.5)+"s",opacity:0,transition:"transform 0.15s"}}>
-                    <div style={{height:3,background:exam.color}} />
+                  <div key={exam.id} className="card" onClick={function(){openExam(exam);}} style={{background:T.card,borderRadius:16,overflow:"hidden",cursor:"pointer",boxShadow:dark?"0 2px 10px rgba(0,0,0,0.3)":"0 2px 10px rgba(0,0,0,0.06)",animation:"fadeAppear 0.4s ease forwards "+Math.min(i*0.04,0.4)+"s",opacity:0,transition:"transform 0.15s"}}>
+                    <div style={{height:3,background:exam.color}}/>
                     <div style={{padding:"13px 14px",display:"flex",alignItems:"center",gap:12}}>
                       <div style={{width:48,height:48,background:exam.color+"22",borderRadius:13,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{exam.icon}</div>
                       <div style={{flex:1,minWidth:0}}>
@@ -330,26 +595,25 @@ export default function App() {
                   </div>
                 );
               })}
-
-              {filtered.length === 0 && (
+              {filtered.length===0&&(
                 <div style={{textAlign:"center",padding:"60px 0",color:T.muted}}>
                   <div style={{fontSize:40,marginBottom:12}}>🔍</div>
                   <div style={{fontSize:15,fontWeight:600,color:T.text}}>No exams found</div>
-                  <div style={{fontSize:12,marginTop:4,color:T.muted}}>Try UPSC, SSC, JEE, NEET, CAT, RBI, AFCAT...</div>
-                  <button onClick={function(){setSearch(""); setCategory("All");}} style={{marginTop:14,padding:"9px 22px",background:"#6366f1",color:"#fff",border:"none",borderRadius:12,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Clear Filter</button>
+                  <button onClick={function(){setSearch("");setCategory("All");}} style={{marginTop:14,padding:"9px 22px",background:"#6366f1",color:"#fff",border:"none",borderRadius:12,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Clear Filter</button>
                 </div>
               )}
             </div>
           </div>
         )}
 
+        {/* Bottom Nav */}
         <div style={{position:"fixed",bottom:0,left:0,right:0,background:T.navBg,borderTop:"1px solid "+T.border,display:"flex",zIndex:100}}>
-          {[{id:"home",icon:"🏠",label:"Home"},{id:"planner",icon:"📅",label:"Planner"},{id:"compare",icon:"⚖️",label:"Compare"},{id:"chat",icon:"🤖",label:"AI Chat"},{id:"about",icon:"ℹ️",label:"About"}].map(function(item) {
+          {[{id:"home",icon:"🏠",label:"Home"},{id:"planner",icon:"📅",label:"Planner"},{id:"compare",icon:"⚖️",label:"Compare"},{id:"chat",icon:"🤖",label:"AI Chat"},{id:"about",icon:"ℹ️",label:"About"}].map(function(item){
             return (
               <button key={item.id} onClick={function(){setNavTab(item.id);}} style={{flex:1,padding:"8px 0 6px",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
                 <div style={{fontSize:17}}>{item.icon}</div>
                 <div style={{fontSize:8,fontFamily:"inherit",fontWeight:navTab===item.id?600:400,color:navTab===item.id?"#6366f1":T.muted}}>{item.label}</div>
-                {navTab===item.id && <div style={{width:4,height:4,borderRadius:"50%",background:"#6366f1"}} />}
+                {navTab===item.id&&<div style={{width:4,height:4,borderRadius:"50%",background:"#6366f1"}}/>}
               </button>
             );
           })}
@@ -359,139 +623,91 @@ export default function App() {
   );
 }
 
+// ─── PLANNER ──────────────────────────────────────────
 function PlannerPage(props) {
-  var setNavTab=props.setNavTab, T=props.T, dark=props.dark;
-  var [plannerData, setPlannerData] = useState(function(){ return loadData() || {examId:null,examDate:"",progress:{},step:1}; });
-  var examId=plannerData.examId, examDate=plannerData.examDate, progress=plannerData.progress, step=plannerData.step;
-  var planExam = exams.find(function(e){return e.id===examId;}) || null;
-
-  function update(patch) {
-    var nd = Object.assign({}, plannerData, patch);
-    setPlannerData(nd); saveData(nd);
-  }
-
-  var today = new Date();
-  var daysLeft = examDate ? Math.max(0, Math.ceil((new Date(examDate)-today)/(1000*60*60*24))) : 0;
-  var allTopics = planExam ? Object.entries(planExam.topics).reduce(function(acc,entry){ return acc.concat(entry[1].map(function(t){return {sub:entry[0],t:t,key:entry[0]+"::"+t};})); },[]) : [];
-  var totalTopics=allTopics.length, doneCount=allTopics.filter(function(x){return progress[x.key]===2;}).length, inProgressCount=allTopics.filter(function(x){return progress[x.key]===1;}).length;
-  var pct=totalTopics>0?Math.round((doneCount/totalTopics)*100):0;
-  var dailyTopics=daysLeft>0&&totalTopics>doneCount?Math.ceil((totalTopics-doneCount)/daysLeft):0;
-
-  function toggleTopic(key){ var np=Object.assign({},progress); np[key]=((progress[key]||0)+1)%3; update({progress:np}); }
-  function statusIcon(key){ var s=progress[key]||0; if(s===0)return{icon:"⬜",label:"Not Started",color:"#94a3b8"}; if(s===1)return{icon:"🟡",label:"In Progress",color:"#f59e0b"}; return{icon:"✅",label:"Completed",color:"#22c55e"}; }
-
-  var weekDays=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-  function generateWeekPlan(){ if(!planExam)return[]; var subs=Object.keys(planExam.topics); return weekDays.map(function(day,i){var sub=subs[i%subs.length];return{day:day,sub:sub,topics:planExam.topics[sub].slice(0,3)};}); }
-  function resetPlanner(){ var f={examId:null,examDate:"",progress:{},step:1}; setPlannerData(f); saveData(f); }
-
-  var examsWithTopics = exams.filter(function(e){return e.topics;});
-
-  return (
+  var setNavTab=props.setNavTab,T=props.T,dark=props.dark;
+  var [data,setData]=useState(function(){return loadData()||{examId:null,examDate:"",progress:{},step:1};});
+  var planExam=exams.find(function(e){return e.id===data.examId;})||null;
+  function upd(patch){var nd=Object.assign({},data,patch);setData(nd);saveData(nd);}
+  var today=new Date();
+  var daysLeft=data.examDate?Math.max(0,Math.ceil((new Date(data.examDate)-today)/(1000*60*60*24))):0;
+  var allTopics=planExam?Object.entries(planExam.topics).reduce(function(acc,e){return acc.concat(e[1].map(function(t){return{sub:e[0],t:t,key:e[0]+"::"+t};}));},[]):[];
+  var total=allTopics.length,done=allTopics.filter(function(x){return data.progress[x.key]===2;}).length,inp=allTopics.filter(function(x){return data.progress[x.key]===1;}).length;
+  var pct=total>0?Math.round((done/total)*100):0;
+  var daily=daysLeft>0&&total>done?Math.ceil((total-done)/daysLeft):0;
+  function tog(key){var np=Object.assign({},data.progress);np[key]=((data.progress[key]||0)+1)%3;upd({progress:np});}
+  function si(key){var s=data.progress[key]||0;if(s===0)return{icon:"⬜",label:"Not Started",color:"#94a3b8"};if(s===1)return{icon:"🟡",label:"In Progress",color:"#f59e0b"};return{icon:"✅",label:"Completed",color:"#22c55e"};}
+  function reset(){var f={examId:null,examDate:"",progress:{},step:1};setData(f);saveData(f);}
+  var wk=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+  function weekPlan(){if(!planExam)return[];var subs=Object.keys(planExam.topics);return wk.map(function(day,i){var s=subs[i%subs.length];return{day:day,sub:s,topics:planExam.topics[s].slice(0,3)};});}
+  return(
     <div style={{minHeight:"100vh",background:T.bg,paddingBottom:80,color:T.text}}>
       <div style={{background:"linear-gradient(135deg,#14532d,#166534)",padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
         <button onClick={function(){setNavTab("home");}} style={{background:"rgba(255,255,255,0.15)",border:"none",borderRadius:10,padding:"7px 12px",color:"#fff",cursor:"pointer",fontSize:13,fontFamily:"inherit"}}>← Back</button>
-        <div style={{flex:1}}>
-          <div style={{fontFamily:"'Playfair Display',serif",fontSize:16,fontWeight:700,color:"#fff"}}>📅 Study Planner</div>
-          <div style={{fontSize:11,color:"rgba(255,255,255,0.6)"}}>Progress saved permanently 🔒</div>
-        </div>
-        {planExam && step===3 && <div style={{background:"rgba(255,255,255,0.2)",borderRadius:20,padding:"4px 10px",fontSize:11,color:"#fff",fontWeight:600}}>{pct}% done</div>}
+        <div style={{flex:1}}><div style={{fontFamily:"'Playfair Display',serif",fontSize:16,fontWeight:700,color:"#fff"}}>📅 Study Planner</div><div style={{fontSize:11,color:"rgba(255,255,255,0.6)"}}>Auto-saved 🔒</div></div>
+        {planExam&&data.step===3&&<div style={{background:"rgba(255,255,255,0.2)",borderRadius:20,padding:"4px 10px",fontSize:11,color:"#fff",fontWeight:600}}>{pct}%</div>}
       </div>
-      {planExam && <div style={{background:dark?"#1e293b":"#f0fdf4",padding:"8px 16px",borderBottom:"1px solid "+T.border,display:"flex",alignItems:"center",gap:7}}><span>🔒</span><span style={{fontSize:12,color:"#16a34a",fontWeight:500}}>Progress saved — never resets!</span></div>}
+      {planExam&&<div style={{background:dark?"#1e293b":"#f0fdf4",padding:"8px 16px",borderBottom:"1px solid "+T.border,display:"flex",gap:7}}><span>🔒</span><span style={{fontSize:12,color:"#16a34a",fontWeight:500}}>Progress saved — never resets!</span></div>}
       <div style={{padding:"16px"}}>
-        {step===1 && (
+        {data.step===1&&(
           <div>
             <div style={{fontSize:15,fontWeight:700,color:T.text,marginBottom:4}}>Choose your exam</div>
-            <div style={{fontSize:12,color:T.muted,marginBottom:14}}>Select from {examsWithTopics.length} exams with topic tracking</div>
-            {examsWithTopics.map(function(exam){
-              return (
-                <div key={exam.id} onClick={function(){update({examId:exam.id,step:2});}} className="card"
-                  style={{background:T.card,borderRadius:14,padding:"13px 14px",cursor:"pointer",display:"flex",alignItems:"center",gap:12,marginBottom:9,boxShadow:dark?"0 2px 8px rgba(0,0,0,0.3)":"0 1px 6px rgba(0,0,0,0.07)",transition:"transform 0.15s"}}>
-                  <div style={{width:42,height:42,background:exam.color+"20",borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{exam.icon}</div>
-                  <div style={{flex:1}}>
-                    <div style={{fontFamily:"'Playfair Display',serif",fontSize:14,fontWeight:700,color:T.text}}>{exam.name}</div>
-                    <div style={{fontSize:11,color:T.muted,marginTop:2}}>{exam.category} • {exam.difficulty} • {Object.values(exam.topics).reduce(function(a,b){return a+b.length;},0)} topics</div>
-                  </div>
-                  <div style={{fontSize:16,color:T.muted}}>›</div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-        {step===2 && planExam && (
-          <div>
-            <button onClick={function(){update({step:1});}} style={{background:"none",border:"none",color:T.muted,cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:14,display:"flex",alignItems:"center",gap:5}}>← Change Exam</button>
-            <div style={{background:planExam.color,borderRadius:14,padding:"14px",marginBottom:16,display:"flex",alignItems:"center",gap:12}}>
-              <div style={{fontSize:32}}>{planExam.icon}</div>
-              <div><div style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:"#fff"}}>{planExam.name}</div><div style={{fontSize:12,color:"rgba(255,255,255,0.8)"}}>{planExam.full}</div></div>
-            </div>
-            <div style={{fontSize:15,fontWeight:700,color:T.text,marginBottom:4}}>Set your exam date</div>
-            <div style={{background:T.card,borderRadius:14,padding:"16px",marginBottom:14}}>
-              <input type="date" value={examDate} onChange={function(e){update({examDate:e.target.value});}} min={new Date().toISOString().split("T")[0]}
-                style={{width:"100%",padding:"12px",background:T.card2,border:"1px solid "+T.border,borderRadius:10,fontSize:14,fontFamily:"inherit",color:T.text,cursor:"pointer"}} />
-            </div>
-            {examDate && (
-              <div style={{background:dark?"#1e293b":"#f0fdf4",borderRadius:14,padding:"14px",marginBottom:14,border:"1px solid #22c55e40"}}>
-                <div style={{fontSize:13,color:"#22c55e",fontWeight:600,marginBottom:4}}>🎯 {daysLeft} days left!</div>
-                <div style={{fontSize:12,color:T.subtext}}>{daysLeft>=90?"Great! Plenty of time. Plan smartly! 💪":daysLeft>=30?"Good time. Stay consistent! 📚":daysLeft>=7?"Time is short! Focus on priority topics! ⚡":"Very few days! High-priority topics only! 🔥"}</div>
+            <div style={{fontSize:12,color:T.muted,marginBottom:14}}>Select the exam you are preparing for</div>
+            {exams.filter(function(e){return e.topics;}).map(function(exam){return(
+              <div key={exam.id} onClick={function(){upd({examId:exam.id,step:2});}} className="card" style={{background:T.card,borderRadius:14,padding:"13px 14px",cursor:"pointer",display:"flex",alignItems:"center",gap:12,marginBottom:9,boxShadow:dark?"0 2px 8px rgba(0,0,0,0.3)":"0 1px 6px rgba(0,0,0,0.07)",transition:"transform 0.15s"}}>
+                <div style={{width:42,height:42,background:exam.color+"20",borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{exam.icon}</div>
+                <div style={{flex:1}}><div style={{fontFamily:"'Playfair Display',serif",fontSize:14,fontWeight:700,color:T.text}}>{exam.name}</div><div style={{fontSize:11,color:T.muted,marginTop:2}}>{exam.category} • {exam.difficulty} • {Object.values(exam.topics).reduce(function(a,b){return a+b.length;},0)} topics</div></div>
+                <div style={{fontSize:16,color:T.muted}}>›</div>
               </div>
-            )}
-            <button onClick={function(){if(examDate)update({step:3});}} disabled={!examDate}
-              style={{width:"100%",padding:"14px",background:examDate?"linear-gradient(135deg,#16a34a,#22c55e)":"#334155",border:"none",borderRadius:14,color:"#fff",fontSize:15,fontWeight:600,cursor:examDate?"pointer":"not-allowed",fontFamily:"inherit"}}>
-              Generate My Study Plan →
-            </button>
+            );})}
           </div>
         )}
-        {step===3 && planExam && examDate && (
+        {data.step===2&&planExam&&(
           <div>
-            <button onClick={function(){update({step:2});}} style={{background:"none",border:"none",color:T.muted,cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:14,display:"flex",alignItems:"center",gap:5}}>← Change Date</button>
+            <button onClick={function(){upd({step:1});}} style={{background:"none",border:"none",color:T.muted,cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:14,display:"flex",alignItems:"center",gap:5}}>← Change Exam</button>
+            <div style={{background:planExam.color,borderRadius:14,padding:"14px",marginBottom:16,display:"flex",alignItems:"center",gap:12}}><div style={{fontSize:32}}>{planExam.icon}</div><div><div style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:"#fff"}}>{planExam.name}</div><div style={{fontSize:12,color:"rgba(255,255,255,0.8)"}}>{planExam.full}</div></div></div>
+            <div style={{background:T.card,borderRadius:14,padding:"16px",marginBottom:14}}><input type="date" value={data.examDate} onChange={function(e){upd({examDate:e.target.value});}} min={new Date().toISOString().split("T")[0]} style={{width:"100%",padding:"12px",background:T.card2,border:"1px solid "+T.border,borderRadius:10,fontSize:14,fontFamily:"inherit",color:T.text,cursor:"pointer"}}/></div>
+            {data.examDate&&<div style={{background:dark?"#1e293b":"#f0fdf4",borderRadius:14,padding:"14px",marginBottom:14,border:"1px solid #22c55e40"}}><div style={{fontSize:13,color:"#22c55e",fontWeight:600,marginBottom:4}}>🎯 {daysLeft} days left!</div><div style={{fontSize:12,color:T.subtext}}>{daysLeft>=90?"Great! Plenty of time 💪":daysLeft>=30?"Good time. Stay consistent! 📚":daysLeft>=7?"Time is short! Focus! ⚡":"Very few days! High-priority only! 🔥"}</div></div>}
+            <button onClick={function(){if(data.examDate)upd({step:3});}} disabled={!data.examDate} style={{width:"100%",padding:"14px",background:data.examDate?"linear-gradient(135deg,#16a34a,#22c55e)":"#334155",border:"none",borderRadius:14,color:"#fff",fontSize:15,fontWeight:600,cursor:data.examDate?"pointer":"not-allowed",fontFamily:"inherit"}}>Generate My Study Plan →</button>
+          </div>
+        )}
+        {data.step===3&&planExam&&data.examDate&&(
+          <div>
+            <button onClick={function(){upd({step:2});}} style={{background:"none",border:"none",color:T.muted,cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:14}}>← Change Date</button>
             <div style={{background:planExam.color,borderRadius:16,padding:"16px",marginBottom:14}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
                 <div><div style={{fontFamily:"'Playfair Display',serif",fontSize:17,fontWeight:700,color:"#fff"}}>{planExam.name}</div><div style={{fontSize:12,color:"rgba(255,255,255,0.75)",marginTop:2}}>🗓️ {daysLeft} days remaining</div></div>
                 <div style={{textAlign:"right"}}><div style={{fontFamily:"'Playfair Display',serif",fontSize:32,fontWeight:900,color:"#fff"}}>{pct}%</div><div style={{fontSize:10,color:"rgba(255,255,255,0.7)"}}>completed</div></div>
               </div>
-              <div style={{background:"rgba(0,0,0,0.2)",borderRadius:10,height:10,overflow:"hidden",marginBottom:10}}><div style={{height:"100%",borderRadius:10,background:"rgba(255,255,255,0.9)",width:pct+"%",transition:"width 0.5s ease"}} /></div>
-              <div style={{display:"flex",gap:16,flexWrap:"wrap"}}>
-                {[["✅",doneCount,"Done"],["🟡",inProgressCount,"In Progress"],["⬜",totalTopics-doneCount-inProgressCount,"Pending"]].map(function(arr){return(<div key={arr[2]} style={{textAlign:"center"}}><div style={{fontSize:16,fontWeight:700,color:"#fff"}}>{arr[1]}</div><div style={{fontSize:9,color:"rgba(255,255,255,0.7)"}}>{arr[0]} {arr[2]}</div></div>);})}
-                {dailyTopics>0 && <div style={{textAlign:"center",marginLeft:"auto"}}><div style={{fontSize:16,fontWeight:700,color:"#fff"}}>{dailyTopics}</div><div style={{fontSize:9,color:"rgba(255,255,255,0.7)"}}>📅 topics/day</div></div>}
-              </div>
+              <div style={{background:"rgba(0,0,0,0.2)",borderRadius:10,height:10,overflow:"hidden",marginBottom:10}}><div style={{height:"100%",borderRadius:10,background:"rgba(255,255,255,0.9)",width:pct+"%",transition:"width 0.5s ease"}}/></div>
+              <div style={{display:"flex",gap:16}}>{[["✅",done,"Done"],["🟡",inp,"In Progress"],["⬜",total-done-inp,"Pending"]].map(function(a){return <div key={a[2]} style={{textAlign:"center"}}><div style={{fontSize:16,fontWeight:700,color:"#fff"}}>{a[1]}</div><div style={{fontSize:9,color:"rgba(255,255,255,0.7)"}}>{a[0]} {a[2]}</div></div>;})}{daily>0&&<div style={{textAlign:"center",marginLeft:"auto"}}><div style={{fontSize:16,fontWeight:700,color:"#fff"}}>{daily}</div><div style={{fontSize:9,color:"rgba(255,255,255,0.7)"}}>📅/day</div></div>}</div>
             </div>
             <div style={{background:T.card,borderRadius:14,padding:"14px",marginBottom:14}}>
-              <div style={{fontSize:13,fontWeight:700,color:T.text,marginBottom:10}}>📋 Weekly Study Schedule</div>
-              {generateWeekPlan().map(function(item,i){return(
-                <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"8px 0",borderBottom:i<6?"1px solid "+T.border:"none"}}>
-                  <div style={{width:65,flexShrink:0}}><div style={{fontSize:11,fontWeight:700,color:planExam.color}}>{item.day}</div></div>
-                  <div style={{flex:1}}><div style={{fontSize:11,fontWeight:600,color:T.subtext,marginBottom:2}}>{item.sub}</div><div style={{fontSize:11,color:T.muted}}>{item.topics.join(", ")}</div></div>
-                </div>
-              );})}
+              <div style={{fontSize:13,fontWeight:700,color:T.text,marginBottom:10}}>📋 Weekly Schedule</div>
+              {weekPlan().map(function(item,i){return(<div key={i} style={{display:"flex",gap:10,padding:"7px 0",borderBottom:i<6?"1px solid "+T.border:"none"}}><div style={{width:65,fontSize:11,fontWeight:700,color:planExam.color,flexShrink:0}}>{item.day}</div><div style={{fontSize:11,color:T.muted}}><span style={{fontWeight:600,color:T.subtext}}>{item.sub}:</span> {item.topics.join(", ")}</div></div>);})}
             </div>
-            <div style={{fontSize:14,fontWeight:700,color:T.text,marginBottom:6}}>📊 Topic Progress Tracker</div>
+            <div style={{fontSize:14,fontWeight:700,color:T.text,marginBottom:6}}>📊 Topic Tracker</div>
             <div style={{fontSize:11,color:T.muted,marginBottom:10}}>Tap any topic to update • Auto-saved 🔒</div>
             {Object.entries(planExam.topics).map(function(entry){
-              var subject=entry[0], topics=entry[1];
-              var subDone=topics.filter(function(t){return progress[subject+"::"+t]===2;}).length;
+              var subject=entry[0],topics=entry[1];
+              var subDone=topics.filter(function(t){return data.progress[subject+"::"+t]===2;}).length;
               return(
                 <div key={subject} style={{marginBottom:14}}>
-                  <div style={{background:planExam.color,borderRadius:"10px 10px 0 0",padding:"8px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>{subject}</div>
-                    <div style={{fontSize:10,color:"rgba(255,255,255,0.75)"}}>{subDone}/{topics.length} done</div>
-                  </div>
+                  <div style={{background:planExam.color,borderRadius:"10px 10px 0 0",padding:"8px 14px",display:"flex",justifyContent:"space-between"}}><div style={{fontSize:13,fontWeight:700,color:"#fff"}}>{subject}</div><div style={{fontSize:10,color:"rgba(255,255,255,0.75)"}}>{subDone}/{topics.length} done</div></div>
                   <div style={{background:T.card,borderRadius:"0 0 10px 10px",overflow:"hidden"}}>
-                    {topics.map(function(topic,i){
-                      var key=subject+"::"+topic, st=statusIcon(key);
-                      return(
-                        <div key={i} onClick={function(){toggleTopic(key);}} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",borderBottom:i<topics.length-1?"1px solid "+T.border:"none",cursor:"pointer"}}>
-                          <span style={{fontSize:18,flexShrink:0}}>{st.icon}</span>
-                          <div style={{flex:1}}><div style={{fontSize:13,color:T.text,fontWeight:500}}>{topic}</div><div style={{fontSize:10,color:st.color,marginTop:1}}>{st.label}</div></div>
-                          <span style={{fontSize:10,color:T.muted}}>tap</span>
-                        </div>
-                      );
-                    })}
+                    {topics.map(function(topic,i){var key=subject+"::"+topic,st=si(key);return(
+                      <div key={i} onClick={function(){tog(key);}} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",borderBottom:i<topics.length-1?"1px solid "+T.border:"none",cursor:"pointer"}}>
+                        <span style={{fontSize:18,flexShrink:0}}>{st.icon}</span>
+                        <div style={{flex:1}}><div style={{fontSize:13,color:T.text,fontWeight:500}}>{topic}</div><div style={{fontSize:10,color:st.color,marginTop:1}}>{st.label}</div></div>
+                        <span style={{fontSize:10,color:T.muted}}>tap</span>
+                      </div>
+                    );})}
                   </div>
                 </div>
               );
             })}
-            {pct===100 && <div style={{background:"linear-gradient(135deg,#14532d,#166534)",borderRadius:14,padding:"16px",textAlign:"center",marginTop:8}}><div style={{fontSize:36,marginBottom:8}}>🎉</div><div style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:"#fff",marginBottom:4}}>All Topics Completed!</div><div style={{fontSize:13,color:"rgba(255,255,255,0.8)"}}>Amazing! Now focus on revision and mock tests! 💪</div></div>}
-            <button onClick={resetPlanner} style={{width:"100%",marginTop:16,padding:"12px",background:"none",border:"1px solid "+T.border,borderRadius:12,color:T.muted,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>🔄 Reset and Start Different Exam</button>
+            {pct===100&&<div style={{background:"linear-gradient(135deg,#14532d,#166534)",borderRadius:14,padding:"16px",textAlign:"center",marginTop:8}}><div style={{fontSize:36,marginBottom:8}}>🎉</div><div style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:"#fff",marginBottom:4}}>All Topics Completed!</div><div style={{fontSize:13,color:"rgba(255,255,255,0.8)"}}>Now focus on revision and mock tests! 💪</div></div>}
+            <button onClick={reset} style={{width:"100%",marginTop:16,padding:"12px",background:"none",border:"1px solid "+T.border,borderRadius:12,color:T.muted,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>🔄 Reset & Start Different Exam</button>
           </div>
         )}
       </div>
@@ -499,136 +715,105 @@ function PlannerPage(props) {
   );
 }
 
+// ─── COMPARE ──────────────────────────────────────────
 function ComparePage(props) {
-  var setNavTab=props.setNavTab, T=props.T, dark=props.dark;
-  var [e1, setE1] = useState(exams[0]);
-  var [e2, setE2] = useState(exams[10]);
-  var rows = [
-    {label:"Category",icon:"🏷️",fn:function(e){return e.category;}},
-    {label:"Difficulty",icon:"🔥",fn:function(e){return e.difficulty;}},
-    {label:"Frequency",icon:"📅",fn:function(e){return e.frequency;}},
-    {label:"Total Marks",icon:"📊",fn:function(e){return e.pattern.total;}},
-    {label:"Duration",icon:"⏱️",fn:function(e){return e.pattern.duration;}},
-    {label:"Negative Marking",icon:"⚠️",fn:function(e){return e.pattern.negative;}},
-    {label:"Available Seats",icon:"🪑",fn:function(e){return e.seats;}},
-    {label:"Avg Salary",icon:"💰",fn:function(e){return e.salary;}},
-    {label:"Course Duration",icon:"🗓️",fn:function(e){return e.duration;}},
-    {label:"Eligibility",icon:"✅",fn:function(e){return e.eligibility;}},
-  ];
-  return (
+  var setNavTab=props.setNavTab,T=props.T,dark=props.dark;
+  var [e1,setE1]=useState(exams[0]);
+  var [e2,setE2]=useState(exams[2]);
+  var rows=[{label:"Category",icon:"🏷️",fn:function(e){return e.category;}},{label:"Difficulty",icon:"🔥",fn:function(e){return e.difficulty;}},{label:"Frequency",icon:"📅",fn:function(e){return e.frequency;}},{label:"Total Marks",icon:"📊",fn:function(e){return e.pattern.total;}},{label:"Duration",icon:"⏱️",fn:function(e){return e.pattern.duration;}},{label:"Negative Marking",icon:"⚠️",fn:function(e){return e.pattern.negative;}},{label:"Available Seats",icon:"🪑",fn:function(e){return e.seats;}},{label:"Avg Salary",icon:"💰",fn:function(e){return e.salary;}},{label:"Course Duration",icon:"🗓️",fn:function(e){return e.duration;}},{label:"Eligibility",icon:"✅",fn:function(e){return e.eligibility;}}];
+  return(
     <div style={{minHeight:"100vh",background:T.bg,paddingBottom:80,color:T.text}}>
       <div style={{background:"linear-gradient(135deg,#0f172a,#1e3a5f)",padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
         <button onClick={function(){setNavTab("home");}} style={{background:"rgba(255,255,255,0.15)",border:"none",borderRadius:10,padding:"7px 12px",color:"#fff",cursor:"pointer",fontSize:13,fontFamily:"inherit"}}>← Back</button>
         <div><div style={{fontFamily:"'Playfair Display',serif",fontSize:16,fontWeight:700,color:"#fff"}}>⚖️ Compare Exams</div><div style={{fontSize:11,color:"rgba(255,255,255,0.6)"}}>Pick any 2 from {exams.length}+ exams</div></div>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,padding:"14px 14px 0"}}>
-        {[{val:e1,set:setE1,label:"Exam 1"},{val:e2,set:setE2,label:"Exam 2"}].map(function(item,idx){
-          return(
-            <div key={idx}>
-              <div style={{fontSize:11,color:T.muted,marginBottom:6,fontWeight:600}}>{item.label}</div>
-              <div style={{background:T.card,borderRadius:12,border:"2px solid "+item.val.color,overflow:"hidden"}}>
-                <div style={{background:item.val.color,padding:"8px 10px",display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:18}}>{item.val.icon}</span><span style={{fontSize:12,fontWeight:700,color:"#fff"}}>{item.val.name}</span></div>
-                <select value={item.val.id} onChange={function(ev){item.set(exams.find(function(x){return x.id===ev.target.value;}));}} style={{width:"100%",padding:"8px 10px",border:"none",background:T.card,fontSize:12,fontFamily:"inherit",color:T.text,cursor:"pointer"}}>
-                  {exams.map(function(ex){return <option key={ex.id} value={ex.id}>{ex.name} ({ex.category})</option>;})}
-                </select>
-              </div>
+        {[{val:e1,set:setE1,label:"Exam 1"},{val:e2,set:setE2,label:"Exam 2"}].map(function(item,idx){return(
+          <div key={idx}>
+            <div style={{fontSize:11,color:T.muted,marginBottom:6,fontWeight:600}}>{item.label}</div>
+            <div style={{background:T.card,borderRadius:12,border:"2px solid "+item.val.color,overflow:"hidden"}}>
+              <div style={{background:item.val.color,padding:"8px 10px",display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:18}}>{item.val.icon}</span><span style={{fontSize:12,fontWeight:700,color:"#fff"}}>{item.val.name}</span></div>
+              <select value={item.val.id} onChange={function(ev){item.set(exams.find(function(x){return x.id===ev.target.value;}));}} style={{width:"100%",padding:"8px 10px",border:"none",background:T.card,fontSize:12,fontFamily:"inherit",color:T.text,cursor:"pointer"}}>
+                {exams.map(function(ex){return <option key={ex.id} value={ex.id}>{ex.name} ({ex.category})</option>;})}
+              </select>
             </div>
-          );
-        })}
+          </div>
+        );})}
       </div>
       <div style={{textAlign:"center",padding:"10px 0 6px"}}><span style={{background:"#1a1a2e",color:"#fff",borderRadius:20,padding:"4px 14px",fontSize:12,fontWeight:700}}>VS</span></div>
       <div style={{padding:"0 14px"}}>
-        {rows.map(function(row,i){
-          return(
-            <div key={i} style={{background:T.card,borderRadius:13,marginBottom:9,overflow:"hidden",boxShadow:dark?"0 2px 8px rgba(0,0,0,0.3)":"0 1px 6px rgba(0,0,0,0.05)"}}>
-              <div style={{background:dark?"rgba(255,255,255,0.05)":"#f8f7f4",padding:"6px 12px",fontSize:11,fontWeight:600,color:T.muted,borderBottom:"1px solid "+T.border}}>{row.icon} {row.label}</div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 4px 1fr"}}>
-                <div style={{padding:"10px 12px",fontSize:12,color:T.text,lineHeight:1.5}}>{row.fn(e1)}</div>
-                <div style={{background:T.border}} />
-                <div style={{padding:"10px 12px",fontSize:12,color:T.text,lineHeight:1.5}}>{row.fn(e2)}</div>
-              </div>
-            </div>
-          );
-        })}
+        {rows.map(function(row,i){return(
+          <div key={i} style={{background:T.card,borderRadius:13,marginBottom:9,overflow:"hidden",boxShadow:dark?"0 2px 8px rgba(0,0,0,0.3)":"0 1px 6px rgba(0,0,0,0.05)"}}>
+            <div style={{background:dark?"rgba(255,255,255,0.05)":"#f8f7f4",padding:"6px 12px",fontSize:11,fontWeight:600,color:T.muted,borderBottom:"1px solid "+T.border}}>{row.icon} {row.label}</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 4px 1fr"}}><div style={{padding:"10px 12px",fontSize:12,color:T.text,lineHeight:1.5}}>{row.fn(e1)}</div><div style={{background:T.border}}/><div style={{padding:"10px 12px",fontSize:12,color:T.text,lineHeight:1.5}}>{row.fn(e2)}</div></div>
+          </div>
+        );})}
         <div style={{background:T.card,borderRadius:13,padding:"14px",marginBottom:9}}>
           <div style={{fontSize:12,fontWeight:600,color:T.muted,marginBottom:12}}>🔥 DIFFICULTY METER</div>
           {[e1,e2].map(function(e,i){return(
             <div key={i} style={{marginBottom:i===0?12:0}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}><span style={{fontSize:12,fontWeight:600,color:T.text}}>{e.name}</span><span style={{fontSize:11,color:diffColor[e.difficulty],fontWeight:600}}>{e.difficulty}</span></div>
-              <div style={{background:dark?"rgba(255,255,255,0.08)":"#f1f5f9",borderRadius:10,height:10,overflow:"hidden"}}><div style={{height:"100%",borderRadius:10,background:diffColor[e.difficulty],width:(e.diffScore*20)+"%",transition:"width 0.5s ease"}} /></div>
+              <div style={{background:dark?"rgba(255,255,255,0.08)":"#f1f5f9",borderRadius:10,height:10,overflow:"hidden"}}><div style={{height:"100%",borderRadius:10,background:diffColor[e.difficulty],width:(e.diffScore*20)+"%",transition:"width 0.5s ease"}}/></div>
             </div>
           );})}
         </div>
         <div style={{background:"linear-gradient(135deg,#1a1a2e,#2d1b69)",borderRadius:13,padding:"14px"}}>
           <div style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.6)",marginBottom:8}}>💡 QUICK VERDICT</div>
-          <div style={{fontSize:13,color:"#fff",lineHeight:1.7}}>
-            {e1.diffScore<e2.diffScore?"✅ "+e1.name+" is easier than "+e2.name+".":e1.diffScore>e2.diffScore?"✅ "+e2.name+" is easier than "+e1.name+".":"🤝 Both have similar difficulty."}
-            {" "}Choose based on your stream and career goals!
-          </div>
+          <div style={{fontSize:13,color:"#fff",lineHeight:1.7}}>{e1.diffScore<e2.diffScore?"✅ "+e1.name+" is easier than "+e2.name+".":e1.diffScore>e2.diffScore?"✅ "+e2.name+" is easier than "+e1.name+".":"🤝 Both have similar difficulty."} Choose based on your stream and career goals!</div>
         </div>
       </div>
     </div>
   );
 }
 
+// ─── CHAT ─────────────────────────────────────────────
 function ChatPage(props) {
-  var setNavTab=props.setNavTab, T=props.T;
-  var [messages, setMessages] = useState([{role:"bot",text:"👋 Hi! I am **ExamBot**!\n\nI know about **"+exams.length+"+ Indian exams** — UPSC, SSC, Banking, Railway, Defence, Engineering, Medical, Law, Management and more!\n\nAsk me anything! 😊"}]);
-  var [input, setInput] = useState("");
-  var [loading, setLoading] = useState(false);
-  var bottomRef = useRef(null);
-  useEffect(function(){ if(bottomRef.current) bottomRef.current.scrollIntoView({behavior:"smooth"}); }, [messages, loading]);
-  function send(text){
-    var q=(text||input).trim(); if(!q||loading)return;
-    setInput("");
-    setMessages(function(prev){return prev.concat([{role:"user",text:q}]);});
-    setLoading(true);
-    setTimeout(function(){setMessages(function(prev){return prev.concat([{role:"bot",text:getBotReply(q)}]);});setLoading(false);},700);
-  }
+  var setNavTab=props.setNavTab,T=props.T;
+  var [messages,setMessages]=useState([{role:"bot",text:"👋 Hi! I am **ExamBot**!\n\nI know about "+exams.length+"+ Indian exams!\n\nAsk me about syllabus, cutoffs, books, tips or eligibility for any exam! 😊"}]);
+  var [input,setInput]=useState("");
+  var [loading,setLoading]=useState(false);
+  var bottomRef=useRef(null);
+  useEffect(function(){if(bottomRef.current)bottomRef.current.scrollIntoView({behavior:"smooth"});},[messages,loading]);
+  function send(text){var q=(text||input).trim();if(!q||loading)return;setInput("");setMessages(function(p){return p.concat([{role:"user",text:q}]);});setLoading(true);setTimeout(function(){setMessages(function(p){return p.concat([{role:"bot",text:getBotReply(q)}]);});setLoading(false);},700);}
   function fmt(t){return t.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\n/g,"<br/>");}
-  return (
+  var quickQs=["Hello! What can you do?","JEE Main cutoff 2024","Best books for UPSC","NEET eligibility","Toughest exam in India"];
+  return(
     <div style={{height:"100vh",display:"flex",flexDirection:"column",background:T.bg}}>
       <div style={{background:"linear-gradient(135deg,#1e1b4b,#312e81)",padding:"14px 16px",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
         <button onClick={function(){setNavTab("home");}} style={{background:"rgba(255,255,255,0.15)",border:"none",borderRadius:10,padding:"7px 12px",color:"#fff",cursor:"pointer",fontSize:13,fontFamily:"inherit"}}>← Back</button>
         <div style={{width:34,height:34,background:"linear-gradient(135deg,#6366f1,#ec4899)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:17}}>🤖</div>
         <div><div style={{fontSize:14,fontWeight:700,color:"#fff"}}>ExamBot AI</div><div style={{fontSize:11,color:"rgba(255,255,255,0.6)"}}>{exams.length}+ exams · Ask anything</div></div>
-        <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:5}}><div style={{width:7,height:7,borderRadius:"50%",background:"#22c55e"}} /><span style={{fontSize:10,color:"rgba(255,255,255,0.5)"}}>Online</span></div>
+        <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:5}}><div style={{width:7,height:7,borderRadius:"50%",background:"#22c55e"}}/><span style={{fontSize:10,color:"rgba(255,255,255,0.5)"}}>Online</span></div>
       </div>
-      {messages.length===1 && (
-        <div style={{padding:"10px 14px",flexShrink:0}}>
-          <div style={{fontSize:11,color:T.muted,marginBottom:7}}>💡 Try asking:</div>
-          <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-            {quickQs.map(function(q,i){return <button key={i} onClick={function(){send(q);}} style={{background:T.card,border:"1px solid rgba(99,102,241,0.25)",borderRadius:20,padding:"5px 10px",fontSize:11,color:"#6366f1",cursor:"pointer",fontFamily:"inherit",fontWeight:500}}>{q}</button>;})}
-          </div>
-        </div>
-      )}
+      {messages.length===1&&<div style={{padding:"10px 14px",flexShrink:0}}><div style={{fontSize:11,color:T.muted,marginBottom:7}}>💡 Try asking:</div><div style={{display:"flex",flexWrap:"wrap",gap:6}}>{quickQs.map(function(q,i){return <button key={i} onClick={function(){send(q);}} style={{background:T.card,border:"1px solid rgba(99,102,241,0.25)",borderRadius:20,padding:"5px 10px",fontSize:11,color:"#6366f1",cursor:"pointer",fontFamily:"inherit",fontWeight:500}}>{q}</button>;})}</div></div>}
       <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:10}}>
         {messages.map(function(msg,i){return(
           <div key={i} style={{display:"flex",justifyContent:msg.role==="user"?"flex-end":"flex-start",animation:"fadeIn 0.3s ease forwards"}}>
-            {msg.role==="bot" && <div style={{width:28,height:28,background:"linear-gradient(135deg,#6366f1,#ec4899)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,flexShrink:0,marginRight:7,alignSelf:"flex-end"}}>🤖</div>}
-            <div style={{maxWidth:"82%",padding:"10px 13px",borderRadius:msg.role==="user"?"16px 16px 4px 16px":"16px 16px 16px 4px",background:msg.role==="user"?"linear-gradient(135deg,#6366f1,#818cf8)":T.card,color:msg.role==="user"?"#fff":T.text,fontSize:13,lineHeight:1.7,boxShadow:"0 2px 8px rgba(0,0,0,0.1)"}} dangerouslySetInnerHTML={{__html:fmt(msg.text)}} />
+            {msg.role==="bot"&&<div style={{width:28,height:28,background:"linear-gradient(135deg,#6366f1,#ec4899)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,flexShrink:0,marginRight:7,alignSelf:"flex-end"}}>🤖</div>}
+            <div style={{maxWidth:"82%",padding:"10px 13px",borderRadius:msg.role==="user"?"16px 16px 4px 16px":"16px 16px 16px 4px",background:msg.role==="user"?"linear-gradient(135deg,#6366f1,#818cf8)":T.card,color:msg.role==="user"?"#fff":T.text,fontSize:13,lineHeight:1.7,boxShadow:"0 2px 8px rgba(0,0,0,0.1)"}} dangerouslySetInnerHTML={{__html:fmt(msg.text)}}/>
           </div>
         );})}
-        {loading && <div style={{display:"flex",gap:7,alignItems:"flex-end"}}><div style={{width:28,height:28,background:"linear-gradient(135deg,#6366f1,#ec4899)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>🤖</div><div style={{background:T.card,borderRadius:"16px 16px 16px 4px",padding:"13px 16px",display:"flex",gap:5,alignItems:"center"}}>{[0,1,2].map(function(j){return <div key={j} style={{width:7,height:7,borderRadius:"50%",background:"#6366f1",animation:"bounce 0.8s ease infinite",animationDelay:(j*0.15)+"s"}} />;})}</div></div>}
-        <div ref={bottomRef} />
+        {loading&&<div style={{display:"flex",gap:7,alignItems:"flex-end"}}><div style={{width:28,height:28,background:"linear-gradient(135deg,#6366f1,#ec4899)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>🤖</div><div style={{background:T.card,borderRadius:"16px 16px 16px 4px",padding:"13px 16px",display:"flex",gap:5,alignItems:"center"}}>{[0,1,2].map(function(j){return <div key={j} style={{width:7,height:7,borderRadius:"50%",background:"#6366f1",animation:"bounce 0.8s ease infinite",animationDelay:(j*0.15)+"s"}}/>;})}</div></div>}
+        <div ref={bottomRef}/>
       </div>
       <div style={{padding:"10px 14px",background:T.navBg,borderTop:"1px solid "+T.border,display:"flex",gap:9,alignItems:"flex-end",flexShrink:0}}>
-        <textarea value={input} onChange={function(e){setInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} placeholder="Ask about any exam..." rows={1} style={{flex:1,padding:"10px 13px",background:T.card2,border:"1px solid "+T.border,borderRadius:13,fontSize:13,fontFamily:"inherit",resize:"none",color:T.text,maxHeight:90}} />
+        <textarea value={input} onChange={function(e){setInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} placeholder="Ask about any exam..." rows={1} style={{flex:1,padding:"10px 13px",background:T.card2,border:"1px solid "+T.border,borderRadius:13,fontSize:13,fontFamily:"inherit",resize:"none",color:T.text,maxHeight:90}}/>
         <button onClick={function(){send();}} disabled={loading||!input.trim()} style={{width:42,height:42,borderRadius:13,border:"none",cursor:loading||!input.trim()?"not-allowed":"pointer",background:loading||!input.trim()?"#334155":"linear-gradient(135deg,#6366f1,#818cf8)",color:"#fff",fontSize:17,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>➤</button>
       </div>
     </div>
   );
 }
 
+// ─── DETAIL ───────────────────────────────────────────
 function DetailPage(props) {
-  var exam=props.exam, goHome=props.goHome, tab=props.tab, setTab=props.setTab, T=props.T, dark=props.dark;
+  var exam=props.exam,goHome=props.goHome,tab=props.tab,setTab=props.setTab,T=props.T,dark=props.dark;
   var tabs=[{id:"syllabus",label:"Syllabus",icon:"📖"},{id:"pattern",label:"Pattern",icon:"📋"},{id:"cutoff",label:"Cutoff",icon:"📊"},{id:"books",label:"Books",icon:"📚"},{id:"tips",label:"Tips",icon:"💡"}];
   return(
     <div style={{minHeight:"100vh",background:T.bg,paddingBottom:30,color:T.text}}>
       <div style={{background:exam.color,padding:"14px 16px 0",position:"sticky",top:0,zIndex:50}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
           <button onClick={goHome} style={{background:"rgba(255,255,255,0.22)",border:"none",borderRadius:10,padding:"7px 13px",color:"#fff",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:500}}>← Back</button>
-          <div style={{fontFamily:"'Playfair Display',serif",fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.85)"}}>ExamNest</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:14,fontWeight:600,color:"rgba(255,255,255,0.85)",letterSpacing:"0.05em"}}>ExamNest</div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:13,marginBottom:14}}>
           <div style={{width:54,height:54,background:"rgba(255,255,255,0.2)",borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:27,flexShrink:0}}>{exam.icon}</div>
@@ -645,27 +830,29 @@ function DetailPage(props) {
       </div>
       <div style={{background:T.card,padding:"10px 16px",borderBottom:"1px solid "+T.border,display:"flex",gap:7}}><span>✅</span><div style={{fontSize:12,color:T.subtext,lineHeight:1.6}}><strong style={{color:T.text}}>Eligibility:</strong> {exam.eligibility}</div></div>
       <div style={{padding:"12px 14px"}}>
-        {tab==="syllabus" && exam.syllabus.map(function(s,i){var parts=s.split(": ");var sub=parts[0];var rest=parts.slice(1).join(": ");return(<div key={i} style={{background:T.card,borderRadius:12,padding:"12px 14px",marginBottom:9,borderLeft:"4px solid "+exam.color,boxShadow:dark?"0 2px 8px rgba(0,0,0,0.2)":"0 1px 5px rgba(0,0,0,0.05)"}}><div style={{fontWeight:700,fontSize:13,marginBottom:4,color:T.text}}>{sub}</div>{rest&&<div style={{fontSize:12,color:T.subtext,lineHeight:1.6}}>{rest}</div>}</div>);})}
-        {tab==="pattern" && <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9}}>{Object.entries(exam.pattern).map(function(entry){return(<div key={entry[0]} style={{background:T.card,borderRadius:12,padding:"12px",boxShadow:dark?"0 2px 8px rgba(0,0,0,0.2)":"0 1px 5px rgba(0,0,0,0.05)",textAlign:"center"}}><div style={{fontSize:9,color:T.muted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:7}}>{entry[0].replace(/([A-Z])/g," $1").trim()}</div><div style={{fontFamily:"'Playfair Display',serif",fontSize:14,fontWeight:700,color:exam.color,lineHeight:1.3}}>{entry[1]}</div></div>);})}</div>}
-        {tab==="cutoff" && <div><div style={{background:T.card,borderRadius:12,overflow:"hidden",boxShadow:dark?"0 2px 8px rgba(0,0,0,0.2)":"0 1px 5px rgba(0,0,0,0.05)"}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",background:exam.color+"25",padding:"9px 8px"}}>{["Year","Gen","OBC","SC","ST"].map(function(h){return <div key={h} style={{fontSize:10,fontWeight:700,textAlign:"center",color:T.text}}>{h}</div>;})}</div>{exam.cutoff.map(function(row,i){return(<div key={i} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",padding:"10px 8px",borderTop:"1px solid "+T.border}}><div style={{fontSize:12,fontWeight:700,color:exam.color,textAlign:"center"}}>{row.year}</div>{[row.general,row.obc,row.sc,row.st].map(function(v,j){return <div key={j} style={{fontSize:12,textAlign:"center",color:T.text}}>{v}</div>;})}</div>);})}</div><div style={{fontSize:11,color:T.muted,marginTop:8,textAlign:"center"}}>* Indicative. Verify from official sources.</div></div>}
-        {tab==="books" && exam.books.map(function(book,i){return(<div key={i} style={{background:T.card,borderRadius:12,padding:"12px 14px",marginBottom:9,display:"flex",alignItems:"center",gap:11,boxShadow:dark?"0 2px 8px rgba(0,0,0,0.2)":"0 1px 5px rgba(0,0,0,0.05)"}}><div style={{width:32,height:32,background:exam.color+"22",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>📖</div><div style={{fontSize:13,fontWeight:500,color:T.text}}>{book}</div></div>);})}
-        {tab==="tips" && exam.tips.map(function(tip,i){return(<div key={i} style={{background:T.card,borderRadius:12,padding:"12px 14px",marginBottom:9,display:"flex",gap:11,boxShadow:dark?"0 2px 8px rgba(0,0,0,0.2)":"0 1px 5px rgba(0,0,0,0.05)"}}><div style={{width:25,height:25,background:exam.color,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:12,flexShrink:0}}>{i+1}</div><div style={{fontSize:13,color:T.text,lineHeight:1.7,paddingTop:2}}>{tip}</div></div>);})}
+        {tab==="syllabus"&&exam.syllabus.map(function(s,i){var p=s.split(": ");return(<div key={i} style={{background:T.card,borderRadius:12,padding:"12px 14px",marginBottom:9,borderLeft:"4px solid "+exam.color,boxShadow:dark?"0 2px 8px rgba(0,0,0,0.2)":"0 1px 5px rgba(0,0,0,0.05)"}}><div style={{fontWeight:700,fontSize:13,marginBottom:4,color:T.text}}>{p[0]}</div>{p[1]&&<div style={{fontSize:12,color:T.subtext,lineHeight:1.6}}>{p.slice(1).join(": ")}</div>}</div>);})}
+        {tab==="pattern"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9}}>{Object.entries(exam.pattern).map(function(e){return(<div key={e[0]} style={{background:T.card,borderRadius:12,padding:"12px",boxShadow:dark?"0 2px 8px rgba(0,0,0,0.2)":"0 1px 5px rgba(0,0,0,0.05)",textAlign:"center"}}><div style={{fontSize:9,color:T.muted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:7}}>{e[0].replace(/([A-Z])/g," $1").trim()}</div><div style={{fontFamily:"'Playfair Display',serif",fontSize:14,fontWeight:700,color:exam.color,lineHeight:1.3}}>{e[1]}</div></div>);})}</div>}
+        {tab==="cutoff"&&<div><div style={{background:T.card,borderRadius:12,overflow:"hidden"}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",background:exam.color+"25",padding:"9px 8px"}}>{["Year","Gen","OBC","SC","ST"].map(function(h){return <div key={h} style={{fontSize:10,fontWeight:700,textAlign:"center",color:T.text}}>{h}</div>;})}</div>{exam.cutoff.map(function(row,i){return(<div key={i} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",padding:"10px 8px",borderTop:"1px solid "+T.border}}><div style={{fontSize:12,fontWeight:700,color:exam.color,textAlign:"center"}}>{row.year}</div>{[row.general,row.obc,row.sc,row.st].map(function(v,j){return <div key={j} style={{fontSize:12,textAlign:"center",color:T.text}}>{v}</div>;})}</div>);})}</div><div style={{fontSize:11,color:T.muted,marginTop:8,textAlign:"center"}}>* Indicative. Verify from official sources.</div></div>}
+        {tab==="books"&&exam.books.map(function(book,i){return(<div key={i} style={{background:T.card,borderRadius:12,padding:"12px 14px",marginBottom:9,display:"flex",alignItems:"center",gap:11,boxShadow:dark?"0 2px 8px rgba(0,0,0,0.2)":"0 1px 5px rgba(0,0,0,0.05)"}}><div style={{width:32,height:32,background:exam.color+"22",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>📖</div><div style={{fontSize:13,fontWeight:500,color:T.text}}>{book}</div></div>);})}
+        {tab==="tips"&&exam.tips.map(function(tip,i){return(<div key={i} style={{background:T.card,borderRadius:12,padding:"12px 14px",marginBottom:9,display:"flex",gap:11,boxShadow:dark?"0 2px 8px rgba(0,0,0,0.2)":"0 1px 5px rgba(0,0,0,0.05)"}}><div style={{width:25,height:25,background:exam.color,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:12,flexShrink:0}}>{i+1}</div><div style={{fontSize:13,color:T.text,lineHeight:1.7,paddingTop:2}}>{tip}</div></div>);})}
       </div>
     </div>
   );
 }
 
+// ─── ABOUT ────────────────────────────────────────────
 function AboutPage(props) {
-  var goHome=props.goHome, count=props.count, T=props.T, dark=props.dark;
+  var setNavTab=props.setNavTab,count=props.count,T=props.T,dark=props.dark;
   return(
     <div style={{minHeight:"100vh",background:T.bg,paddingBottom:80,color:T.text}}>
       <div style={{background:"#1a1a2e",padding:"14px 16px",display:"flex",alignItems:"center",gap:10}}>
-        <button onClick={goHome} style={{background:"rgba(255,255,255,0.1)",border:"none",borderRadius:10,padding:"7px 12px",color:"#fff",cursor:"pointer",fontSize:13,fontFamily:"inherit"}}>← Back</button>
-        <div style={{fontFamily:"'Playfair Display',serif",fontSize:16,fontWeight:700,color:"#fff"}}>About ExamNest</div>
+        <button onClick={function(){setNavTab("home");}} style={{background:"rgba(255,255,255,0.1)",border:"none",borderRadius:10,padding:"7px 12px",color:"#fff",cursor:"pointer",fontSize:13,fontFamily:"inherit"}}>← Back</button>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:17,fontWeight:600,color:"#fff",letterSpacing:"0.05em"}}>About ExamNest</div>
       </div>
       <div style={{padding:"16px"}}>
         {[
-          {icon:"📚",title:"Who We Are",text:"ExamNest is India's most complete free exam platform — covering "+count+"+ exams across UPSC, SSC, Banking, Railway, Defence, Engineering, Medical, Law, Management, State PSC and more!",color:"#f97316"},
+          {icon:"📚",title:"Who We Are",text:"ExamNest is India's most complete free exam platform — covering "+count+"+ exams across Engineering, Medical, UPSC, SSC, Banking, Railway, Defence, Management, Law, Commerce & more!",color:"#f97316"},
+          {icon:"🎬",title:"Cinematic Experience",text:"ExamNest features a stunning cinematic intro every time you open the app — because your exam journey deserves a grand entrance!",color:"#c9a84c"},
           {icon:"🤖",title:"AI Chatbot",text:"ExamBot knows all Indian exams — ask about syllabus, cutoffs, books, tips, eligibility instantly. Works offline!",color:"#6366f1"},
           {icon:"⚖️",title:"Exam Comparison",text:"Compare any 2 exams side by side — difficulty, salary, seats, duration, eligibility and more!",color:"#0ea5e9"},
           {icon:"📅",title:"Study Planner",text:"Personalised weekly plan + topic tracker. Progress saved permanently — never resets even if you close the app! 🔒",color:"#16a34a"},
