@@ -217,12 +217,12 @@ function LogoScreen(props) {
 
   useEffect(function() {
     var timers = [
-      setTimeout(function(){setStep(1);},500),
-      setTimeout(function(){setStep(2);},1500),
-      setTimeout(function(){setStep(3);},2500),
-      setTimeout(function(){setStep(4);},3500),
-      setTimeout(function(){setStep(5);},4200),
-      setTimeout(onComplete,5500),
+      setTimeout(function(){setStep(1);},800),
+      setTimeout(function(){setStep(2);},2000),
+      setTimeout(function(){setStep(3);},3500),
+      setTimeout(function(){setStep(4);},5000),
+      setTimeout(function(){setStep(5);},6500),
+      setTimeout(onComplete,8000),
     ];
     return function(){timers.forEach(clearTimeout);};
   }, []);
