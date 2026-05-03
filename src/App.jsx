@@ -125,15 +125,15 @@ function Particle(props) {
 // ─── PHASE 1: BOOT SCREEN ─────────────────────────────
 var BOOT_LINES = [
   {text:"EXAMNEST SYSTEM v5.0.0 — INITIALIZING",color:"#22c55e",bold:true,delay:0},
-  {text:"████████████████████ Loading core modules...",color:"#475569",delay:500},
-  {text:"[OK] Exam database loaded — 80+ exams indexed",color:"#64748b",delay:1000},
-  {text:"[OK] AI ExamBot neural module — ONLINE",color:"#6366f1",delay:1500},
-  {text:"[OK] Study Planner — INITIALIZED",color:"#f97316",delay:2000},
-  {text:"[OK] Compare Engine — ACTIVE",color:"#ec4899",delay:2500},
-  {text:"[OK] Dark Mode — READY",color:"#7c3aed",delay:3000},
-  {text:"[OK] localStorage — CONNECTED",color:"#14b8a6",delay:3500},
-  {text:"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",color:"#1e293b",delay:4200},
-  {text:"▶  BOOT SEQUENCE COMPLETE — LAUNCHING",color:"#c9a84c",bold:true,delay:5000},
+  {text:"████████████████████ Loading core modules...",color:"#475569",delay:200},
+  {text:"[OK] Exam database loaded — 80+ exams indexed",color:"#64748b",delay:400},
+  {text:"[OK] AI ExamBot neural module — ONLINE",color:"#6366f1",delay:600},
+  {text:"[OK] Study Planner — INITIALIZED",color:"#f97316",delay:800},
+  {text:"[OK] Compare Engine — ACTIVE",color:"#ec4899",delay:1000},
+  {text:"[OK] Dark Mode — READY",color:"#7c3aed",delay:1200},
+  {text:"[OK] localStorage — CONNECTED",color:"#14b8a6",delay:1400},
+  {text:"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",color:"#1e293b",delay:1600},
+  {text:"▶  BOOT SEQUENCE COMPLETE — LAUNCHING",color:"#c9a84c",bold:true,delay:1800},
 ];
 
 function BootScreen(props) {
@@ -148,7 +148,7 @@ function BootScreen(props) {
         setVisible(function(p){return p.concat([i]);});
         if (i===BOOT_LINES.length-1) {
           setShowBar(true);
-          timers.push(setTimeout(onComplete, 1000));
+          timers.push(setTimeout(onComplete, 200));
         }
       }, line.delay));
     });
