@@ -25,6 +25,30 @@ const exams = [
   { id:"afcat", name:"AFCAT", full:"Air Force Common Admission Test", category:"Defence", color:"#0c4a6e", icon:"✈️", difficulty:"High", diffScore:3, frequency:"Twice a year", seats:"~250+", salary:"₹56,100+ (Flying Officer)", duration:"6 months prep", syllabus:["General Awareness","Verbal Ability in English","Numerical Ability","Reasoning & Military Aptitude"], topics:{"General Awareness":["History","Geography","Polity","Economy","Science","Military Current Affairs"],"Verbal Ability":["Grammar","Vocabulary","Comprehension","Idioms & Phrases"],"Numerical Ability":["Arithmetic","Algebra","Geometry","Data Interpretation"],"Military Aptitude":["Spatial Reasoning","Rotational Figures","Hidden Figures"]}, pattern:{duration:"2 hours",questions:"100 MCQs",total:"300 marks",negative:"Yes (-1)"}, cutoff:[{year:2024,general:170,obc:155,sc:140,st:132},{year:2023,general:165,obc:150,sc:135,st:127}], books:["Arihant AFCAT guide","Previous year AFCAT papers","Lucent GK"], eligibility:"Graduate with 60% marks. Age: 20-24 (flying), 20-26 (ground duty).", tips:["Military aptitude section is unique","Current affairs about defence is important","AFSB interview after written exam","Physical fitness is essential"] },
   { id:"ctet", name:"CTET", full:"Central Teacher Eligibility Test", category:"Teaching", color:"#16a34a", icon:"📚", difficulty:"Moderate", diffScore:2, frequency:"Twice a year", seats:"No limit", salary:"₹35,000-₹1.1 LPA", duration:"3 months prep", syllabus:["Child Development & Pedagogy","Language I (compulsory)","Language II (compulsory)","Mathematics / Science / Social Studies"], topics:{"Child Development":["Growth & Development","Learning Theories","Inclusive Education","Assessment","Motivation"],"Language":["Reading","Writing","Grammar","Comprehension","Language Acquisition"],"Mathematics":["Number System","Geometry","Measurement","Data Handling","Pedagogy"],"EVS/Science":["Environment","Living World","Matter","Pedagogy"]}, pattern:{duration:"2.5 hours",questions:"150 MCQs",total:"150 marks",negative:"No"}, cutoff:[{year:2024,general:90,obc:82,sc:75,st:75},{year:2023,general:88,obc:80,sc:73,st:73}], books:["Child Development by Arihant","NCERT textbooks Class 1-8","Previous year CTET papers","Disha CTET guide"], eligibility:"Class 12 with 50% + D.El.Ed OR Graduation + B.Ed.", tips:["No negative marking — attempt all","Child Development has highest weightage","Pedagogy questions need conceptual clarity","Language sections test teaching methods"] },
   { id:"nata", name:"NATA", full:"National Aptitude Test in Architecture", category:"Architecture", color:"#0369a1", icon:"🏗️", difficulty:"High", diffScore:3, frequency:"Twice a year", seats:"~40,000+", salary:"₹5-15 LPA", duration:"5 years (B.Arch)", syllabus:["Drawing & Composition","Visual Perception & Cognition","Mathematics (Class 11 & 12)","General Aptitude"], topics:{"Drawing":["Perspective Drawing","Architectural Drawing","Sketching","Composition"],"Mathematics":["Algebra","Trigonometry","Coordinate Geometry","Calculus"],"Aptitude":["Visual Perception","Spatial Ability","Critical Thinking","Observation"]}, pattern:{duration:"3 hours",questions:"Part A: Drawing | Part B: MCQ",total:"200 marks",negative:"No"}, cutoff:[{year:2024,general:110,obc:98,sc:82,st:75},{year:2023,general:105,obc:94,sc:78,st:71}], books:["NATA previous year papers","Drawing & sketching practice books","B.Arch entrance guide by Arihant"], eligibility:"Class 12 with Maths. Min 50% marks.", tips:["Drawing is the most important component","Practice perspective drawing daily","Maths up to Class 12 level","Observe architecture and buildings around you"] },
+  { id: "ib-sa", 
+  name: "IB SA/MT", 
+  full: "Intelligence Bureau Security Assistant / Motor Transport", 
+  category: "Defence", 
+  color: "#1e3a8a", 
+  icon: "🕵️", 
+  difficulty: "Moderate", 
+  diffScore: 2, 
+  frequency: "As per vacancy", 
+  seats: "Varies", 
+  salary: "₹21,700 - ₹69,100", 
+  duration: "6-8 months prep", 
+  syllabus: ["Tier I: General Awareness, English, Quant, Reasoning", "Tier II: Local Language Translation & Personality Test"], 
+  topics: {
+    "General Awareness": ["Current Affairs", "Security Issues", "International Relations", "Indian History"],
+    "English": ["Grammar", "Comprehension", "Vocabulary"],
+    "Reasoning": ["Analytical Ability", "Logic", "Series"]
+  }, 
+  pattern: {duration: "1 hour (Tier I)", questions: "100 MCQs", total: "100 marks", negative: "Yes (-0.25)"}, 
+  cutoff: [{year: 2024, general: 35, obc: 34, sc: 33, st: 33}], 
+  books: ["Lucent GK", "R.S. Aggarwal", "Monthly Current Affairs"], 
+  eligibility: "Class 10th pass + Local language proficiency.", 
+  tips: ["Focus on Current Affairs related to internal security", "Practice local language translation", "Prepare for the personality test/interview"] 
+  },
 ];
 
 const categories = ["All","Engineering","Medical","UPSC","SSC","Banking","Defence","Management","Law","Teaching","Commerce","Architecture"];
