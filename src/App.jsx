@@ -11,8 +11,31 @@ function loadData() { try { var d = localStorage.getItem(STORAGE_KEY);
 return d ? JSON.parse(d) : null; } catch(e) { return null;
 } }
 
-const categories = ["All","Engineering","Medical","UPSC","SSC","Banking","Defence","Management","Law","Teaching","Commerce","Architecture"];
-const catIcons = {"All":"🇮🇳","Engineering":"⚙️","Medical":"🩺","UPSC":"🏛️","SSC":"📋","Banking":"🏦","Defence":"⚔️","Management":"📊","Law":"⚖️","Teaching":"📚","Commerce":"💰","Architecture":"🏗️"};
+const categories = [
+  "All", "Engineering", "Medical", "UPSC", "SSC", 
+  "Banking", "Defence", "Management", "Law", "Teaching", 
+  "Commerce", "Architecture", "Railway", "State PSC", 
+  "Insurance", "PSUs & Technical"
+];
+
+const catIcons = {
+  "All": "🇮🇳",
+  "Engineering": "⚙️",
+  "Medical": "🩺",
+  "UPSC": "🏛️",
+  "SSC": "📋",
+  "Banking": "🏦",
+  "Defence": "⚔️",
+  "Management": "📊",
+  "Law": "⚖️",
+  "Teaching": "📚",
+  "Commerce": "💰",
+  "Architecture": "🏗️",
+  "Railway": "🚆",
+  "State PSC": "🗺️",
+  "Insurance": "🛡️",
+  "PSUs & Technical": "🚀"
+};
 const diffColor = {"Easy":"#22c55e","Moderate":"#f59e0b","High":"#f97316","Very High":"#ef4444","Extremely High":"#7c3aed"};
 
 function getBotReply(question) {
