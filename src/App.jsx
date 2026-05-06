@@ -516,7 +516,7 @@ export default function App() {
       }}>
         {navTab==="chat"    ?<ChatPage    setNavTab={setNavTab} T={T} dark={dark}/>:  
          navTab==="compare" ?<ComparePage setNavTab={setNavTab} T={T} dark={dark}/>:
-        {navTab === "career" ?<CareerGuidePage setNavTab={setNavTab} T={T} dark={dark} />}  
+        {navTab==="career" ?<CareerGuidePage setNavTab={setNavTab} T={T} dark={dark}/>}:  
          navTab==="planner" ?<PlannerPage setNavTab={setNavTab} T={T} dark={dark}/>:
          navTab==="about"   ?<AboutPage   setNavTab={setNavTab} count={exams.length} T={T} dark={dark}/>:(
           <div>
