@@ -614,23 +614,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Bottom Nav */}
-        <div style={{position:"fixed",bottom:0,left:0,right:0,background:T.navBg,borderTop:"1px solid "+T.border,display:"flex",zIndex:100}}>
-          {[{id:"home",icon:"🏠",label:"Home"},{id:"planner",icon:"📅",label:"Planner"},{id:"compare",icon:"⚖️",label:"Compare"},{id:"chat",icon:"🤖",label:"AI Chat"},{id:"about",icon:"ℹ️",label:"About"}].map(function(item){
-            return (
-              <button key={item.id} onClick={function(){setNavTab(item.id);}} style={{flex:1,padding:"8px 0 6px",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-                <div style={{fontSize:17}}>{item.icon}</div>
-                <div style={{fontSize:8,fontFamily:"inherit",fontWeight:navTab===item.id?600:400,color:navTab===item.id?"#6366f1":T.muted}}>{item.label}</div>
-                {navTab===item.id&&<div style={{width:4,height:4,borderRadius:"50%",background:"#6366f1"}}/>}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </>
-  );
-}
-
 // ─── PLANNER ──────────────────────────────────────────
 function PlannerPage(props) {
   var setNavTab=props.setNavTab,T=props.T,dark=props.dark;
