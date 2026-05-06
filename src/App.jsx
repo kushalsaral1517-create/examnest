@@ -514,9 +514,9 @@ export default function App() {
         transform:appReady?"translateY(0)":"translateY(20px)",
         transition:"opacity 0.8s ease, transform 0.8s ease",
       }}>
-        {navTab==="chat"    ?<ChatPage    setNavTab={setNavTab} T={T} dark={dark}/>:
-        {navTab === "career" ?<CareerGuidePage setNavTab={setNavTab} T={T} dark={dark} />}  
+        {navTab==="chat"    ?<ChatPage    setNavTab={setNavTab} T={T} dark={dark}/>:  
          navTab==="compare" ?<ComparePage setNavTab={setNavTab} T={T} dark={dark}/>:
+        {navTab === "career" ?<CareerGuidePage setNavTab={setNavTab} T={T} dark={dark} />}  
          navTab==="planner" ?<PlannerPage setNavTab={setNavTab} T={T} dark={dark}/>:
          navTab==="about"   ?<AboutPage   setNavTab={setNavTab} count={exams.length} T={T} dark={dark}/>:(
           <div>
