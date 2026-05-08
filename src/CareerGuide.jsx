@@ -1,304 +1,852 @@
 import { useState } from "react";
 
 // ═══════════════════════════════════════════════════════
-// CAREER GUIDE COMPONENT WITH INTERACTIVE CHARTS
+// ADVANCED CAREER GUIDE - INTERACTIVE ROADMAP & CHARTS
 // ═══════════════════════════════════════════════════════
 
 const careerData = {
   after10th: {
     streams: [
       {
+        id: "science_pcm",
         name: "Science (PCM)",
         icon: "🔬",
         color: "#3b82f6",
         popularity: 35,
+        roadmap: [
+          { id: 1, title: "10th Grade", desc: "Focus on Math, Physics" },
+          { id: 2, title: "11-12th PCM", desc: "Deep study of core subjects" },
+          { id: 3, title: "JEE/BITSAT", desc: "Prepare for engineering exams" },
+          { id: 4, title: "B.Tech", desc: "4-year engineering degree" },
+          { id: 5, title: "Career", desc: "Software Engineer, Architect" }
+        ],
         careers: ["Engineering", "Architecture", "Computer Science", "Research", "Aviation", "Defense"],
-        exams: ["JEE Main", "JEE Advanced", "BITSAT", "VITEEE", "NDA"]
+        exams: ["JEE Main", "JEE Advanced", "BITSAT", "VITEEE", "NDA"],
+        avgSalary: "₹6-15 LPA"
       },
       {
+        id: "science_pcb",
         name: "Science (PCB)",
         icon: "🩺",
         color: "#10b981",
         popularity: 30,
+        roadmap: [
+          { id: 1, title: "10th Grade", desc: "Score 85%+ in science" },
+          { id: 2, title: "11-12th PCB", desc: "Biology, Chemistry focus" },
+          { id: 3, title: "NEET Prep", desc: "2 years intensive preparation" },
+          { id: 4, title: "MBBS", desc: "5.5 years medical degree" },
+          { id: 5, title: "Career", desc: "Doctor, Surgeon, Specialist" }
+        ],
         careers: ["Medicine (MBBS)", "Dentistry", "Pharmacy", "Nursing", "Biotechnology", "Veterinary"],
-        exams: ["NEET UG", "AIIMS", "JIPMER", "NEET MDS", "AFMC"]
+        exams: ["NEET UG", "AIIMS", "JIPMER", "NEET MDS", "AFMC"],
+        avgSalary: "₹8-25 LPA"
       },
       {
+        id: "commerce",
         name: "Commerce",
         icon: "💼",
         color: "#f59e0b",
         popularity: 25,
+        roadmap: [
+          { id: 1, title: "10th Grade", desc: "Strong in Math, Economics" },
+          { id: 2, title: "11-12th Commerce", desc: "Accountancy, Business Studies" },
+          { id: 3, title: "CA Foundation", desc: "Start CA journey early" },
+          { id: 4, title: "B.Com + CA", desc: "Dual qualification" },
+          { id: 5, title: "Career", desc: "CA, Banking, Finance" }
+        ],
         careers: ["CA", "CS", "Banking", "Finance", "Economics", "Business Management"],
-        exams: ["CA Foundation", "CS Executive", "CLAT", "BBA Entrance", "IPM"]
+        exams: ["CA Foundation", "CS Executive", "CLAT", "BBA Entrance", "IPM"],
+        avgSalary: "₹5-20 LPA"
       },
       {
+        id: "arts",
         name: "Arts/Humanities",
         icon: "🎨",
         color: "#8b5cf6",
         popularity: 15,
+        roadmap: [
+          { id: 1, title: "10th Grade", desc: "Develop critical thinking" },
+          { id: 2, title: "11-12th Arts", desc: "History, Political Science" },
+          { id: 3, title: "CLAT/UPSC Prep", desc: "Law or civil services track" },
+          { id: 4, title: "BA LLB/BA", desc: "5-year integrated or 3-year" },
+          { id: 5, title: "Career", desc: "Lawyer, IAS, Journalist" }
+        ],
         careers: ["Law", "Psychology", "Journalism", "Teaching", "Civil Services", "Design"],
-        exams: ["CLAT", "NID", "NIFT", "UCEED", "Hotel Management"]
+        exams: ["CLAT", "NID", "NIFT", "UCEED", "Hotel Management"],
+        avgSalary: "₹4-15 LPA"
       },
       {
+        id: "vocational",
         name: "Vocational",
         icon: "⚙️",
         color: "#ef4444",
         popularity: 10,
+        roadmap: [
+          { id: 1, title: "10th Grade", desc: "Identify skill interest" },
+          { id: 2, title: "ITI/Diploma", desc: "2-3 year courses" },
+          { id: 3, title: "Skill Training", desc: "Practical experience" },
+          { id: 4, title: "Certification", desc: "Industry certificates" },
+          { id: 5, title: "Career", desc: "Technician, Craftsman" }
+        ],
         careers: ["ITI Courses", "Polytechnic", "Hotel Management", "Fashion Design", "Agriculture"],
-        exams: ["ITI Entrance", "Diploma Entrance", "NIFT", "IHM"]
+        exams: ["ITI Entrance", "Diploma Entrance", "NIFT", "IHM"],
+        avgSalary: "₹3-10 LPA"
       }
     ]
   },
   
   after12th: {
     science: [
-      { career: "Engineering", avgSalary: "₹6-15 LPA", duration: "4 years", seats: "15 Lakh+", difficulty: 85 },
-      { career: "Medicine (MBBS)", avgSalary: "₹8-25 LPA", duration: "5.5 years", seats: "90,000", difficulty: 95 },
-      { career: "Architecture", avgSalary: "₹5-12 LPA", duration: "5 years", seats: "40,000", difficulty: 75 },
-      { career: "BSc + Research", avgSalary: "₹4-10 LPA", duration: "3-5 years", seats: "10 Lakh+", difficulty: 60 },
-      { career: "Pharmacy", avgSalary: "₹3-8 LPA", duration: "4 years", seats: "2 Lakh+", difficulty: 65 },
-      { career: "Nursing", avgSalary: "₹3-7 LPA", duration: "4 years", seats: "1.5 Lakh", difficulty: 55 }
+      { 
+        id: "eng",
+        career: "Engineering", 
+        avgSalary: "₹6-15 LPA", 
+        duration: "4 years", 
+        seats: "15 Lakh+", 
+        difficulty: 85,
+        pathway: ["12th PCM", "JEE Prep (1-2 yrs)", "B.Tech (4 yrs)", "Job/M.Tech"],
+        topColleges: ["IIT Bombay", "IIT Delhi", "BITS Pilani", "NIT Trichy"],
+        skills: ["Problem Solving", "Math", "Programming", "Logical Thinking"]
+      },
+      { 
+        id: "med",
+        career: "Medicine (MBBS)", 
+        avgSalary: "₹8-25 LPA", 
+        duration: "5.5 years", 
+        seats: "90,000", 
+        difficulty: 95,
+        pathway: ["12th PCB", "NEET Prep (1-2 yrs)", "MBBS (5.5 yrs)", "MD/Practice"],
+        topColleges: ["AIIMS Delhi", "CMC Vellore", "JIPMER", "KGMU"],
+        skills: ["Biology", "Chemistry", "Memory", "Dedication", "Empathy"]
+      },
+      { 
+        id: "arch",
+        career: "Architecture", 
+        avgSalary: "₹5-12 LPA", 
+        duration: "5 years", 
+        seats: "40,000", 
+        difficulty: 75,
+        pathway: ["12th PCM", "NATA/JEE Arch", "B.Arch (5 yrs)", "Practice/M.Arch"],
+        topColleges: ["IIT Kharagpur", "SPA Delhi", "NIT Trichy", "CEPT"],
+        skills: ["Creativity", "Drawing", "Math", "Visualization"]
+      },
+      { 
+        id: "bsc",
+        career: "BSc + Research", 
+        avgSalary: "₹4-10 LPA", 
+        duration: "3-5 years", 
+        seats: "10 Lakh+", 
+        difficulty: 60,
+        pathway: ["12th PCM/PCB", "BSc (3 yrs)", "MSc (2 yrs)", "PhD/Research"],
+        topColleges: ["St. Stephen's", "Hindu College", "Fergusson", "Presidency"],
+        skills: ["Analytical", "Research", "Scientific Thinking"]
+      }
     ],
     commerce: [
-      { career: "CA (Chartered Accountant)", avgSalary: "₹7-20 LPA", duration: "4-5 years", seats: "20,000/year", difficulty: 90 },
-      { career: "CS (Company Secretary)", avgSalary: "₹6-15 LPA", duration: "3-4 years", seats: "5,000/year", difficulty: 85 },
-      { career: "BBA + MBA", avgSalary: "₹8-25 LPA", duration: "5 years", seats: "5 Lakh+", difficulty: 70 },
-      { career: "B.Com + CA/CS", avgSalary: "₹5-12 LPA", duration: "3-5 years", seats: "10 Lakh+", difficulty: 75 },
-      { career: "Economics + UPSC", avgSalary: "₹10-40 LPA", duration: "3+ years", seats: "1,000/year", difficulty: 95 },
-      { career: "Banking (IBPS)", avgSalary: "₹4-12 LPA", duration: "1-2 years", seats: "50,000/year", difficulty: 70 }
+      { 
+        id: "ca",
+        career: "CA (Chartered Accountant)", 
+        avgSalary: "₹7-20 LPA", 
+        duration: "4-5 years", 
+        seats: "20,000/year", 
+        difficulty: 90,
+        pathway: ["12th Commerce", "CA Foundation", "CA Intermediate", "CA Final", "Practice"],
+        topColleges: ["ICAI (All India)"],
+        skills: ["Accounting", "Taxation", "Audit", "Financial Analysis"]
+      },
+      { 
+        id: "cs",
+        career: "CS (Company Secretary)", 
+        avgSalary: "₹6-15 LPA", 
+        duration: "3-4 years", 
+        seats: "5,000/year", 
+        difficulty: 85,
+        pathway: ["12th Commerce", "CS Foundation", "CS Executive", "CS Professional"],
+        topColleges: ["ICSI (All India)"],
+        skills: ["Corporate Law", "Compliance", "Governance"]
+      },
+      { 
+        id: "bba",
+        career: "BBA + MBA", 
+        avgSalary: "₹8-25 LPA", 
+        duration: "5 years", 
+        seats: "5 Lakh+", 
+        difficulty: 70,
+        pathway: ["12th Any", "BBA (3 yrs)", "CAT Prep", "MBA (2 yrs)", "Management Career"],
+        topColleges: ["Christ Bangalore", "Shaheed Sukhdev", "NMIMS", "Symbiosis"],
+        skills: ["Leadership", "Communication", "Business Acumen"]
+      }
     ],
     arts: [
-      { career: "Law (5 Yr Integrated)", avgSalary: "₹6-20 LPA", duration: "5 years", seats: "60,000", difficulty: 80 },
-      { career: "UPSC Civil Services", avgSalary: "₹10-50 LPA", duration: "1-3 years", seats: "1,000/year", difficulty: 98 },
-      { career: "Journalism", avgSalary: "₹4-12 LPA", duration: "3 years", seats: "50,000", difficulty: 60 },
-      { career: "Design (NIFT/NID)", avgSalary: "₹5-15 LPA", duration: "4 years", seats: "10,000", difficulty: 75 },
-      { career: "BA + Teaching", avgSalary: "₹3-8 LPA", duration: "3-5 years", seats: "5 Lakh+", difficulty: 55 },
-      { career: "Psychology", avgSalary: "₹4-10 LPA", duration: "3-5 years", seats: "30,000", difficulty: 65 }
+      { 
+        id: "law",
+        career: "Law (5 Yr Integrated)", 
+        avgSalary: "₹6-20 LPA", 
+        duration: "5 years", 
+        seats: "60,000", 
+        difficulty: 80,
+        pathway: ["12th Any", "CLAT Prep", "BA LLB (5 yrs)", "Practice/LLM"],
+        topColleges: ["NLSIU Bangalore", "NALSAR Hyderabad", "NLU Delhi"],
+        skills: ["Critical Thinking", "Reading", "Argumentation", "Writing"]
+      },
+      { 
+        id: "upsc",
+        career: "UPSC Civil Services", 
+        avgSalary: "₹10-50 LPA", 
+        duration: "1-3 years", 
+        seats: "1,000/year", 
+        difficulty: 98,
+        pathway: ["Graduation", "UPSC Prep (1-3 yrs)", "Prelims", "Mains", "Interview", "IAS/IPS"],
+        topColleges: ["Any UG College", "Then Coaching"],
+        skills: ["General Knowledge", "Essay Writing", "Current Affairs", "Persistence"]
+      },
+      { 
+        id: "design",
+        career: "Design (NIFT/NID)", 
+        avgSalary: "₹5-15 LPA", 
+        duration: "4 years", 
+        seats: "10,000", 
+        difficulty: 75,
+        pathway: ["12th Any", "NIFT/NID Exam", "B.Des (4 yrs)", "Designer"],
+        topColleges: ["NID Ahmedabad", "NIFT Delhi", "Srishti", "Pearl Academy"],
+        skills: ["Creativity", "Aesthetics", "Drawing", "Innovation"]
+      }
     ]
-  },
-  
-  afterGraduation: [
-    { field: "Engineering", options: ["M.Tech", "MBA", "UPSC (IES)", "PSUs", "Higher Studies Abroad", "Startups"], icon: "⚙️", color: "#3b82f6" },
-    { field: "Medicine", options: ["MD/MS", "PG Diploma", "Hospital Practice", "Research", "UPSC (Health Services)"], icon: "🩺", color: "#10b981" },
-    { field: "Commerce", options: ["MBA", "M.Com", "CFA", "Banking PO", "UPSC", "PhD"], icon: "💼", color: "#f59e0b" },
-    { field: "Arts", options: ["MA", "PhD", "NET/SET", "Civil Services", "Journalism", "Content Writing"], icon: "🎨", color: "#8b5cf6" },
-    { field: "Law", options: ["LLM", "Judiciary", "Corporate Practice", "Legal Advisor", "Arbitration"], icon: "⚖️", color: "#ef4444" },
-    { field: "Science", options: ["MSc", "PhD", "Research", "Teaching", "CSIR NET", "ISRO/DRDO"], icon: "🔬", color: "#06b6d4" }
-  ]
+  }
 };
 
-function CareerGuidePage({ setNavTab, T, dark }) {
-  const [activeLevel, setActiveLevel] = useState("after10th");
-  const [selectedStream, setSelectedStream] = useState("science");
-  const [expandedCareer, setExpandedCareer] = useState(null);
-
-  // Chart Component for After 10th Stream Popularity
-  function StreamPopularityChart({ streams }) {
-    const maxPop = Math.max(...streams.map(s => s.popularity));
-    return (
-      <div style={{ background: T.card, borderRadius: 14, padding: "16px", marginBottom: 16, boxShadow: dark ? "0 2px 12px rgba(0,0,0,0.3)" : "0 2px 8px rgba(0,0,0,0.08)" }}>
-        <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 700, marginBottom: 14, color: T.text }}>
-          📊 Stream Popularity Among Students
-        </div>
-        {streams.map((stream, i) => (
-          <div key={i} style={{ marginBottom: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{stream.icon} {stream.name}</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: stream.color }}>{stream.popularity}%</span>
-            </div>
-            <div style={{ height: 8, background: T.card2, borderRadius: 4, overflow: "hidden", position: "relative" }}>
-              <div style={{ 
-                height: "100%", 
-                width: (stream.popularity / maxPop * 100) + "%", 
-                background: `linear-gradient(90deg, ${stream.color}, ${stream.color}dd)`,
-                borderRadius: 4,
-                transition: "width 1s ease"
-              }} />
-            </div>
-          </div>
-        ))}
+// ═══════════════════════════════════════════════════════
+// INTERACTIVE ROADMAP COMPONENT
+// ═══════════════════════════════════════════════════════
+function InteractiveRoadmap({ roadmap, color, streamName }) {
+  const [activeNode, setActiveNode] = useState(null);
+  
+  return (
+    <div style={{ 
+      background: `linear-gradient(135deg, ${color}08, ${color}15)`,
+      borderRadius: 16,
+      padding: "20px",
+      marginBottom: 20,
+      position: "relative",
+      overflow: "hidden"
+    }}>
+      <div style={{ 
+        fontFamily: "'Playfair Display', serif",
+        fontSize: 15,
+        fontWeight: 700,
+        marginBottom: 20,
+        color: "#1a1a2e"
+      }}>
+        🗺️ Career Roadmap: {streamName}
       </div>
-    );
-  }
-
-  // Career Options Chart (Bar Chart)
-  function CareerOptionsChart({ careers, streamType }) {
-    return (
-      <div style={{ background: T.card, borderRadius: 14, padding: "16px", marginBottom: 16, boxShadow: dark ? "0 2px 12px rgba(0,0,0,0.3)" : "0 2px 8px rgba(0,0,0,0.08)" }}>
-        <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 700, marginBottom: 14, color: T.text }}>
-          💼 Top Career Options ({streamType})
-        </div>
-        {careers.map((career, i) => (
-          <div 
-            key={i} 
-            style={{ 
-              background: T.card2, 
-              borderRadius: 10, 
-              padding: "12px 14px", 
-              marginBottom: 10,
+      
+      {/* Connection Lines */}
+      <svg 
+        style={{ 
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          zIndex: 0
+        }}
+      >
+        {roadmap.slice(0, -1).map((_, i) => (
+          <line
+            key={i}
+            x1="20%"
+            y1={`${70 + i * 80}px`}
+            x2="20%"
+            y2={`${130 + i * 80}px`}
+            stroke={color}
+            strokeWidth="3"
+            strokeDasharray="5,5"
+            opacity="0.3"
+          />
+        ))}
+      </svg>
+      
+      {/* Roadmap Nodes */}
+      <div style={{ position: "relative", zIndex: 1 }}>
+        {roadmap.map((node, i) => (
+          <div
+            key={node.id}
+            onClick={() => setActiveNode(activeNode === i ? null : i)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 15,
+              marginBottom: 15,
               cursor: "pointer",
-              transition: "all 0.3s ease",
-              transform: expandedCareer === i ? "scale(1.02)" : "scale(1)",
-              boxShadow: expandedCareer === i ? `0 4px 12px ${T.border}` : "none"
+              transform: activeNode === i ? "translateX(10px)" : "translateX(0)",
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
             }}
-            onClick={() => setExpandedCareer(expandedCareer === i ? null : i)}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: expandedCareer === i ? 10 : 0 }}>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: T.text, marginBottom: 2 }}>{career.career}</div>
-                <div style={{ fontSize: 11, color: T.subtext }}>💰 {career.avgSalary}</div>
+            {/* Node Circle */}
+            <div style={{
+              width: activeNode === i ? 60 : 50,
+              height: activeNode === i ? 60 : 50,
+              background: activeNode === i ? color : "#fff",
+              border: `3px solid ${color}`,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: activeNode === i ? 16 : 14,
+              fontWeight: 700,
+              color: activeNode === i ? "#fff" : color,
+              flexShrink: 0,
+              boxShadow: activeNode === i ? `0 8px 20px ${color}40` : "0 2px 8px rgba(0,0,0,0.1)",
+              transition: "all 0.3s ease"
+            }}>
+              {node.id}
+            </div>
+            
+            {/* Node Content */}
+            <div style={{ flex: 1 }}>
+              <div style={{
+                fontSize: 14,
+                fontWeight: 700,
+                color: "#1a1a2e",
+                marginBottom: 3
+              }}>
+                {node.title}
               </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 10, color: T.muted, marginBottom: 2 }}>Difficulty</div>
-                <div style={{ 
-                  width: 40, 
-                  height: 40, 
-                  borderRadius: "50%", 
-                  background: `conic-gradient(${career.difficulty >= 80 ? "#ef4444" : career.difficulty >= 60 ? "#f59e0b" : "#10b981"} ${career.difficulty}%, ${T.card2} 0)`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: T.text
-                }}>
-                  {career.difficulty}
-                </div>
+              <div style={{
+                fontSize: 12,
+                color: "#64748b",
+                lineHeight: 1.4,
+                maxHeight: activeNode === i ? 100 : 0,
+                overflow: "hidden",
+                transition: "max-height 0.3s ease"
+              }}>
+                {node.desc}
               </div>
             </div>
             
-            {expandedCareer === i && (
-              <div style={{ 
-                marginTop: 10, 
-                paddingTop: 10, 
-                borderTop: `1px solid ${T.border}`,
-                animation: "slideDown 0.3s ease"
-              }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                  <div style={{ background: T.card, padding: "8px", borderRadius: 8 }}>
-                    <div style={{ fontSize: 10, color: T.muted, marginBottom: 2 }}>⏱️ Duration</div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{career.duration}</div>
-                  </div>
-                  <div style={{ background: T.card, padding: "8px", borderRadius: 8 }}>
-                    <div style={{ fontSize: 10, color: T.muted, marginBottom: 2 }}>🎓 Seats</div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{career.seats}</div>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Arrow Indicator */}
+            <div style={{
+              fontSize: 18,
+              color: color,
+              opacity: activeNode === i ? 1 : 0.3,
+              transition: "all 0.3s ease"
+            }}>
+              {activeNode === i ? "▼" : "▶"}
+            </div>
           </div>
         ))}
       </div>
-    );
-  }
+      
+      {/* Action Button */}
+      <button
+        style={{
+          width: "100%",
+          background: color,
+          color: "#fff",
+          border: "none",
+          borderRadius: 12,
+          padding: "12px",
+          fontSize: 13,
+          fontWeight: 600,
+          cursor: "pointer",
+          marginTop: 10,
+          transition: "all 0.3s ease",
+          boxShadow: `0 4px 12px ${color}40`
+        }}
+        onMouseEnter={(e) => e.target.style.transform = "translateY(-2px)"}
+        onMouseLeave={(e) => e.target.style.transform = "translateY(0)"}
+      >
+        Start This Journey →
+      </button>
+    </div>
+  );
+}
 
-  // After Graduation Options
-  function GraduationPathways({ options }) {
-    return (
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        {options.map((field, i) => (
-          <div 
-            key={i}
+// ═══════════════════════════════════════════════════════
+// FLOWCHART PATHWAY COMPONENT
+// ═══════════════════════════════════════════════════════
+function CareerFlowchart({ pathway, color, career }) {
+  const [hoveredStep, setHoveredStep] = useState(null);
+  
+  return (
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      overflowX: "auto",
+      padding: "10px 0",
+      marginTop: 12
+    }}>
+      {pathway.map((step, i) => (
+        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div
+            onMouseEnter={() => setHoveredStep(i)}
+            onMouseLeave={() => setHoveredStep(null)}
             style={{
-              background: T.card,
-              borderRadius: 12,
-              padding: "14px",
-              boxShadow: dark ? "0 2px 12px rgba(0,0,0,0.3)" : "0 2px 8px rgba(0,0,0,0.08)",
-              borderTop: `3px solid ${field.color}`
+              background: hoveredStep === i ? color : "#f1f5f9",
+              color: hoveredStep === i ? "#fff" : "#1a1a2e",
+              padding: "8px 14px",
+              borderRadius: 8,
+              fontSize: 11,
+              fontWeight: 600,
+              whiteSpace: "nowrap",
+              cursor: "pointer",
+              border: `2px solid ${hoveredStep === i ? color : "transparent"}`,
+              transition: "all 0.3s ease",
+              transform: hoveredStep === i ? "scale(1.05)" : "scale(1)",
+              boxShadow: hoveredStep === i ? `0 4px 12px ${color}30` : "none"
             }}
           >
-            <div style={{ 
-              width: 42, 
-              height: 42, 
-              background: field.color + "20", 
-              borderRadius: 10, 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "center", 
-              fontSize: 20,
-              marginBottom: 10
-            }}>
-              {field.icon}
+            {step}
+          </div>
+          {i < pathway.length - 1 && (
+            <div style={{ color: color, fontSize: 16, fontWeight: 700 }}>→</div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+// ANIMATED CHART COMPONENT
+// ═══════════════════════════════════════════════════════
+function AnimatedStreamChart({ streams, T }) {
+  const [selectedStream, setSelectedStream] = useState(null);
+  const maxPop = Math.max(...streams.map(s => s.popularity));
+  
+  return (
+    <div style={{
+      background: T.card,
+      borderRadius: 16,
+      padding: "20px",
+      marginBottom: 20,
+      boxShadow: "0 4px 16px rgba(0,0,0,0.08)"
+    }}>
+      <div style={{
+        fontFamily: "'Playfair Display', serif",
+        fontSize: 17,
+        fontWeight: 700,
+        marginBottom: 16,
+        color: T.text
+      }}>
+        📊 Stream Selection Trends
+      </div>
+      
+      {streams.map((stream, i) => (
+        <div
+          key={i}
+          onClick={() => setSelectedStream(selectedStream === i ? null : i)}
+          style={{
+            marginBottom: 16,
+            cursor: "pointer",
+            transition: "all 0.3s ease"
+          }}
+        >
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 8
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 20 }}>{stream.icon}</span>
+              <span style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: T.text
+              }}>
+                {stream.name}
+              </span>
             </div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 8 }}>{field.field}</div>
-            <div style={{ fontSize: 11, color: T.subtext, lineHeight: 1.5 }}>
-              {field.options.slice(0, 3).map((opt, j) => (
-                <div key={j} style={{ marginBottom: 4 }}>• {opt}</div>
-              ))}
-              {field.options.length > 3 && (
-                <div style={{ fontSize: 10, color: field.color, fontWeight: 600, marginTop: 4 }}>
-                  +{field.options.length - 3} more
-                </div>
-              )}
+            <span style={{
+              fontSize: 13,
+              fontWeight: 700,
+              color: stream.color,
+              background: `${stream.color}15`,
+              padding: "4px 10px",
+              borderRadius: 6
+            }}>
+              {stream.popularity}%
+            </span>
+          </div>
+          
+          {/* Animated Bar */}
+          <div style={{
+            height: 12,
+            background: "#e2e8f0",
+            borderRadius: 6,
+            overflow: "hidden",
+            position: "relative"
+          }}>
+            <div style={{
+              height: "100%",
+              width: `${(stream.popularity / maxPop) * 100}%`,
+              background: `linear-gradient(90deg, ${stream.color}, ${stream.color}cc)`,
+              borderRadius: 6,
+              transition: "width 1s cubic-bezier(0.4, 0, 0.2, 1)",
+              position: "relative",
+              overflow: "hidden"
+            }}>
+              {/* Shimmer Effect */}
+              <div style={{
+                position: "absolute",
+                top: 0,
+                left: "-100%",
+                width: "100%",
+                height: "100%",
+                background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+                animation: "shimmer 2s infinite"
+              }} />
             </div>
           </div>
-        ))}
+          
+          {/* Expanded Info */}
+          {selectedStream === i && (
+            <div style={{
+              marginTop: 12,
+              padding: 12,
+              background: `${stream.color}08`,
+              borderRadius: 10,
+              borderLeft: `4px solid ${stream.color}`,
+              animation: "slideDown 0.3s ease"
+            }}>
+              <div style={{ fontSize: 12, color: T.text, marginBottom: 6 }}>
+                <strong>💰 Avg Salary:</strong> {stream.avgSalary}
+              </div>
+              <div style={{ fontSize: 11, color: T.subtext, lineHeight: 1.6 }}>
+                <strong>Top Careers:</strong> {stream.careers.join(", ")}
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+      
+      <style>{`
+        @keyframes shimmer {
+          0% { left: -100%; }
+          100% { left: 100%; }
+        }
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+// INTERACTIVE CAREER CARD
+// ═══════════════════════════════════════════════════════
+function InteractiveCareerCard({ career, color, T, dark }) {
+  const [expanded, setExpanded] = useState(false);
+  
+  return (
+    <div
+      onClick={() => setExpanded(!expanded)}
+      style={{
+        background: T.card,
+        borderRadius: 14,
+        padding: "16px",
+        marginBottom: 12,
+        cursor: "pointer",
+        border: `2px solid ${expanded ? color : "transparent"}`,
+        boxShadow: expanded ? `0 8px 24px ${color}20` : "0 2px 8px rgba(0,0,0,0.06)",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        transform: expanded ? "scale(1.02)" : "scale(1)"
+      }}
+    >
+      {/* Header */}
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: expanded ? 12 : 0
+      }}>
+        <div>
+          <div style={{
+            fontSize: 14,
+            fontWeight: 700,
+            color: T.text,
+            marginBottom: 4
+          }}>
+            {career.career}
+          </div>
+          <div style={{
+            fontSize: 12,
+            color: color,
+            fontWeight: 600
+          }}>
+            💰 {career.avgSalary}
+          </div>
+        </div>
+        
+        {/* Difficulty Ring */}
+        <div style={{
+          width: 50,
+          height: 50,
+          borderRadius: "50%",
+          background: `conic-gradient(${color} ${career.difficulty}%, #e2e8f0 0)`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative"
+        }}>
+          <div style={{
+            width: 38,
+            height: 38,
+            borderRadius: "50%",
+            background: T.card,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 11,
+            fontWeight: 700,
+            color: T.text
+          }}>
+            {career.difficulty}
+          </div>
+        </div>
       </div>
-    );
-  }
+      
+      {/* Expanded Content */}
+      {expanded && (
+        <div style={{
+          marginTop: 12,
+          paddingTop: 12,
+          borderTop: `1px solid ${T.border}`,
+          animation: "fadeIn 0.3s ease"
+        }}>
+          {/* Quick Stats */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 10,
+            marginBottom: 12
+          }}>
+            <div style={{
+              background: T.card2,
+              padding: "10px",
+              borderRadius: 8,
+              textAlign: "center"
+            }}>
+              <div style={{ fontSize: 10, color: T.muted, marginBottom: 3 }}>⏱️ Duration</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.text }}>{career.duration}</div>
+            </div>
+            <div style={{
+              background: T.card2,
+              padding: "10px",
+              borderRadius: 8,
+              textAlign: "center"
+            }}>
+              <div style={{ fontSize: 10, color: T.muted, marginBottom: 3 }}>🎓 Seats</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.text }}>{career.seats}</div>
+            </div>
+          </div>
+          
+          {/* Career Pathway */}
+          {career.pathway && (
+            <>
+              <div style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: T.text,
+                marginBottom: 8
+              }}>
+                🗺️ Career Path:
+              </div>
+              <CareerFlowchart pathway={career.pathway} color={color} career={career.career} />
+            </>
+          )}
+          
+          {/* Top Colleges */}
+          {career.topColleges && (
+            <>
+              <div style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: T.text,
+                marginTop: 12,
+                marginBottom: 6
+              }}>
+                🏛️ Top Colleges:
+              </div>
+              <div style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 6
+              }}>
+                {career.topColleges.map((college, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      background: `${color}15`,
+                      color: color,
+                      padding: "4px 8px",
+                      borderRadius: 6,
+                      fontSize: 10,
+                      fontWeight: 500
+                    }}
+                  >
+                    {college}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+          
+          {/* Skills Required */}
+          {career.skills && (
+            <>
+              <div style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: T.text,
+                marginTop: 12,
+                marginBottom: 6
+              }}>
+                ⚡ Skills Required:
+              </div>
+              <div style={{
+                fontSize: 11,
+                color: T.subtext,
+                lineHeight: 1.6
+              }}>
+                {career.skills.join(" • ")}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+      
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+// MAIN CAREER GUIDE PAGE
+// ═══════════════════════════════════════════════════════
+function CareerGuidePage({ setNavTab, T, dark }) {
+  const [activeLevel, setActiveLevel] = useState("after10th");
+  const [selectedStream, setSelectedStream] = useState("science");
+  const [showRoadmap, setShowRoadmap] = useState(null);
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, paddingBottom: 80, color: T.text }}>
+    <div style={{
+      minHeight: "100vh",
+      background: T.bg,
+      paddingBottom: 80,
+      color: T.text
+    }}>
       {/* Header */}
-      <div style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", padding: "14px 16px", position: "sticky", top: 0, zIndex: 50 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-          <button 
-            onClick={() => setNavTab("home")} 
-            style={{ 
-              background: "rgba(255,255,255,0.22)", 
-              border: "none", 
-              borderRadius: 10, 
-              padding: "7px 13px", 
-              color: "#fff", 
-              cursor: "pointer", 
-              fontSize: 13, 
-              fontFamily: "inherit", 
-              fontWeight: 500 
+      <div style={{
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        padding: "16px",
+        position: "sticky",
+        top: 0,
+        zIndex: 50,
+        boxShadow: "0 4px 16px rgba(0,0,0,0.1)"
+      }}>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 14
+        }}>
+          <button
+            onClick={() => setNavTab("home")}
+            style={{
+              background: "rgba(255,255,255,0.2)",
+              border: "none",
+              borderRadius: 10,
+              padding: "8px 14px",
+              color: "#fff",
+              cursor: "pointer",
+              fontSize: 13,
+              fontFamily: "inherit",
+              fontWeight: 600,
+              backdropFilter: "blur(10px)"
             }}
           >
             ← Back
           </button>
-          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.85)", letterSpacing: "0.05em" }}>
+          <div style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: 14,
+            fontWeight: 600,
+            color: "rgba(255,255,255,0.9)",
+            letterSpacing: "0.05em"
+          }}>
             ExamNest
           </div>
         </div>
         
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-          <div style={{ 
-            width: 50, 
-            height: 50, 
-            background: "rgba(255,255,255,0.2)", 
-            borderRadius: 12, 
-            display: "flex", 
-            alignItems: "center", 
-            justifyContent: "center", 
-            fontSize: 24 
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+          marginBottom: 14
+        }}>
+          <div style={{
+            width: 56,
+            height: 56,
+            background: "rgba(255,255,255,0.2)",
+            borderRadius: 14,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 28,
+            backdropFilter: "blur(10px)"
           }}>
             🎯
           </div>
           <div>
-            <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 20, fontWeight: 900, color: "#fff", lineHeight: 1.1 }}>
-              Career Guide
+            <div style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: 22,
+              fontWeight: 900,
+              color: "#fff",
+              lineHeight: 1.1,
+              textShadow: "0 2px 8px rgba(0,0,0,0.2)"
+            }}>
+              Career Roadmap
             </div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", marginTop: 2 }}>
-              Find Your Perfect Career Path
+            <div style={{
+              fontSize: 12,
+              color: "rgba(255,255,255,0.85)",
+              marginTop: 3
+            }}>
+              Interactive pathway to your dream career
             </div>
           </div>
         </div>
 
-        {/* Level Selector */}
-        <div style={{ display: "flex", gap: 8, overflowX: "auto" }}>
+        {/* Level Tabs */}
+        <div style={{
+          display: "flex",
+          gap: 8,
+          overflowX: "auto",
+          paddingBottom: 2
+        }}>
           {[
             { id: "after10th", label: "After 10th", icon: "📚" },
             { id: "after12th", label: "After 12th", icon: "🎓" },
-            { id: "afterGrad", label: "After Graduation", icon: "🚀" }
+            { id: "compare", label: "Compare", icon: "⚖️" }
           ].map(level => (
             <button
               key={level.id}
               onClick={() => setActiveLevel(level.id)}
               style={{
                 flexShrink: 0,
-                padding: "8px 14px",
+                padding: "10px 16px",
                 background: activeLevel === level.id ? "#fff" : "rgba(255,255,255,0.15)",
                 border: "none",
                 borderRadius: 10,
@@ -306,9 +854,10 @@ function CareerGuidePage({ setNavTab, T, dark }) {
                 fontSize: 12,
                 fontFamily: "inherit",
                 fontWeight: 600,
-                color: activeLevel === level.id ? "#6366f1" : "#fff",
+                color: activeLevel === level.id ? "#667eea" : "#fff",
                 whiteSpace: "nowrap",
-                transition: "all 0.3s ease"
+                transition: "all 0.3s ease",
+                backdropFilter: "blur(10px)"
               }}
             >
               {level.icon} {level.label}
@@ -322,78 +871,89 @@ function CareerGuidePage({ setNavTab, T, dark }) {
         {/* After 10th View */}
         {activeLevel === "after10th" && (
           <>
-            <StreamPopularityChart streams={careerData.after10th.streams} />
+            <AnimatedStreamChart streams={careerData.after10th.streams} T={T} />
             
-            <div style={{ marginTop: 16 }}>
-              {careerData.after10th.streams.map((stream, i) => (
-                <div 
-                  key={i}
+            {careerData.after10th.streams.map((stream, i) => (
+              <div key={i} style={{ marginBottom: 16 }}>
+                <div
+                  onClick={() => setShowRoadmap(showRoadmap === stream.id ? null : stream.id)}
                   style={{
                     background: T.card,
                     borderRadius: 14,
                     padding: "16px",
-                    marginBottom: 12,
-                    boxShadow: dark ? "0 2px 12px rgba(0,0,0,0.3)" : "0 2px 8px rgba(0,0,0,0.08)",
-                    borderLeft: `4px solid ${stream.color}`
+                    cursor: "pointer",
+                    border: `2px solid ${showRoadmap === stream.id ? stream.color : "transparent"}`,
+                    transition: "all 0.3s ease",
+                    boxShadow: showRoadmap === stream.id ? `0 8px 24px ${stream.color}20` : "0 2px 8px rgba(0,0,0,0.06)"
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                    <div style={{ 
-                      width: 48, 
-                      height: 48, 
-                      background: stream.color + "20", 
-                      borderRadius: 12, 
-                      display: "flex", 
-                      alignItems: "center", 
-                      justifyContent: "center", 
-                      fontSize: 24 
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12
+                  }}>
+                    <div style={{
+                      width: 50,
+                      height: 50,
+                      background: `${stream.color}20`,
+                      borderRadius: 12,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 24
                     }}>
                       {stream.icon}
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{stream.name}</div>
-                      <div style={{ fontSize: 11, color: T.subtext }}>{stream.popularity}% students choose this</div>
+                      <div style={{
+                        fontSize: 15,
+                        fontWeight: 700,
+                        color: T.text,
+                        marginBottom: 3
+                      }}>
+                        {stream.name}
+                      </div>
+                      <div style={{
+                        fontSize: 11,
+                        color: T.subtext
+                      }}>
+                        {stream.popularity}% students • {stream.avgSalary}
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: T.text, marginBottom: 6 }}>🎯 Career Options:</div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                      {stream.careers.map((career, j) => (
-                        <span 
-                          key={j}
-                          style={{
-                            background: stream.color + "15",
-                            color: stream.color,
-                            padding: "4px 10px",
-                            borderRadius: 6,
-                            fontSize: 11,
-                            fontWeight: 500
-                          }}
-                        >
-                          {career}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: T.text, marginBottom: 6 }}>📝 Key Exams:</div>
-                    <div style={{ fontSize: 11, color: T.subtext, lineHeight: 1.6 }}>
-                      {stream.exams.join(" • ")}
+                    <div style={{
+                      fontSize: 20,
+                      color: stream.color,
+                      transition: "transform 0.3s ease",
+                      transform: showRoadmap === stream.id ? "rotate(180deg)" : "rotate(0deg)"
+                    }}>
+                      ▼
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+                
+                {showRoadmap === stream.id && (
+                  <div style={{ marginTop: 12 }}>
+                    <InteractiveRoadmap
+                      roadmap={stream.roadmap}
+                      color={stream.color}
+                      streamName={stream.name}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
           </>
         )}
 
         {/* After 12th View */}
         {activeLevel === "after12th" && (
           <>
-            {/* Stream Tabs */}
-            <div style={{ display: "flex", gap: 8, marginBottom: 16, overflowX: "auto" }}>
+            <div style={{
+              display: "flex",
+              gap: 8,
+              marginBottom: 16,
+              overflowX: "auto"
+            }}>
               {[
                 { id: "science", label: "Science", icon: "🔬", color: "#3b82f6" },
                 { id: "commerce", label: "Commerce", icon: "💼", color: "#f59e0b" },
@@ -401,23 +961,21 @@ function CareerGuidePage({ setNavTab, T, dark }) {
               ].map(tab => (
                 <button
                   key={tab.id}
-                  onClick={() => {
-                    setSelectedStream(tab.id);
-                    setExpandedCareer(null);
-                  }}
+                  onClick={() => setSelectedStream(tab.id)}
                   style={{
                     flex: 1,
-                    padding: "10px 16px",
+                    padding: "12px",
                     background: selectedStream === tab.id ? tab.color : T.card,
-                    border: selectedStream === tab.id ? "none" : `1px solid ${T.border}`,
-                    borderRadius: 10,
+                    border: selectedStream === tab.id ? "none" : `2px solid ${T.border}`,
+                    borderRadius: 12,
                     cursor: "pointer",
                     fontSize: 13,
                     fontFamily: "inherit",
                     fontWeight: 600,
                     color: selectedStream === tab.id ? "#fff" : T.text,
                     whiteSpace: "nowrap",
-                    transition: "all 0.3s ease"
+                    transition: "all 0.3s ease",
+                    boxShadow: selectedStream === tab.id ? `0 4px 12px ${tab.color}30` : "none"
                   }}
                 >
                   {tab.icon} {tab.label}
@@ -425,45 +983,91 @@ function CareerGuidePage({ setNavTab, T, dark }) {
               ))}
             </div>
 
-            <CareerOptionsChart 
-              careers={careerData.after12th[selectedStream]} 
-              streamType={selectedStream.charAt(0).toUpperCase() + selectedStream.slice(1)}
-            />
+            {careerData.after12th[selectedStream].map((career, i) => (
+              <InteractiveCareerCard
+                key={i}
+                career={career}
+                color={
+                  selectedStream === "science" ? "#3b82f6" :
+                  selectedStream === "commerce" ? "#f59e0b" : "#8b5cf6"
+                }
+                T={T}
+                dark={dark}
+              />
+            ))}
           </>
         )}
 
-        {/* After Graduation View */}
-        {activeLevel === "afterGrad" && (
-          <>
-            <div style={{ 
-              background: T.card, 
-              borderRadius: 14, 
-              padding: "14px", 
-              marginBottom: 16,
-              boxShadow: dark ? "0 2px 12px rgba(0,0,0,0.3)" : "0 2px 8px rgba(0,0,0,0.08)"
+        {/* Compare View */}
+        {activeLevel === "compare" && (
+          <div style={{
+            background: T.card,
+            borderRadius: 16,
+            padding: "20px",
+            textAlign: "center"
+          }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>⚖️</div>
+            <div style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: 18,
+              fontWeight: 700,
+              color: T.text,
+              marginBottom: 8
             }}>
-              <div style={{ fontSize: 13, color: T.text, lineHeight: 1.7 }}>
-                <strong>🎓 Specialization Paths:</strong> After completing your graduation, explore these advanced career options and specializations in your field.
-              </div>
+              Career Comparison Tool
             </div>
-            
-            <GraduationPathways options={careerData.afterGraduation} />
-          </>
+            <div style={{
+              fontSize: 13,
+              color: T.subtext,
+              lineHeight: 1.6,
+              marginBottom: 16
+            }}>
+              Select any two careers to compare side-by-side: salary, difficulty, duration, and career prospects.
+            </div>
+            <button
+              style={{
+                background: "linear-gradient(135deg, #667eea, #764ba2)",
+                color: "#fff",
+                border: "none",
+                borderRadius: 12,
+                padding: "12px 24px",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)"
+              }}
+            >
+              Start Comparing →
+            </button>
+          </div>
         )}
 
         {/* Pro Tip */}
         <div style={{
-          background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+          background: "linear-gradient(135deg, #667eea, #764ba2)",
           borderRadius: 14,
           padding: "16px",
           marginTop: 20,
           color: "#fff"
         }}>
-          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>💡 Pro Tip</div>
-          <div style={{ fontSize: 12, lineHeight: 1.6, opacity: 0.95 }}>
-            {activeLevel === "after10th" && "Choose your stream based on your interests, not peer pressure. Your passion drives success!"}
-            {activeLevel === "after12th" && "Research salary trends, job market demand, and your personal interests before finalizing a career."}
-            {activeLevel === "afterGrad" && "Consider pursuing higher education or certifications to stay competitive in your field."}
+          <div style={{
+            fontSize: 13,
+            fontWeight: 700,
+            marginBottom: 6,
+            display: "flex",
+            alignItems: "center",
+            gap: 6
+          }}>
+            💡 Pro Tip
+          </div>
+          <div style={{
+            fontSize: 12,
+            lineHeight: 1.6,
+            opacity: 0.95
+          }}>
+            {activeLevel === "after10th" && "Click on any stream to see the complete career roadmap with step-by-step guidance!"}
+            {activeLevel === "after12th" && "Tap on career cards to expand and see detailed pathway, top colleges, and required skills!"}
+            {activeLevel === "compare" && "Compare careers based on your priorities: salary, work-life balance, or job security!"}
           </div>
         </div>
       </div>
