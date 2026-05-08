@@ -68,7 +68,6 @@ const getTheme = function(dark) {
 const allStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@700;900&display=swap');
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{font-family:'DM Sans',sans-serif;overscroll-behavior:none;}
 
   /* ── CINEMATIC ANIMATIONS ── */
   @keyframes fadeIn       {from{opacity:0}to{opacity:1}}
