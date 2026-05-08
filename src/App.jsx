@@ -574,7 +574,6 @@ export default function App() {
                     <div style={{fontSize:12,fontWeight:700,color:"#fff"}}>{item.label}</div>
                     <div style={{fontSize:10,color:"rgba(255,255,255,0.5)",marginTop:1}}>{item.sub}</div>
                   </div>
- 
                 );
               })}
             </div>
