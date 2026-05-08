@@ -558,14 +558,23 @@ export default function App() {
             </div>
 
             {/* Feature banners */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,padding:"12px 16px 0"}}>
-              {[{tab:"compare",icon:"⚖️",label:"Compare",sub:"2 exams",bg:"linear-gradient(135deg,#0f172a,#1e3a5f)"},{tab:"planner",icon:"📅",label:"Planner",sub:"Saved ✓",bg:"linear-gradient(135deg,#14532d,#166534)"},{tab:"chat",icon:"🤖",label:"Ask AI",sub:"Instant help",bg:"linear-gradient(135deg,#1e1b4b,#312e81)"}].map(function(item){
+            {/* Changed gridTemplateColumns to '1fr 1fr' for a 2x2 layout */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,padding:"12px 16px 0"}}>
+              {[
+                {tab:"compare",icon:"⚖️",label:"Compare",sub:"2 exams",bg:"linear-gradient(135deg,#0f172a,#1e3a5f)"},
+                {tab:"planner",icon:"📅",label:"Planner",sub:"Saved ✓",bg:"linear-gradient(135deg,#14532d,#166534)"},
+                {tab:"chat",icon:"🤖",label:"Ask AI",sub:"Instant help",bg:"linear-gradient(135deg,#1e1b4b,#312e81)"},
+                // Added the Career button below:
+                {tab:"career",icon:"🎯",label:"Career",sub:"Pathways",bg:"linear-gradient(135deg,#7f1d1d,#b91c1c)"} 
+              ].map(function(item){
                 return (
-                  <div key={item.tab} onClick={function(){setNavTab(item.tab);}} style={{background:dark?"#1e293b":item.bg,borderRadius:13,padding:"11px 10px",cursor:"pointer",textAlign:"center",boxShadow:"0 3px 12px rgba(0,0,0,0.15)"}}>
+       
+            <div key={item.tab} onClick={function(){setNavTab(item.tab);}} style={{background:dark?"#1e293b":item.bg,borderRadius:13,padding:"11px 10px",cursor:"pointer",textAlign:"center",boxShadow:"0 3px 12px rgba(0,0,0,0.15)"}}>
                     <div style={{fontSize:20,marginBottom:3}}>{item.icon}</div>
                     <div style={{fontSize:12,fontWeight:700,color:"#fff"}}>{item.label}</div>
                     <div style={{fontSize:10,color:"rgba(255,255,255,0.5)",marginTop:1}}>{item.sub}</div>
                   </div>
+ 
                 );
               })}
             </div>
