@@ -512,7 +512,8 @@ export default function App() {
       <div style={{
         minHeight:"100vh",background:T.bg,paddingBottom:72,color:T.text,
         opacity:appReady?1:0,
-        transform:appReady?"translateY(0)":"translateY(20px)",
+        /* FIX: Use "none" instead of "translateY(0)" to prevent breaking position:fixed */
+        transform:appReady?"none":"translateY(20px)", 
         transition:"opacity 0.8s ease, transform 0.8s ease",
       }}>
         {navTab==="chat"    ?<ChatPage    setNavTab={setNavTab} T={T} dark={dark}/>:
