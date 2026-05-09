@@ -3,17 +3,13 @@
 // ═══════════════════════════════════════════════════════
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+// Upgraded to the newer, faster 1.5-flash model
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
-/**
- * Call Google Gemini API with a prompt
- * @param {string} prompt - The question/prompt to send to AI
- * @param {object} context - Optional context object for better responses
- * @returns {Promise<string>} - AI response text
- */
 export async function askGemini(prompt, context = {}) {
+  // Check if the key exists
   if (!GEMINI_API_KEY) {
-    return "⚠️ AI is not configured. Please add your Gemini API key to enable AI features.";
+    return "⚠️ Setup Error: Vercel cannot find your GEMINI_API_KEY. Please check your Vercel Environment Variables.";
   }
 
   try {
@@ -39,81 +35,40 @@ export async function askGemini(prompt, context = {}) {
       })
     });
 
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
     const data = await response.json();
+
+    // SMART ERROR CHECKING: If Google rejects the request, tell us exactly why
+    if (!response.ok) {
+      console.error("Google API Details:", data);
+      return `❌ Google API Error: ${data.error?.message || response.statusText}`;
+    }
     
     if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
       return data.candidates[0].content.parts[0].text;
     } else {
-      throw new Error("Invalid response format");
+      return "❌ Data Error: The AI sent an empty response.";
     }
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    return "❌ Sorry, I encountered an error. Please try again.";
+    console.error("Network Error:", error);
+    return `❌ Network Error: ${error.message}. Please check your internet connection.`;
   }
 }
 
-/**
- * Build an enhanced prompt with context
- */
 function buildPrompt(userQuestion, context) {
-  let systemContext = `You are ExamBot, an expert AI assistant for Indian competitive exams and career guidance. You provide accurate, concise, and helpful information about:
-- Competitive exams (JEE, NEET, UPSC, SSC, Banking, etc.)
-- Career paths after 10th, 12th, and graduation
-- Exam preparation strategies
-- Salary expectations and job prospects
-- College selection and courses
+  let systemContext = `You are ExamBot, an expert AI assistant for Indian competitive exams and career guidance. Keep responses clear, factual, and encouraging. Keep responses under 150 words unless asked for details.`;
 
-Keep responses clear, factual, and encouraging. Use bullet points for lists. Keep responses under 150 words unless asked for details.`;
-
-  // Add specific context if provided
   if (context.type === "career") {
-    systemContext += `\n\nCurrent Context: The user is viewing information about "${context.career}" career path.`;
-    if (context.stream) systemContext += ` Stream: ${context.stream}.`;
-    if (context.salary) systemContext += ` Average Salary: ${context.salary}.`;
-    if (context.difficulty) systemContext += ` Difficulty Level: ${context.difficulty}/100.`;
+    systemContext += `\n\nContext: The user is asking about the "${context.career}" path. Avg Salary: ${context.salary}. Difficulty: ${context.difficulty}/100.`;
   }
 
-  if (context.type === "exam") {
-    systemContext += `\n\nCurrent Context: The user is asking about "${context.examName}" exam.`;
-    if (context.category) systemContext += ` Category: ${context.category}.`;
-  }
-
-  return `${systemContext}\n\nUser Question: ${userQuestion}\n\nProvide a helpful, accurate response:`;
+  return `${systemContext}\n\nUser Question: ${userQuestion}\n\nProvide a helpful response:`;
 }
 
-/**
- * Ask AI about a specific career
- */
 export async function askAboutCareer(question, careerData) {
   return askGemini(question, {
     type: "career",
     career: careerData.career,
-    stream: careerData.stream,
     salary: careerData.avgSalary,
     difficulty: careerData.difficulty
-  });
-}
-
-/**
- * Ask AI about a specific exam
- */
-export async function askAboutExam(question, examData) {
-  return askGemini(question, {
-    type: "exam",
-    examName: examData.name,
-    category: examData.category
-  });
-}
-
-/**
- * General career guidance question
- */
-export async function askCareerGuidance(question) {
-  return askGemini(question, {
-    type: "general"
   });
 }
