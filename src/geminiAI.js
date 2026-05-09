@@ -3,8 +3,8 @@
 // ═══════════════════════════════════════════════════════
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
-// Upgraded to the newer, faster 1.5-flash model
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+// Upgraded to the newer, faster 2.5-flash model
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 export async function askGemini(prompt, context = {}) {
   // Check if the key exists
