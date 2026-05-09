@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { exams } from "./examsData";
 import CareerGuidePage from "./CareerGuide";
+import { askGemini } from "./geminiAI"; // 🚀 ADDED: Importing the Gemini AI Engine
 
 // ═══════════════════════════════════════════════════
 // EXAMNEST — ULTRA CINEMATIC INTRO + FULL APP
@@ -783,17 +784,36 @@ function ComparePage(props) {
   );
 }
 
-// ─── CHAT ─────────────────────────────────────────────
+// ─── CHAT (⚡ UPGRADED WITH GEMINI AI) ─────────────────────────────────────────────
 function ChatPage(props) {
   var setNavTab=props.setNavTab,T=props.T;
-  var [messages,setMessages]=useState([{role:"bot",text:"👋 Hi! I am **ExamBot**!\n\nI know about "+exams.length+"+ Indian exams!\n\nAsk me about syllabus, cutoffs, books, tips or eligibility for any exam! 😊"}]);
+  var [messages,setMessages]=useState([{role:"bot",text:"👋 Hi! I am **ExamBot**!\n\nI am now powered by **Google Gemini AI** and I know about "+exams.length+"+ Indian exams!\n\nAsk me about syllabus, cutoffs, books, tips or eligibility for any exam! 😊"}]);
   var [input,setInput]=useState("");
   var [loading,setLoading]=useState(false);
   var bottomRef=useRef(null);
+  
   useEffect(function(){if(bottomRef.current)bottomRef.current.scrollIntoView({behavior:"smooth"});},[messages,loading]);
-  function send(text){var q=(text||input).trim();if(!q||loading)return;setInput("");setMessages(function(p){return p.concat([{role:"user",text:q}]);});setLoading(true);setTimeout(function(){setMessages(function(p){return p.concat([{role:"bot",text:getBotReply(q)}]);});setLoading(false);},700);}
+  
+  // 🚀 ADDED: The new Async send function to talk to Gemini
+  async function send(text){
+    var q=(text||input).trim();
+    if(!q||loading)return;
+    setInput("");
+    setMessages(function(p){return p.concat([{role:"user",text:q}]);});
+    setLoading(true);
+    
+    try {
+      var aiReply = await askGemini(q, { type: "general" });
+      setMessages(function(p){return p.concat([{role:"bot",text:aiReply}]);});
+    } catch (e) {
+      setMessages(function(p){return p.concat([{role:"bot",text:"❌ Connection Error. Please try again."}]);});
+    }
+    setLoading(false);
+  }
+  
   function fmt(t){return t.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\n/g,"<br/>");}
   var quickQs=["Hello! What can you do?","JEE Main cutoff 2024","Best books for UPSC","NEET eligibility","Toughest exam in India"];
+  
   return(
     <div style={{height:"100vh",display:"flex",flexDirection:"column",background:T.bg}}>
       <div style={{background:"linear-gradient(135deg,#1e1b4b,#312e81)",padding:"14px 16px",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
