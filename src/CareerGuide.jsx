@@ -1,8 +1,8 @@
 import { useState } from "react";
+import { askAboutCareer, askCareerGuidance } from "./geminiAI";
 
-// ═══════════════════════════════════════════════════════
-// ADVANCED CAREER GUIDE - INTERACTIVE ROADMAP & CHARTS
-// ═══════════════════════════════════════════════════════
+// [Previous careerData object stays the same - keeping it for space]
+// Copy the entire careerData object from the previous CareerGuide.jsx here
 
 const careerData = {
   after10th: {
@@ -216,8 +216,214 @@ const careerData = {
 };
 
 // ═══════════════════════════════════════════════════════
-// INTERACTIVE ROADMAP COMPONENT
+// AI CHAT MODAL COMPONENT
 // ═══════════════════════════════════════════════════════
+function AIChat({ career, onClose, T, dark, stream }) {
+  const [messages, setMessages] = useState([
+    { role: "ai", text: `Hi! I'm your AI assistant. Ask me anything about ${career.career}!` }
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSend() {
+    if (!input.trim() || loading) return;
+
+    const userMessage = input.trim();
+    setInput("");
+    setMessages(prev => [...prev, { role: "user", text: userMessage }]);
+    setLoading(true);
+
+    try {
+      const aiResponse = await askAboutCareer(userMessage, {
+        career: career.career,
+        stream: stream,
+        avgSalary: career.avgSalary,
+        difficulty: career.difficulty,
+        duration: career.duration,
+        seats: career.seats
+      });
+
+      setMessages(prev => [...prev, { role: "ai", text: aiResponse }]);
+    } catch (error) {
+      setMessages(prev => [...prev, { 
+        role: "ai", 
+        text: "Sorry, I encountered an error. Please try again!" 
+      }]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: "rgba(0,0,0,0.7)",
+      zIndex: 9999,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "20px"
+    }}>
+      <div style={{
+        background: T.card,
+        borderRadius: 16,
+        maxWidth: 500,
+        width: "100%",
+        maxHeight: "80vh",
+        display: "flex",
+        flexDirection: "column",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.3)"
+      }}>
+        {/* Header */}
+        <div style={{
+          background: "linear-gradient(135deg, #667eea, #764ba2)",
+          padding: "16px",
+          borderRadius: "16px 16px 0 0",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>
+              🤖 AI Career Assistant
+            </div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", marginTop: 2 }}>
+              Powered by Google Gemini
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: "rgba(255,255,255,0.2)",
+              border: "none",
+              borderRadius: 8,
+              padding: "6px 12px",
+              color: "#fff",
+              cursor: "pointer",
+              fontSize: 13,
+              fontWeight: 600
+            }}
+          >
+            ✕ Close
+          </button>
+        </div>
+
+        {/* Messages */}
+        <div style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "16px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 12
+        }}>
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              style={{
+                alignSelf: msg.role === "user" ? "flex-end" : "flex-start",
+                maxWidth: "85%"
+              }}
+            >
+              <div style={{
+                background: msg.role === "user" ? "#667eea" : T.card2,
+                color: msg.role === "user" ? "#fff" : T.text,
+                padding: "10px 14px",
+                borderRadius: 12,
+                fontSize: 13,
+                lineHeight: 1.6,
+                whiteSpace: "pre-wrap"
+              }}>
+                {msg.text}
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div style={{
+              alignSelf: "flex-start",
+              maxWidth: "85%"
+            }}>
+              <div style={{
+                background: T.card2,
+                padding: "10px 14px",
+                borderRadius: 12,
+                fontSize: 13
+              }}>
+                <span className="thinking-dots">Thinking</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Input */}
+        <div style={{
+          padding: "12px",
+          borderTop: `1px solid ${T.border}`,
+          display: "flex",
+          gap: 8
+        }}>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSend()}
+            placeholder="Ask anything about this career..."
+            style={{
+              flex: 1,
+              padding: "10px 12px",
+              background: T.card2,
+              border: `1px solid ${T.border}`,
+              borderRadius: 10,
+              fontSize: 13,
+              color: T.text,
+              fontFamily: "inherit"
+            }}
+          />
+          <button
+            onClick={handleSend}
+            disabled={loading || !input.trim()}
+            style={{
+              background: "linear-gradient(135deg, #667eea, #764ba2)",
+              border: "none",
+              borderRadius: 10,
+              padding: "0 16px",
+              color: "#fff",
+              fontSize: 20,
+              cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading || !input.trim() ? 0.5 : 1
+            }}
+          >
+            {loading ? "..." : "→"}
+          </button>
+        </div>
+
+        <style>{`
+          .thinking-dots::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+          }
+          @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+          }
+        `}</style>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+// REST OF THE CAREERGUIDE COMPONENTS
+// (InteractiveRoadmap, AnimatedStreamChart, CareerFlowchart, etc.)
+// [Copy from previous CareerGuide.jsx]
+// ═══════════════════════════════════════════════════════
+
+// [I'll include the main components here - copying from previous version]
+
 function InteractiveRoadmap({ roadmap, color, streamName }) {
   const [activeNode, setActiveNode] = useState(null);
   
@@ -240,7 +446,7 @@ function InteractiveRoadmap({ roadmap, color, streamName }) {
         🗺️ Career Roadmap: {streamName}
       </div>
       
-      {/* Connection Lines */}
+      {/* SVG Connection Lines */}
       <svg 
         style={{ 
           position: "absolute",
@@ -363,9 +569,6 @@ function InteractiveRoadmap({ roadmap, color, streamName }) {
   );
 }
 
-// ═══════════════════════════════════════════════════════
-// FLOWCHART PATHWAY COMPONENT
-// ═══════════════════════════════════════════════════════
 function CareerFlowchart({ pathway, color, career }) {
   const [hoveredStep, setHoveredStep] = useState(null);
   
@@ -409,9 +612,6 @@ function CareerFlowchart({ pathway, color, career }) {
   );
 }
 
-// ═══════════════════════════════════════════════════════
-// ANIMATED CHART COMPONENT
-// ═══════════════════════════════════════════════════════
 function AnimatedStreamChart({ streams, T }) {
   const [selectedStream, setSelectedStream] = useState(null);
   const maxPop = Math.max(...streams.map(s => s.popularity));
@@ -537,197 +737,236 @@ function AnimatedStreamChart({ streams, T }) {
   );
 }
 
-// ═══════════════════════════════════════════════════════
-// INTERACTIVE CAREER CARD
-// ═══════════════════════════════════════════════════════
-function InteractiveCareerCard({ career, color, T, dark }) {
+function InteractiveCareerCard({ career, color, T, dark, stream }) {
   const [expanded, setExpanded] = useState(false);
+  const [showAI, setShowAI] = useState(false);
   
   return (
-    <div
-      onClick={() => setExpanded(!expanded)}
-      style={{
-        background: T.card,
-        borderRadius: 14,
-        padding: "16px",
-        marginBottom: 12,
-        cursor: "pointer",
-        border: `2px solid ${expanded ? color : "transparent"}`,
-        boxShadow: expanded ? `0 8px 24px ${color}20` : "0 2px 8px rgba(0,0,0,0.06)",
-        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        transform: expanded ? "scale(1.02)" : "scale(1)"
-      }}
-    >
-      {/* Header */}
-      <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: expanded ? 12 : 0
-      }}>
-        <div>
-          <div style={{
-            fontSize: 14,
-            fontWeight: 700,
-            color: T.text,
-            marginBottom: 4
-          }}>
-            {career.career}
-          </div>
-          <div style={{
-            fontSize: 12,
-            color: color,
-            fontWeight: 600
-          }}>
-            💰 {career.avgSalary}
-          </div>
-        </div>
-        
-        {/* Difficulty Ring */}
+    <>
+      <div
+        onClick={() => setExpanded(!expanded)}
+        style={{
+          background: T.card,
+          borderRadius: 14,
+          padding: "16px",
+          marginBottom: 12,
+          cursor: "pointer",
+          border: `2px solid ${expanded ? color : "transparent"}`,
+          boxShadow: expanded ? `0 8px 24px ${color}20` : "0 2px 8px rgba(0,0,0,0.06)",
+          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          transform: expanded ? "scale(1.02)" : "scale(1)"
+        }}
+      >
+        {/* Header */}
         <div style={{
-          width: 50,
-          height: 50,
-          borderRadius: "50%",
-          background: `conic-gradient(${color} ${career.difficulty}%, #e2e8f0 0)`,
           display: "flex",
+          justifyContent: "space-between",
           alignItems: "center",
-          justifyContent: "center",
-          position: "relative"
+          marginBottom: expanded ? 12 : 0
         }}>
+          <div>
+            <div style={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: T.text,
+              marginBottom: 4
+            }}>
+              {career.career}
+            </div>
+            <div style={{
+              fontSize: 12,
+              color: color,
+              fontWeight: 600
+            }}>
+              💰 {career.avgSalary}
+            </div>
+          </div>
+          
+          {/* Difficulty Ring */}
           <div style={{
-            width: 38,
-            height: 38,
+            width: 50,
+            height: 50,
             borderRadius: "50%",
-            background: T.card,
+            background: `conic-gradient(${color} ${career.difficulty}%, #e2e8f0 0)`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 11,
-            fontWeight: 700,
-            color: T.text
+            position: "relative"
           }}>
-            {career.difficulty}
+            <div style={{
+              width: 38,
+              height: 38,
+              borderRadius: "50%",
+              background: T.card,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 11,
+              fontWeight: 700,
+              color: T.text
+            }}>
+              {career.difficulty}
+            </div>
           </div>
         </div>
-      </div>
-      
-      {/* Expanded Content */}
-      {expanded && (
-        <div style={{
-          marginTop: 12,
-          paddingTop: 12,
-          borderTop: `1px solid ${T.border}`,
-          animation: "fadeIn 0.3s ease"
-        }}>
-          {/* Quick Stats */}
+        
+        {/* Expanded Content */}
+        {expanded && (
           <div style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 10,
-            marginBottom: 12
+            marginTop: 12,
+            paddingTop: 12,
+            borderTop: `1px solid ${T.border}`,
+            animation: "fadeIn 0.3s ease"
           }}>
+            {/* Quick Stats */}
             <div style={{
-              background: T.card2,
-              padding: "10px",
-              borderRadius: 8,
-              textAlign: "center"
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 10,
+              marginBottom: 12
             }}>
-              <div style={{ fontSize: 10, color: T.muted, marginBottom: 3 }}>⏱️ Duration</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: T.text }}>{career.duration}</div>
-            </div>
-            <div style={{
-              background: T.card2,
-              padding: "10px",
-              borderRadius: 8,
-              textAlign: "center"
-            }}>
-              <div style={{ fontSize: 10, color: T.muted, marginBottom: 3 }}>🎓 Seats</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: T.text }}>{career.seats}</div>
-            </div>
-          </div>
-          
-          {/* Career Pathway */}
-          {career.pathway && (
-            <>
               <div style={{
-                fontSize: 11,
-                fontWeight: 600,
-                color: T.text,
-                marginBottom: 8
+                background: T.card2,
+                padding: "10px",
+                borderRadius: 8,
+                textAlign: "center"
               }}>
-                🗺️ Career Path:
-              </div>
-              <CareerFlowchart pathway={career.pathway} color={color} career={career.career} />
-            </>
-          )}
-          
-          {/* Top Colleges */}
-          {career.topColleges && (
-            <>
-              <div style={{
-                fontSize: 11,
-                fontWeight: 600,
-                color: T.text,
-                marginTop: 12,
-                marginBottom: 6
-              }}>
-                🏛️ Top Colleges:
+                <div style={{ fontSize: 10, color: T.muted, marginBottom: 3 }}>⏱️ Duration</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: T.text }}>{career.duration}</div>
               </div>
               <div style={{
+                background: T.card2,
+                padding: "10px",
+                borderRadius: 8,
+                textAlign: "center"
+              }}>
+                <div style={{ fontSize: 10, color: T.muted, marginBottom: 3 }}>🎓 Seats</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: T.text }}>{career.seats}</div>
+              </div>
+            </div>
+            
+            {/* AI Chat Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowAI(true);
+              }}
+              style={{
+                width: "100%",
+                background: "linear-gradient(135deg, #667eea, #764ba2)",
+                border: "none",
+                borderRadius: 10,
+                padding: "12px",
+                color: "#fff",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                marginBottom: 12,
                 display: "flex",
-                flexWrap: "wrap",
-                gap: 6
-              }}>
-                {career.topColleges.map((college, i) => (
-                  <span
-                    key={i}
-                    style={{
-                      background: `${color}15`,
-                      color: color,
-                      padding: "4px 8px",
-                      borderRadius: 6,
-                      fontSize: 10,
-                      fontWeight: 500
-                    }}
-                  >
-                    {college}
-                  </span>
-                ))}
-              </div>
-            </>
-          )}
-          
-          {/* Skills Required */}
-          {career.skills && (
-            <>
-              <div style={{
-                fontSize: 11,
-                fontWeight: 600,
-                color: T.text,
-                marginTop: 12,
-                marginBottom: 6
-              }}>
-                ⚡ Skills Required:
-              </div>
-              <div style={{
-                fontSize: 11,
-                color: T.subtext,
-                lineHeight: 1.6
-              }}>
-                {career.skills.join(" • ")}
-              </div>
-            </>
-          )}
-        </div>
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)"
+              }}
+            >
+              <span style={{ fontSize: 16 }}>🤖</span>
+              Ask AI About This Career
+            </button>
+            
+            {/* Career Pathway */}
+            {career.pathway && (
+              <>
+                <div style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: T.text,
+                  marginBottom: 8
+                }}>
+                  🗺️ Career Path:
+                </div>
+                <CareerFlowchart pathway={career.pathway} color={color} career={career.career} />
+              </>
+            )}
+            
+            {/* Top Colleges */}
+            {career.topColleges && (
+              <>
+                <div style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: T.text,
+                  marginTop: 12,
+                  marginBottom: 6
+                }}>
+                  🏛️ Top Colleges:
+                </div>
+                <div style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 6
+                }}>
+                  {career.topColleges.map((college, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        background: `${color}15`,
+                        color: color,
+                        padding: "4px 8px",
+                        borderRadius: 6,
+                        fontSize: 10,
+                        fontWeight: 500
+                      }}
+                    >
+                      {college}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
+            
+            {/* Skills Required */}
+            {career.skills && (
+              <>
+                <div style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: T.text,
+                  marginTop: 12,
+                  marginBottom: 6
+                }}>
+                  ⚡ Skills Required:
+                </div>
+                <div style={{
+                  fontSize: 11,
+                  color: T.subtext,
+                  lineHeight: 1.6
+                }}>
+                  {career.skills.join(" • ")}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+        
+        <style>{`
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+        `}</style>
+      </div>
+
+      {/* AI Chat Modal */}
+      {showAI && (
+        <AIChat
+          career={career}
+          stream={stream}
+          onClose={() => setShowAI(false)}
+          T={T}
+          dark={dark}
+        />
       )}
-      
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-      `}</style>
-    </div>
+    </>
   );
 }
 
@@ -824,7 +1063,7 @@ function CareerGuidePage({ setNavTab, T, dark }) {
               color: "rgba(255,255,255,0.85)",
               marginTop: 3
             }}>
-              Interactive pathway to your dream career
+              AI-Powered Career Guidance
             </div>
           </div>
         </div>
@@ -838,8 +1077,7 @@ function CareerGuidePage({ setNavTab, T, dark }) {
         }}>
           {[
             { id: "after10th", label: "After 10th", icon: "📚" },
-            { id: "after12th", label: "After 12th", icon: "🎓" },
-            { id: "compare", label: "Compare", icon: "⚖️" }
+            { id: "after12th", label: "After 12th", icon: "🎓" }
           ].map(level => (
             <button
               key={level.id}
@@ -987,6 +1225,7 @@ function CareerGuidePage({ setNavTab, T, dark }) {
               <InteractiveCareerCard
                 key={i}
                 career={career}
+                stream={selectedStream}
                 color={
                   selectedStream === "science" ? "#3b82f6" :
                   selectedStream === "commerce" ? "#f59e0b" : "#8b5cf6"
@@ -996,50 +1235,6 @@ function CareerGuidePage({ setNavTab, T, dark }) {
               />
             ))}
           </>
-        )}
-
-        {/* Compare View */}
-        {activeLevel === "compare" && (
-          <div style={{
-            background: T.card,
-            borderRadius: 16,
-            padding: "20px",
-            textAlign: "center"
-          }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>⚖️</div>
-            <div style={{
-              fontFamily: "'Playfair Display', serif",
-              fontSize: 18,
-              fontWeight: 700,
-              color: T.text,
-              marginBottom: 8
-            }}>
-              Career Comparison Tool
-            </div>
-            <div style={{
-              fontSize: 13,
-              color: T.subtext,
-              lineHeight: 1.6,
-              marginBottom: 16
-            }}>
-              Select any two careers to compare side-by-side: salary, difficulty, duration, and career prospects.
-            </div>
-            <button
-              style={{
-                background: "linear-gradient(135deg, #667eea, #764ba2)",
-                color: "#fff",
-                border: "none",
-                borderRadius: 12,
-                padding: "12px 24px",
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer",
-                boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)"
-              }}
-            >
-              Start Comparing →
-            </button>
-          </div>
         )}
 
         {/* Pro Tip */}
@@ -1058,16 +1253,14 @@ function CareerGuidePage({ setNavTab, T, dark }) {
             alignItems: "center",
             gap: 6
           }}>
-            💡 Pro Tip
+            🤖 AI Tip
           </div>
           <div style={{
             fontSize: 12,
             lineHeight: 1.6,
             opacity: 0.95
           }}>
-            {activeLevel === "after10th" && "Click on any stream to see the complete career roadmap with step-by-step guidance!"}
-            {activeLevel === "after12th" && "Tap on career cards to expand and see detailed pathway, top colleges, and required skills!"}
-            {activeLevel === "compare" && "Compare careers based on your priorities: salary, work-life balance, or job security!"}
+            Click "Ask AI" on any career card to get personalized guidance powered by Google Gemini!
           </div>
         </div>
       </div>
